@@ -90,14 +90,31 @@ export async function extractWithGemini(
   } else {
     // Official GoogleGenAI SDK call
     const ai = new GoogleGenAI({ apiKey: apiKey! });
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        temperature: options.temperature ?? 0.1,
-      },
-    });
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: options.temperature ?? 0.1,
+        },
+      });
+    } catch (err: any) {
+      // If the model is 404 (e.g. gemini-2.5-flash deprecated for new accounts, migrate to gemini-3.5-flash)
+      if (err?.status === 404 && (modelName === 'gemini-2.5-flash' || err?.message?.includes('gemini-3.5-flash'))) {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            temperature: options.temperature ?? 0.1,
+          },
+        });
+      } else {
+        throw err;
+      }
+    }
     rawResponseText = response.text || '';
   }
 
@@ -113,19 +130,44 @@ export async function extractWithGemini(
     cleanJson = cleanJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
   }
 
+  const normalizeType = (t: string) => {
+    const raw = (t || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+    if (raw === 'question' || raw === 'unresolved_question') return 'unresolved_question';
+    if (raw === 'next_action' || raw === 'action' || raw === 'next') return 'next_action';
+    if (raw === 'decision') return 'decision';
+    if (raw === 'task') return 'task';
+    if (raw === 'risk') return 'risk';
+    if (raw === 'dependency') return 'dependency';
+    if (raw === 'contact' || raw === 'responsibility' || raw === 'owner') return 'contact';
+    return raw;
+  };
+
   try {
     const parsed = JSON.parse(cleanJson);
-    if (!Array.isArray(parsed)) {
-      if (parsed && typeof parsed === 'object') {
-        // Maybe wrapped in { findings: [...] } or { results: [...] }
-        const candidate = (parsed as any).findings || (parsed as any).results || (parsed as any).items;
-        if (Array.isArray(candidate)) {
-          return candidate as RawExtractedFinding[];
-        }
+    let items: any[] = [];
+    if (Array.isArray(parsed)) {
+      items = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      const candidate = (parsed as any).findings || (parsed as any).results || (parsed as any).items;
+      if (Array.isArray(candidate)) {
+        items = candidate;
       }
-      return [];
     }
-    return parsed as RawExtractedFinding[];
+
+    return items.map((f: any) => ({
+      ...f,
+      type: normalizeType(f.type) as any,
+      title: f.title || 'Untitled Finding',
+      summary: f.summary || '',
+      category: f.category || 'General Operations',
+      urgency: (f.urgency || 'medium').toLowerCase(),
+      owner: f.owner || 'Unassigned',
+      reasoning: f.reasoning || undefined,
+      impact: f.impact || undefined,
+      supportingQuote: f.supportingQuote || f.quote || '',
+      claimedConfidence: typeof f.claimedConfidence === 'number' ? f.claimedConfidence : 90,
+      isConflict: Boolean(f.isConflict),
+    }));
   } catch (err) {
     console.warn('Failed to parse Gemini JSON response:', err, '\nRaw text:', rawResponseText);
     return [];

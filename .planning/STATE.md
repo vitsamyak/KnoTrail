@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: D
 current_phase_name: Real AI Knowledge Extraction with Gemini API Integration & Evidence Grounding
 status: complete
-stopped_at: Completed Phase D implementation. 46/46 unit, persistence, ingestion, and AI extraction tests passing, Next.js production build passing with 13 API routes + 6 static pages, ADR-010 recorded, Gravitas verified PASS.
-last_updated: "2026-11-08T18:05:00.000Z"
+stopped_at: Completed Phase D live Gemini API integration verification. Authenticated live request executed with Google Gemini, dynamically extracting 8 verified findings across all 7 categories from real uploaded document with exact verbatim quote grounding. 46/46 automated tests pass, Next.js production build passes with zero errors.
+last_updated: "2026-11-08T18:27:00.000Z"
 last_activity: 2026-11-08
-state_head: 91ac653
+state_head: 7d165c8
 progress:
   total_phases: 7
   completed_phases: 5
@@ -37,7 +37,7 @@ Progress: [██████████] 100%
 **Velocity:**
 - Total screens completed: 8 of 8
 - Total API endpoints implemented: 13 active REST endpoints (`/api/...` including `/api/analysis/extract`, `/api/sources/upload`, `/api/sources/[id]`)
-- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash), structured JSON response mode, temperature 0.1
+- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash / Gemini 3.5 Flash), live authenticated API verification PASS, structured JSON response mode
 - Evidence Grounding Engine: Exact & normalized whitespace matching, PDF page & line detection, TXT/MD line ranges, SHA-256 snippet hashing
 - Grounding Statuses: `VERIFIED` (exact quote match), `UNCERTAIN` (unlocated quote with warning), `MISSING` (no quote provided), `CONFLICTING` (contradictory claims)
 - Operational Categories: 7 types (Decisions with reasoning/impact, Tasks, Risks, Dependencies, Contacts, Unresolved Questions, Next Actions)

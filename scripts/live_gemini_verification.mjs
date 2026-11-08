@@ -102,8 +102,8 @@ async function runLiveVerification() {
   const uploadData = await uploadRes.json();
   console.log(`[PASS] Upload HTTP Status: ${uploadRes.status}`);
   console.log(`       Success Count: ${uploadData.successCount}`);
-  console.log(`       Uploaded Source: ${uploadData.results[0]?.name}`);
-  console.log(`       Extracted Text Length: ${uploadData.results[0]?.extractedLength} characters`);
+  console.log(`       Uploaded Source: ${uploadData.results[0]?.filename}`);
+  console.log(`       Extracted Lines: ${uploadData.results[0]?.lineCount} lines`);
   console.log(`       SHA-256 Hash: ${docHash}`);
 
   const uploadedSourceId = uploadData.results[0]?.sourceId;
@@ -239,3 +239,4 @@ runLiveVerification().catch((err) => {
   console.error('\nVERIFICATION EXECUTION ERROR:', err);
   process.exit(1);
 });
+
