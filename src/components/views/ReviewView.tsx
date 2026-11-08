@@ -140,16 +140,22 @@ export function ReviewView() {
           </div>
           <button
             onClick={() => setShowCertifyConfirm(true)}
-            disabled={hasBlockingConflicts}
+            disabled={!stats.canCertifyHandover}
             className={`px-space-md py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
-              hasBlockingConflicts
+              !stats.canCertifyHandover
                 ? 'bg-surface-container text-outline cursor-not-allowed border border-outline-variant/30'
                 : 'bg-primary text-on-primary hover:bg-primary-container active:scale-95'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">verified</span>
             <span>
-              {hasBlockingConflicts ? 'Resolve Blocker to Certify' : 'Certify & Approve Handover'}
+              {hasBlockingConflicts
+                ? 'Resolve Conflicts to Certify'
+                : stats.unreviewedCount > 0
+                ? `Review All Claims to Certify (${stats.unreviewedCount} pending)`
+                : project.handoverCertified
+                ? 'Re-certify Handover'
+                : 'Certify & Approve Handover'}
             </span>
           </button>
         </div>

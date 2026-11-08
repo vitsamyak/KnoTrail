@@ -10,6 +10,7 @@ import {
   ProjectSource,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
+import { checkHandoverBlockStatus } from '../lib/handoverFilter';
 
 interface ProjectContextType {
   activeView: ActiveView;
@@ -47,6 +48,11 @@ interface ProjectContextType {
     missingCount: number;
     approvedCount: number;
     certificationProgressPercent: number;
+    isHandoverBlocked: boolean;
+    canCertifyHandover: boolean;
+    unresolvedConflictsCount: number;
+    unreviewedCount: number;
+    handoverBlockReason: string;
   };
 }
 
@@ -314,8 +320,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const conflictingCount = project.findings.filter((f) => f.status === 'CONFLICTING').length;
   const missingCount = project.findings.filter((f) => f.status === 'MISSING').length;
 
-  const approvedCount = project.findings.filter((f) => f.approved).length;
+  const approvedCount = project.findings.filter((f) => f.approved && !f.rejected).length;
   const certificationProgressPercent = Math.round((approvedCount / (totalFindings || 1)) * 100);
+
+  const blockStatus = checkHandoverBlockStatus(project.findings, project.handoverCertified);
 
   return (
     <ProjectContext.Provider
@@ -355,6 +363,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           missingCount,
           approvedCount,
           certificationProgressPercent,
+          isHandoverBlocked: blockStatus.isBlocked,
+          canCertifyHandover: blockStatus.canCertify,
+          unresolvedConflictsCount: blockStatus.unresolvedConflictsCount,
+          unreviewedCount: blockStatus.unreviewedCount,
+          handoverBlockReason: blockStatus.reason,
         },
       }}
     >

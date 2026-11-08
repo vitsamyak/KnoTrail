@@ -21,7 +21,12 @@ export function Sidebar() {
     { id: 'analysis', label: 'AI Analysis', icon: 'auto_awesome' },
     { id: 'evidence', label: 'Evidence Explorer', icon: 'fact_check', badge: `${stats.totalFindings}` },
     { id: 'review', label: 'Review Center', icon: 'rule', badge: `${stats.certificationProgressPercent}%` },
-    { id: 'handover', label: 'Handovers', icon: 'sync_alt' },
+    {
+      id: 'handover',
+      label: 'Handovers',
+      icon: stats.isHandoverBlocked ? 'lock' : 'sync_alt',
+      badge: stats.isHandoverBlocked ? 'Locked' : (project.handoverCertified ? 'Certified' : 'Ready'),
+    },
   ];
 
   return (

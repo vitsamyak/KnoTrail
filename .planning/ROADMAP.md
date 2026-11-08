@@ -9,6 +9,7 @@ KnoTrail is engineered across three major hackathon milestones:
 
 ## Phases
 
+- [x] **Phase A: Critical Handover Integrity & Human Review Gating** - Enforce strict approved-only filtering, conditional certification badges, human review gating, dependency exports, and navigation locks. [COMPLETED]
 - [ ] **Phase 1: Core Domain Models, Provenance Schema & Storage Foundation** - Define data schemas for knowledge nodes, evidence links, RBAC permissions, and local SQLite/vector storage.
 - [ ] **Phase 2: Multi-Source Ingestion & Extraction Pipeline** - Build parsers for Git history, Markdown documentation, task items, and technical decision records.
 - [ ] **Phase 3: Evidence Grounding, Conflict & Uncertainty Engine** - Implement cross-source verification, contradiction detection, and citation linking.
@@ -17,6 +18,23 @@ KnoTrail is engineered across three major hackathon milestones:
 - [ ] **Phase 6: End-to-End System Integration, Verification & Standalone Judge Packaging** - Wire all components into a seamless, self-contained deployment with demo sample data and full verification.
 
 ## Phase Details
+
+### Phase A: Critical Handover Integrity & Human Review Gating
+**Goal**: Enforce strict data filtering and human review gating so that unapproved or rejected findings never leak into certified handovers or exports, and handover dossiers cannot be generated with unresolved conflicts.  
+**Depends on**: Initial Application Shell & Functional Audit  
+**Requirements**: REV-01, REV-03, HAND-01, HAND-02, HAND-03  
+**Success Criteria** (what must be TRUE):
+  1. Only approved and non-rejected findings appear in the final handover dossier.
+  2. Rejected findings never appear in handover exports.
+  3. Unapproved findings never appear in a certified handover.
+  4. The "Certified & Signed Off" badge is conditional on `project.handoverCertified`, not statically displayed.
+  5. Handover generation is blocked until all required findings are reviewed and critical conflicts are resolved.
+  6. Dependencies are included in the final handover dossier and exports.
+  7. Identical filtering rules are applied to Markdown, JSON, and Print/PDF exports.
+  8. Sidebar navigation displays lock state and enforces the handover approval gate.
+  9. Automated unit test suite verifies all 8 integrity conditions.
+**Status**: COMPLETED (8/8 tests passing, Next.js production build passing)
+
 
 ### Phase 1: Core Domain Models, Provenance Schema & Storage Foundation
 **Goal**: Establish authoritative data schemas for reconstructed project state, evidence citations, RBAC security profiles, and local persistence.  
@@ -116,6 +134,7 @@ Phases execute in numeric order: Phase 1 → Phase 2 → Phase 3 → Phase 4 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
+| A. Critical Handover Integrity & Gating | 1/1 | Completed | 2026-11-08 |
 | 1. Core Domain Models, Provenance Schema & Storage Foundation | 0/2 | Not started | - |
 | 2. Multi-Source Ingestion & Extraction Pipeline | 0/2 | Not started | - |
 | 3. Evidence Grounding, Conflict & Uncertainty Engine | 0/2 | Not started | - |

@@ -148,4 +148,35 @@ Hackathon judges evaluate dozens of projects in limited time windows. Forcing us
 - Removes all authentication barriers; guarantees judges can evaluate the core product within 3 minutes in Incognito mode.
 - Requires robust, pre-seeded sample data and careful isolation of client-side code from sensitive credentials.
 
+---
+
+## ADR-007: Strict Handover Integrity Gating & Approved-Only Export Policy
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Implemented (Phase A)
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+During the functional audit of the initial handover implementation, multiple integrity issues were identified:
+1. Findings marked as unreviewed or rejected could appear in handover exports if filtering was naive.
+2. The "Certified & Signed Off" badge was statically rendered regardless of whether human sign-off had actually occurred.
+3. Handover generation was accessible even when unresolved cross-source conflicts or unreviewed items existed in the project.
+4. Dependencies were omitted from the handover dossier summaries and export files.
+5. Inconsistent filtering logic between UI display, JSON exports, and Markdown exports risked data leakage.
+
+### Decision
+1. **Approved-Only Filtering**: All handover consumption channels (`HandoverView`, `generateHandoverMarkdown`, `generateHandoverJSON`) strictly consume findings via `getApprovedFindings(findings)` (`approved === true && !rejected`).
+2. **Exclusion of Rejected Items**: Rejected findings are permanently purged from final handover dossiers and exported artifacts.
+3. **Exclusion of Unapproved Items**: Unapproved candidate findings are excluded from the certified handover.
+4. **Conditional Certification Status**: The "Certified & Signed Off" badge renders only when `project.handoverCertified === true`. Otherwise, the dossier displays "Draft / Uncertified".
+5. **Human Review Gatekeeper**: Handover dossier generation is hard-blocked via `checkHandoverBlockStatus(findings, handoverCertified)` whenever unresolved conflicts count > 0 or unreviewed findings count > 0. A dedicated locked-gate screen is rendered in `HandoverView` explaining exact blocking reasons and providing a direct action to the Human Review Center.
+6. **First-Class Dependencies**: Dependencies are promoted to first-class handover entities (`getHandoverDependencies`), included in category counts, the interactive dossier, and export files.
+7. **Export Parity**: Markdown (`generateHandoverMarkdown`) and JSON (`generateHandoverJSON`) exports share the identical filtering pipeline, guaranteeing zero divergence between export formats and UI rendering.
+8. **Sidebar Gate Awareness**: The sidebar navigation displays a lock indicator and "Locked" badge when handover prerequisites are incomplete.
+
+### Consequences
+- Strictly fulfills the core product principle: *Keep humans in control of final approval* and *Zero ungrounded claims*.
+- Verifiable via automated unit tests (`src/__tests__/handoverIntegrity.test.mjs`, 8/8 tests passing).
+- Cleanly isolates draft findings from certified handovers without requiring server-side state or complex authentication.
+
 

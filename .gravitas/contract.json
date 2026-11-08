@@ -1,45 +1,38 @@
 {
   "mode": "implement",
-  "objective": "Transform Google Stitch designs into production-quality KnoTrail web application across all 8 screens with zero-auth public access and end-to-end knowledge handover workflow",
+  "objective": "Implement Phase A: Critical Handover Integrity & Human Review Gating",
   "acceptance_criteria": [
-    "Design system and all 8 Google Stitch screens implemented (Landing, Dashboard, Workspace, Sources, Analysis, Evidence Explorer, Review Center, Handover Dossier)",
-    "Zero-auth public access invariant enforced: no login, no signup, no account creation, no auth redirects, 100% Incognito-compatible",
-    "Preloaded Project Titan Handover demo dataset accessible in one click with decisions, tasks, risks, contacts, and evidence citations",
-    "Functional user workflow: Landing -> Workspace -> Sources -> Analysis -> Evidence -> Review -> Handover",
-    "Interactive review center with approval locking and conflict resolution",
-    "Handover dossier export in Markdown, JSON, and printable format",
-    "Production build passes with zero TypeScript or linting errors"
+    "Only approved and non-rejected findings appear in the final handover dossier",
+    "Rejected findings never appear in handover exports",
+    "Unapproved findings never appear in a certified handover",
+    "The 'Certified & Signed Off' badge is conditional on project.handoverCertified, not statically displayed",
+    "Handover generation is blocked until all required findings are reviewed and critical conflicts are resolved",
+    "Dependencies are included in the final handover dossier and exports",
+    "Identical filtering rules are applied to Markdown, JSON, and Print/PDF exports",
+    "Sidebar navigation does not bypass the handover approval gate",
+    "Automated tests pass for all handover filtering and gating conditions",
+    "Production build and typecheck pass with zero errors"
   ],
   "non_goals": [
-    "Do not add mandatory login, signup, or registration screens",
-    "Do not leak private tokens or secrets in client code",
-    "Do not invent disconnected or fake UI that deviates from Google Stitch designs"
+    "Do not modify unrelated components or design system tokens",
+    "Do not start database or AI integration yet",
+    "Do not introduce fake cryptographic guarantees",
+    "Do not change the no-login/no-signup requirement"
   ],
   "risk": "medium",
   "budget": "balanced",
   "allowed_write_scope": [
     "src/**",
-    "public/**",
     "package.json",
-    "package-lock.json",
-    "tsconfig.json",
-    "tailwind.config.js",
-    "tailwind.config.ts",
-    "next.config.js",
-    "next.config.ts",
-    "next.config.mjs",
-    "postcss.config.js",
-    "postcss.config.mjs",
     ".planning/**",
-    "GEMINI.md",
     ".gravitas/**",
     "docs/**"
   ],
   "verification": {
     "type": "executable_evidence",
-    "command": "npm run build",
+    "command": "npm test && npm run build",
     "exit_code": 0,
-    "result": "Compiled successfully with 0 linting or type errors. Generated static pages / and /_not-found.",
+    "result": "8/8 unit tests passed in 1.75ms. Production build succeeded (next build exit code 0) with all routes compiled and statically rendered.",
     "verdict": "VERDICT: PASS"
   }
 }
