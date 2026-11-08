@@ -13,6 +13,13 @@ export interface StorageRepository {
     workspaceId: string,
     sourceData: { name: string; type: ProjectSource['type']; content: string; description: string }
   ): Promise<{ source: ProjectSource; finding: KnowledgeFinding; project: ProjectData }>;
+  addUploadedSource(
+    workspaceId: string,
+    source: ProjectSource,
+    rawBuffer?: Buffer
+  ): Promise<ProjectSource>;
+  deleteSource(workspaceId: string, sourceId: string): Promise<ProjectData>;
+  getSource(workspaceId: string, sourceId: string): Promise<ProjectSource | null>;
   approveFinding(workspaceId: string, findingId: string, reviewerNotes?: string): Promise<ProjectData>;
   rejectFinding(workspaceId: string, findingId: string, reason?: string): Promise<ProjectData>;
   editFinding(workspaceId: string, findingId: string, updates: Partial<KnowledgeFinding>): Promise<ProjectData>;
@@ -34,11 +41,14 @@ export interface StorageRepository {
  */
 export class DurableFileRepository implements StorageRepository {
   private baseDir: string;
+  private uploadDir: string;
   private memoryCache: Map<string, ProjectData> = new Map();
 
-  constructor(customBaseDir?: string) {
+  constructor(customBaseDir?: string, customUploadDir?: string) {
     this.baseDir = customBaseDir || path.join(process.cwd(), '.data', 'workspaces');
+    this.uploadDir = customUploadDir || path.join(process.cwd(), '.data', 'uploads');
     this.ensureDirectoryExists(this.baseDir);
+    this.ensureDirectoryExists(this.uploadDir);
   }
 
   private ensureDirectoryExists(dir: string) {
@@ -197,6 +207,72 @@ export class DurableFileRepository implements StorageRepository {
 
     await this.saveProject(workspaceId, updatedProject);
     return { source: newSource, finding: syntheticFinding, project: updatedProject };
+  }
+
+  async addUploadedSource(
+    workspaceId: string,
+    source: ProjectSource,
+    rawBuffer?: Buffer
+  ): Promise<ProjectSource> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    // Save physical file safely if raw buffer is provided
+    if (rawBuffer && source.documentData) {
+      const wsUploadDir = path.join(this.uploadDir, workspaceId);
+      this.ensureDirectoryExists(wsUploadDir);
+      
+      const safeExt = source.documentData.fileFormat || 'bin';
+      const safeFilename = `${source.id}.${safeExt}`;
+      const safePath = path.join(wsUploadDir, safeFilename);
+
+      await fs.promises.writeFile(safePath, rawBuffer);
+      source.documentData.storagePath = safePath;
+    }
+
+    // Prepend source to project.sources WITHOUT generating any synthetic findings (Phase C rule)
+    const updatedSources = [source, ...project.sources.filter((s) => s.id !== source.id)];
+    const updatedProject: ProjectData = {
+      ...project,
+      sources: updatedSources,
+      lastAnalysed: 'Just now',
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return source;
+  }
+
+  async deleteSource(workspaceId: string, sourceId: string): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const targetSource = project.sources.find((s) => s.id === sourceId);
+    if (targetSource?.documentData?.storagePath && fs.existsSync(targetSource.documentData.storagePath)) {
+      try {
+        await fs.promises.unlink(targetSource.documentData.storagePath);
+      } catch (err) {
+        console.warn(`Could not delete physical file for source ${sourceId}:`, err);
+      }
+    }
+
+    const updatedSources = project.sources.filter((s) => s.id !== sourceId);
+    const updatedProject: ProjectData = {
+      ...project,
+      sources: updatedSources,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async getSource(workspaceId: string, sourceId: string): Promise<ProjectSource | null> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project) return null;
+    return project.sources.find((s) => s.id === sourceId) || null;
   }
 
   async approveFinding(workspaceId: string, findingId: string, reviewerNotes?: string): Promise<ProjectData> {

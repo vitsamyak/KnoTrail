@@ -19,7 +19,7 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 
 ### Ingestion & Source Integration (INGEST)
 
-- [ ] **INGEST-01**: System can ingest project documentation, Markdown files, and plain text notes from authorized local or uploaded paths.
+- [x] **INGEST-01**: System can ingest project documentation, Markdown files, and plain text notes from authorized local or uploaded paths.
 - [ ] **INGEST-02**: System can ingest Git repository commit history, changed files, and commit messages to reconstruct historical activity.
 - [ ] **INGEST-03**: System provides a modular source connector interface supporting extension to external APIs (e.g. GitHub issues, pull requests).
 - [x] **INGEST-04**: System preserves source origin metadata (file path, commit hash, author, timestamp, access restriction tier) for every ingested item.

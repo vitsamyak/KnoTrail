@@ -63,7 +63,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Implement Git repository and document ingestion parsers with metadata preservation
+- [x] 02-01: Implement real document ingestion parsers (PDF, TXT, Markdown) with metadata preservation [COMPLETED - Phase C]
 - [ ] 02-02: Build structured knowledge extraction pipelines for decisions, tasks, risks, and contacts
 
 ### Phase 3: Evidence Grounding, Conflict & Uncertainty Engine
@@ -135,7 +135,7 @@ Phases execute in numeric order: Phase 1 → Phase 2 → Phase 3 → Phase 4 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Core Domain Models, Provenance Schema & Storage Foundation | 2/2 | Completed (Phase B) | 2026-11-08 |
-| 2. Multi-Source Ingestion & Extraction Pipeline | 0/2 | Not started | - |
+| 2. Multi-Source Ingestion & Extraction Pipeline | 1/2 | In progress (Phase C Ingestion Done) | 2026-11-08 |
 | 3. Evidence Grounding, Conflict & Uncertainty Engine | 0/2 | Not started | - |
 | 4. Human Review, Correction & Handover Approval Workflow | 2/2 | Hardened (Phase A) | 2026-11-08 |
 | 5. Handover Viewer, Incoming Member Explorer & Permission Filtering | 2/2 | Hardened (Phase A) | 2026-11-08 |

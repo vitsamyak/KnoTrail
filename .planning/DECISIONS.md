@@ -217,5 +217,36 @@ Prior to Phase B, application state resided entirely in ephemeral React `useStat
 - Multiple visitors evaluate the platform concurrently with absolute data isolation and zero account registration friction.
 - Verified by 9 new persistence tests (`src/__tests__/persistence.test.mjs`, total 18/18 passing).
 
+---
+
+## ADR-009: Real Document Source Ingestion & Server-Side Text Extraction Methodology
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Implemented (Phase C)
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+Prior to Phase C, project sources were limited to preloaded synthetic streams and text-pasted notes. Real project documents (PDF runbooks, system specifications, architecture notes) could not be uploaded or parsed. Furthermore, simulated ingestion in previous prototypes erroneously hallucinated artificial decisions and tasks upon upload, violating KnoTrail's core guarantee of truthful provenance and zero ungrounded claims.
+
+### Decision
+1. **Core Supported Formats**:
+   - PDF (`.pdf`): Real server-side page-by-page text extraction using `unpdf`, preserving exact 1-indexed page references (`pages: [{ pageNumber, text }]`) and detecting scanned/image-only PDFs with zero embedded text.
+   - Plain Text (`.txt`): UTF-8 decoding with exact line numbers and binary byte detection.
+   - Markdown (`.md`, `.markdown`): Heading and code-block preserving text extraction with line counting.
+2. **Strict No-Fake-AI Policy**:
+   - Ingestion is decoupled from AI entity generation. Uploading documents stores genuine extracted text, page/line metadata, and raw file buffers. It strictly does NOT synthesize speculative decisions, tasks, or risks. Genuine extracted text is preserved for Phase D AI analysis.
+3. **Security & Storage Isolation**:
+   - Enforce 10 MB per-file limit and maximum 5 files per upload batch.
+   - Storage isolation: Raw files are stored under `.data/uploads/<workspaceId>/<sourceId>.<ext>` using sanitized unique identifiers, permanently eliminating path traversal (`../`) vulnerabilities.
+   - Multi-visitor workspace isolation: Uploaded files belong exclusively to the uploading visitor's workspace.
+4. **Backend API & UI Integration**:
+   - `POST /api/sources/upload`: `multipart/form-data` endpoint processing batch files individually with granular success/error telemetry.
+   - `GET /api/sources/[id]` & `DELETE /api/sources/[id]`: Retrieval of full extracted text and safe source removal with physical file cleanup.
+   - Upgraded `SourceManagerView` with interactive drag-and-drop zone, file browser, format filtering, document inspection drawer, and deletion confirmation.
+
+### Consequences
+- Incoming engineers and evaluators can upload authentic project documentation, view genuinely extracted content, and verify exact page/line coordinates.
+- Validated by 12 new automated test scenarios (`src/__tests__/sourceIngestion.test.mjs`), bringing test suite total to 30 passing tests.
+
 
 

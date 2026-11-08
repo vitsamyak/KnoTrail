@@ -146,3 +146,4 @@ CREATE INDEX IF NOT EXISTS idx_findings_project ON knowledge_findings(project_id
 CREATE INDEX IF NOT EXISTS idx_findings_type ON knowledge_findings(type);
 CREATE INDEX IF NOT EXISTS idx_findings_status ON knowledge_findings(status);
 CREATE INDEX IF NOT EXISTS idx_citations_finding ON evidence_citations(finding_id);
+

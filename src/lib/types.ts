@@ -46,6 +46,25 @@ export interface KnowledgeFinding {
   createdDate: string;
 }
 
+export interface DocumentPage {
+  pageNumber: number;
+  text: string;
+}
+
+export interface ExtractedDocumentData {
+  fileFormat: 'pdf' | 'txt' | 'md';
+  mimeType: string;
+  fileSizeBytes: number;
+  fileSizeFormatted: string;
+  contentHash: string; // SHA-256
+  storagePath?: string;
+  extractedText: string;
+  lineCount?: number;
+  pageCount?: number;
+  pages?: DocumentPage[];
+  isScannedPdf?: boolean;
+}
+
 export interface ProjectSource {
   id: string;
   name: string;
@@ -56,6 +75,8 @@ export interface ProjectSource {
   icon: string;
   description: string;
   privacyLevel: 'SYNTHETIC_DEMO' | 'LOCAL_READ_ONLY';
+  isUploaded?: boolean;
+  documentData?: ExtractedDocumentData;
 }
 
 export interface Stakeholder {

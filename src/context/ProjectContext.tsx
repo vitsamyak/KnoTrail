@@ -34,6 +34,8 @@ interface ProjectContextType {
   syncStatusMessage: string;
   runAiSync: () => Promise<void>;
   addSource: (source: { name: string; type: ProjectSource['type']; content: string; description: string }) => Promise<void>;
+  uploadSources: (files: File[]) => Promise<{ success: boolean; results: any[]; error?: string }>;
+  deleteSource: (sourceId: string) => Promise<void>;
   approveFinding: (id: string, reviewerNotes?: string) => Promise<void>;
   rejectFinding: (id: string, reason?: string) => Promise<void>;
   editFinding: (id: string, updates: Partial<KnowledgeFinding>) => Promise<void>;
@@ -326,6 +328,87 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       console.warn('Backend sync error for addSource:', err);
       setSaveError(err.message || 'Failed to sync source to server');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Upload actual document sources (PDF, TXT, Markdown) with genuine server-side extraction
+  const uploadSources = async (files: File[]) => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const formData = new FormData();
+      formData.append('workspaceId', workspaceId);
+      for (const file of files) {
+        formData.append('files', file);
+      }
+
+      const res = await fetch('/api/sources/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
+      }
+
+      return {
+        success: data.successCount > 0,
+        results: data.results || [],
+      };
+    } catch (err: any) {
+      console.warn('Upload sources failed:', err);
+      setSaveError(err.message || 'File upload failed');
+      return {
+        success: false,
+        results: [],
+        error: err.message || 'Upload failed',
+      };
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Safely delete an uploaded or connected source
+  const deleteSource = async (sourceId: string) => {
+    setIsSaving(true);
+    setSaveError(null);
+
+    // Optimistically remove from state & local cache
+    const updatedSources = project.sources.filter((s) => s.id !== sourceId);
+    const updatedProject: ProjectData = {
+      ...project,
+      sources: updatedSources,
+    };
+    setProject(updatedProject);
+    persistToLocalCache(workspaceId, updatedProject);
+
+    try {
+      const res = await fetch(`/api/sources/${encodeURIComponent(sourceId)}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
+      }
+    } catch (err: any) {
+      console.warn('Delete source error:', err);
+      setSaveError(err.message || 'Failed to delete source');
     } finally {
       setIsSaving(false);
     }
@@ -630,6 +713,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         syncStatusMessage,
         runAiSync,
         addSource,
+        uploadSources,
+        deleteSource,
         approveFinding,
         rejectFinding,
         editFinding,

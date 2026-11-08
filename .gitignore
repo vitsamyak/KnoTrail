@@ -1,4 +1,6 @@
-# dependencies
+# local persistent storage / uploads
+/.data/
+
 /node_modules
 /.pnp
 .pnp.js
