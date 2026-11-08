@@ -35,5 +35,11 @@
     ".gravitas/**",
     "docs/**"
   ],
-  "verification": "targeted"
+  "verification": {
+    "type": "executable_evidence",
+    "command": "npm run build",
+    "exit_code": 0,
+    "result": "Compiled successfully with 0 linting or type errors. Generated static pages / and /_not-found.",
+    "verdict": "VERDICT: PASS"
+  }
 }
