@@ -121,3 +121,31 @@ Adopt both:
 ### Consequences
 - Guarantees that any future session can instantly resume with full factual awareness.
 - Requires recording actual observed tool output and diagnostic evidence before marking tasks complete.
+
+---
+
+## ADR-006: Frictionless Public Web Architecture & Zero-Auth Demo Policy (No Login/Signup)
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Core Architecture Constraint
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+Hackathon judges evaluate dozens of projects in limited time windows. Forcing user registration, email verification, login screens, or account creation creates high friction, causes cold-start failures, and breaks in Incognito browser testing. At the same time, a public application must not expose private organizational secrets or allow unauthorized access to private repositories.
+
+### Decision
+1. **No Login or Signup**: KnoTrail will be a 100% publicly accessible web application. No registration, signup, login, or account creation screens will exist.
+2. **Mandatory Incognito Compatibility**: The complete core demonstration workflow (Ingest/Select Demo -> Reconstruct -> Verify -> Review -> Approve -> Handover) must work seamlessly in a fresh Incognito/Private browser window without an existing session.
+3. **Pre-Seeded Demonstration Project**: The platform will ship with ready-to-use, synthetic/anonymized demonstration data ("Project Titan Handover") accessible in one click.
+4. **Public Access Security Boundary**: Public application access does NOT grant unrestricted access to private source repositories. Secrets and tokens are kept out of frontend code. Private data integrations are cleanly separated from the public demo sandbox.
+5. **Simulated Role Perspectives**: Role-based access control (RBAC) and permission-aware redaction (Reviewer vs. Incoming Member view) will be demonstrated through an interactive perspective switcher, completely avoiding the need for individual user accounts.
+
+### Alternatives Considered
+- *Mandatory OAuth (GitHub Login)*: Rejected. Introduces rate limits, third-party dependency failures, and friction for judges who do not wish to authenticate.
+- *Local email/password auth*: Rejected. Adds unnecessary tables, password hashing, and session management overhead for a 72-hour build while degrading judge UX.
+
+### Consequences
+- Removes all authentication barriers; guarantees judges can evaluate the core product within 3 minutes in Incognito mode.
+- Requires robust, pre-seeded sample data and careful isolation of client-side code from sensitive credentials.
+
+

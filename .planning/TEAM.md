@@ -35,3 +35,4 @@ Official team identity and registration details for CodersInPune Hackathon 2026.
 2. **Submission Protocol**: Per hackathon rules, only team leader Samyak Gedam submits once on behalf of the team.
 3. **Collaboration Protocol**: Both members share access to repository code, issue tracking, and architectural decisions.
 4. **Verified Contact Channels**: All official correspondence with hackathon organizers flows through the registered email addresses above.
+

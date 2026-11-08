@@ -94,19 +94,20 @@ Plans:
 - [ ] 05-02: Enforce RBAC redaction engine and export generation (JSON/Markdown/PDF)
 
 ### Phase 6: End-to-End System Integration, Verification & Standalone Judge Packaging
-**Goal**: Integrate all frontend and backend modules into a self-contained, turnkey application with demo scenarios for hackathon evaluation.  
+**Goal**: Integrate all frontend and backend modules into a frictionless, publicly accessible application with a zero-auth landing page, pre-seeded demonstration scenarios, and 100% Incognito-compatible judge evaluation.  
 **Depends on**: Phase 5  
-**Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03  
+**Requirements**: PUB-01, PUB-02, PUB-03, PUB-04, PUB-05, PUB-06, PUB-07, DEPLOY-01, DEPLOY-02, DEPLOY-03  
 **Success Criteria** (what must be TRUE):
-  1. The complete end-to-end user workflow (Ingest → Reconstruct → Verify → Review → Approve → Handover) operates without human developer intervention.
-  2. Bundled sample project data allows a judge to test the platform in under 3 minutes.
-  3. Incognito window verification passes with zero broken assets or authentication roadblocks.
-  4. Project documentation, source repository, and demo video/links are prepared for Round 2 submission.
+  1. The landing page opens and operates without login or signup, featuring clear "Get Started" and "Try Demo" actions.
+  2. The complete end-to-end user workflow (Ingest → Reconstruct → Verify → Review → Approve → Handover) operates in a fresh Incognito / Private browser window without authentication redirects.
+  3. Pre-seeded synthetic sample project data allows a judge to test the platform in under 3 minutes.
+  4. Zero confidential user information or private credentials are exposed in client code.
+  5. Project documentation, source repository, and public deployment links are verified and ready for Round 2 submission.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: End-to-end workflow wiring, sample data seeding, and standalone execution testing
-- [ ] 06-02: Deployment packaging, incognito browser verification, and Round 2 submission bundle
+- [ ] 06-01: Build frictionless zero-auth landing page, project workspace, and pre-seeded demonstration project
+- [ ] 06-02: Deployment packaging, fresh incognito browser verification, and Round 2 submission bundle
 
 ## Progress
 
@@ -121,3 +122,4 @@ Phases execute in numeric order: Phase 1 → Phase 2 → Phase 3 → Phase 4 →
 | 4. Human Review, Correction & Handover Approval Workflow | 0/2 | Not started | - |
 | 5. Handover Viewer, Incoming Member Explorer & Permission Filtering | 0/2 | Not started | - |
 | 6. End-to-End System Integration, Verification & Standalone Judge Packaging | 0/2 | Not started | - |
+

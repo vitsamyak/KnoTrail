@@ -69,6 +69,7 @@ Recent decisions affecting current work:
 - [ADR-003]: Selected FastAPI (Python) backend + Next.js (React) frontend + SQLite/vector storage as proposed lightweight stack for 72-hour build. (Status: Proposed / Under Validation)
 - [ADR-004]: Established strict 2-person team scope and autonomous judge evaluation criteria (must work without developer assistance). (Status: Confirmed)
 - [ADR-005]: Integrated Gravitas 6 Invariants and GSD v1.16.0 workflows for reliable cross-session engineering. (Status: Confirmed)
+- [ADR-006]: Frictionless Public Web Architecture & Zero-Auth Demo Policy (No login/signup required; mandatory Incognito compatibility; pre-seeded synthetic demo data). (Status: Confirmed)
 
 ### Pending Todos
 
@@ -84,6 +85,7 @@ Items acknowledged and deferred to post-Round 2 (Milestone v2.0):
 
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
+| Authentication | Mandatory user registration / signup / auth walls | Permanently Excluded | 2026-11-08 | Core Principle |
 | Connectors | Real-time Slack/Discord channel ingestion | Deferred | 2026-11-08 | v2.0 |
 | Connectors | Jira, Linear, and Asana bi-directional synchronization | Deferred | 2026-11-08 | v2.0 |
 | AI Agent | Conversational Q&A exploration agent over approved handover | Deferred | 2026-11-08 | v2.0 |
@@ -91,6 +93,6 @@ Items acknowledged and deferred to post-Round 2 (Milestone v2.0):
 
 ## Session Continuity
 
-Last session: 2026-11-08 09:45 IST  
-Stopped at: Completed project initialization; established persistent memory, roadmap, and governance.  
+Last session: 2026-11-08 10:25 IST  
+Stopped at: Permanently updated project GSD memory with confirmed No-Login/Signup requirements, 8-step user journey, and Incognito acceptance criteria.  
 Resume file: None (Ready for Phase 1 planning)

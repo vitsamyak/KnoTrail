@@ -59,14 +59,18 @@ Option B or Option A must be verified in an incognito window with HTTPS and zero
 
 - **Date Raised**: 2026-11-08
 - **Category**: Security / User Experience
-- **Status**: OPEN (To resolve in Phase 1)
-- **Urgency**: Low-Medium
+- **Status**: RESOLVED (Adopted as ADR-006)
+- **Urgency**: Low (Closed)
 
 ### Description
-While RBAC and permission-aware information filtering are core requirements (SEC-01 to SEC-03), real OAuth / SAML / multi-tenant authentication introduces failure points if third-party providers throttle traffic during judging.
+How should user access, authentication, and RBAC demonstration be structured for hackathon evaluation?
 
-### Current Plan
-Implement a robust role switcher (e.g. "Simulate Role: Departing Tech Lead (Reviewer)", "Simulate Role: Incoming Junior Engineer", "Simulate Role: External Auditor") alongside standard JWT session handling. This allows judges to instantly observe how permission-aware filtering redacts confidential sources in real time without creating throwaway accounts.
+### Resolution
+Per **ADR-006**, KnoTrail operates as a completely public web application with **ZERO login or signup requirements**. 
+- No user accounts, registration forms, or auth redirects are permitted.
+- The entire application and its demonstration workflow must function in a fresh Incognito / Private browser window.
+- Role-based permissions (Reviewer vs. Incoming Member) and clearance redaction (Public, Internal, Confidential) are demonstrated via an interactive in-workspace persona/role switcher, allowing judges to test permission filtering without credential setup.
+- Public demo accessibility is isolated from confidential source data using pre-seeded synthetic sample projects.
 
 ---
 
@@ -82,3 +86,4 @@ We must decide whether to use in-process ChromaDB or SQLite-vss / FAISS for sema
 
 ### Current Plan
 Phase 1 Plan 01-02 will benchmark in-process ChromaDB (duckdb/parquet or sqlite backend) against binary size and memory footprint on Mac and Linux containers. Zero external database daemon dependencies is a strict constraint.
+

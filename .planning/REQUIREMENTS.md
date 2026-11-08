@@ -7,6 +7,16 @@
 
 Requirements committed for Round 2 ("The Build", 72-hour delivery). Each requirement maps to a phase in ROADMAP.md.
 
+### Public Access & Incognito Evaluation (PUB)
+
+- [ ] **PUB-01**: Landing page opens and operates without user registration, login, or signup.
+- [ ] **PUB-02**: Core project workspace opens immediately without account creation or sign-in requirements.
+- [ ] **PUB-03**: Ready-made demonstration project ("Project Titan Handover") is pre-loaded and accessible to first-time visitors in one click.
+- [ ] **PUB-04**: Complete product demonstration workflow operates seamlessly in a fresh Incognito / Private browser session.
+- [ ] **PUB-05**: System prohibits mandatory authentication redirects or login walls anywhere in the core demonstration workflow.
+- [ ] **PUB-06**: Demo data uses synthetic, anonymized, or public project artifacts; zero confidential personal information or secrets are exposed in client code.
+- [ ] **PUB-07**: Public deployment is directly accessible and evaluatable by hackathon judges without developer assistance or credentials.
+
 ### Ingestion & Source Integration (INGEST)
 
 - [ ] **INGEST-01**: System can ingest project documentation, Markdown files, and plain text notes from authorized local or uploaded paths.
@@ -47,14 +57,14 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 
 ### Security & Role-Based Access Control (SEC)
 
-- [ ] **SEC-01**: System assigns role-based permissions (Admin/Departing Member Reviewer, Incoming Member, Auditor).
+- [ ] **SEC-01**: System provides role-based perspective simulation (Departing Member Reviewer, Incoming Member, Auditor) without requiring user accounts.
 - [ ] **SEC-02**: System enforces source-level access filters so confidential or restricted source snippets are never leaked to unauthorized roles.
-- [ ] **SEC-03**: Handover export and viewer automatically sanitize or omit restricted sections based on the viewer's security clearance.
+- [ ] **SEC-03**: Handover export and viewer automatically sanitize or omit restricted sections based on the simulated viewer clearance tier.
 
 ### Deployment & Standalone Judge Experience (DEPLOY)
 
 - [ ] **DEPLOY-01**: The deployed application executes the end-to-end workflow (connect/upload → reconstruct → review → approve → view handover) without developer assistance.
-- [ ] **DEPLOY-02**: System includes bundled sample project scenarios (e.g., departing engineer handover repository) allowing instant judge evaluation in under 3 minutes.
+- [ ] **DEPLOY-02**: System includes bundled sample project scenarios allowing instant judge evaluation in under 3 minutes.
 - [ ] **DEPLOY-03**: Deployed application passes verification in an incognito browser window with zero local environment dependencies.
 
 ## v2 Requirements
@@ -78,10 +88,11 @@ Explicitly excluded to prevent scope creep during the 72-hour build.
 
 | Feature | Reason |
 |---------|--------|
+| Mandatory Login / Registration / Signup Screens | Prohibited by core product requirement. The application must be 100% publicly accessible and testable in Incognito mode without accounts. |
 | Brand-Governance Engine | The selection email contained a discrepant reference to brand guidelines; KnoTrail remains strictly a knowledge-handover platform per Round 1 proposal (see OPEN_QUESTIONS.md). |
 | Unbounded Freeform Chatbot | KnoTrail is an evidence-backed state reconstruction platform. Open-ended conversational chatbots without strict citations lead to hallucinations and fail Core Value. |
 | Automatic Unapproved Handover Dispatch | Bypassing human review violates the RECONSTRUCT → VERIFY → REVIEW → HANDOVER principle. |
-| Enterprise SSO / SAML 2.0 | High configuration complexity for 72 hours; mock RBAC with secure session tokens satisfies hackathon criteria cleanly. |
+| Enterprise SSO / SAML 2.0 | High configuration complexity for 72 hours; mock RBAC simulation satisfies hackathon criteria cleanly. |
 | Distributed Microservices | Single modular backend (FastAPI) and clean frontend (Next.js) minimizes deployment failure risks. |
 
 ## Traceability
@@ -90,6 +101,13 @@ Mapping of v1 requirements to implementation phases in ROADMAP.md.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| PUB-01 | Phase 6 | Pending |
+| PUB-02 | Phase 6 | Pending |
+| PUB-03 | Phase 6 | Pending |
+| PUB-04 | Phase 6 | Pending |
+| PUB-05 | Phase 6 | Pending |
+| PUB-06 | Phase 6 | Pending |
+| PUB-07 | Phase 6 | Pending |
 | INGEST-01 | Phase 2 | Pending |
 | INGEST-02 | Phase 2 | Pending |
 | INGEST-03 | Phase 2 | Pending |
@@ -118,10 +136,10 @@ Mapping of v1 requirements to implementation phases in ROADMAP.md.
 | DEPLOY-03 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 25 total
-- Mapped to phases: 25
+- v1 requirements: 32 total
+- Mapped to phases: 32
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-11-08*  
-*Last updated: 2026-11-08 at Hackathon Round 2 kickoff*
+*Last updated: 2026-11-08 with No-Login & Incognito Public Access Requirements*

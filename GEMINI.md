@@ -1,7 +1,6 @@
 # KnoTrail: Project Instructions & Development Governance
 
 <!-- GSD:project-start source:PROJECT.md -->
-
 ## Project
 
 **KnoTrail**
@@ -23,12 +22,13 @@ KnoTrail is an intelligent knowledge-handover platform designed to eliminate cri
   - **Sanshrey Sanagar** (sanshrey7273@gmail.com) — Core Engineer
 - **Total Team Size**: Exactly 2 members. Do not introduce additional team members or invent responsibilities.
 - **Judge Self-Service Gate**: Judges must be able to open and test the deployed product standalone without assistance.
+- **Frictionless Zero-Auth Access**: The application MUST NOT require user registration, login, signup, or account creation. The core demonstration workflow must work seamlessly in an Incognito / Private browser window.
 
 ---
 
 ## 2. Persistent Session Rules (MANDATORY FOR ALL AGENTS)
 
-Every AI assistant or agent starting a session in this repository MUST strictly abide by these 10 rules:
+Every AI assistant or agent starting a session in this repository MUST strictly abide by these rules:
 
 1. **Read GSD Context First**: Ground yourself by reading `.planning/PROJECT.md` and `.planning/STATE.md` before starting substantial work.
 2. **Consult STATE.md**: Review `.planning/STATE.md` to identify the active phase, current plan, and blockers before choosing any task.
@@ -40,10 +40,64 @@ Every AI assistant or agent starting a session in this repository MUST strictly 
 8. **Truthful Progress (Zero Fabrication)**: Never claim a feature is built or functional unless verified by real command output or test execution in this session.
 9. **Preserve Two-Person Scope Constraint**: Keep implementation achievable within the 72-hour window by 2 developers. Avoid microservices or gratuitous complexity.
 10. **Synchronize Documentation with Reality**: Keep `.planning/` artifacts, code comments, and project instruction files synchronized with the codebase.
+11. **Zero-Auth & Incognito Invariant**: NEVER introduce mandatory login, signup, user registration, or authentication redirects. Ensure the product always opens and operates cleanly in a fresh Incognito window.
+12. **Public Demo & Data Protection**: Provide a pre-seeded synthetic demonstration project. Never expose confidential organizational information, private repository access, or API secrets in frontend code.
 
 ---
 
-## 3. Gravitas Engineering Reliability Invariants
+## 3. Core Product Principles
+
+Operating Cycle: **RECONSTRUCT → VERIFY → REVIEW → HANDOVER**
+
+1. **Preserve project knowledge**: Prevent loss of vital operational context when key team members depart.
+2. **Reconstruct project context from available sources**: Synthesize the true current state across repositories, task records, and documentation.
+3. **Link generated findings to original evidence**: Every finding must cite its immutable source coordinates.
+4. **Identify uncertainty and conflicting information**: Explicitly highlight contradictions, missing proof, and ambiguity.
+5. **Keep humans in control of final approval**: Mandatory human review and sign-off before generating the final handover.
+6. **Protect confidential information**: Preserve source clearance boundaries and prevent unauthorized disclosure.
+7. **Make the core workflow usable without an account**: Zero barrier to entry for incoming members, evaluators, and judges.
+
+---
+
+## 4. 8-Step Website User Journey
+
+```
+[1. Landing Page] (Zero-auth intro, "Try Demo")
+        │
+        ▼
+[2. Project Workspace] (Overview, status, sources, pending work, sample loader)
+        │
+        ▼
+[3. Add Project Information] (Git repos, docs, notes, tasks)
+        │
+        ▼
+[4. AI Project Analysis] (Decisions, tasks, responsibilities, risks, questions)
+        │
+        ▼
+[5. Evidence Explorer] (Grounding, citations: VERIFIED | UNCERTAIN | CONFLICTING | MISSING)
+        │
+        ▼
+[6. Human Review Center] (Review, edit, add missing, resolve conflicts, mandatory sign-off)
+        │
+        ▼
+[7. Handover Generation] (Structured, approved handover package creation)
+        │
+        ▼
+[8. Handover Delivery] (Interactive viewer, export JSON/Markdown/PDF, shareable link)
+```
+
+1. **Landing Page**: Explains what KnoTrail is, the problem it solves, how it works, and why evidence-backed handovers matter. "Get Started" / "Try Demo" without login/signup.
+2. **Project Workspace**: Displays project overview, status, available sources, key findings, and pending work. One-click button to open a ready-made demo project.
+3. **Add Project Information**: Ingests supported sources (GitHub repos, project docs, meeting notes, tasks).
+4. **AI Project Analysis**: Reconstructs decisions & reasoning, pending tasks, responsibilities, risks, dependencies, unresolved questions, next actions.
+5. **Evidence Explorer**: Links findings to supporting evidence. Badges: `VERIFIED`, `UNCERTAIN`, `CONFLICTING`, `MISSING EVIDENCE`. No unsupported assumptions as facts.
+6. **Human Review Center**: Allows user to review, edit, add missing info, resolve conflicts, and approve/reject findings. Human approval is mandatory.
+7. **Handover Generation**: Produces a structured handover package across all standard handover categories.
+8. **Handover Delivery**: Interactive exploration, search/filtering, and export to JSON/Markdown/PDF.
+
+---
+
+## 5. Gravitas Engineering Reliability Invariants
 
 Gravitas governance is active for all repository modifications. Agents must observe the 6 Invariants:
 
