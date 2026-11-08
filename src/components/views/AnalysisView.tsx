@@ -114,12 +114,12 @@ export function AnalysisView() {
             onClick={() => runAiSync()}
             disabled={isSyncing || isAnalysing}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors disabled:opacity-60"
-            title="Run simulated source synchronization"
+            title="Synchronize workspace with server"
           >
             <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>
               sync
             </span>
-            <span>Sync Streams</span>
+            <span>Sync Workspace</span>
           </button>
         </div>
       </div>
@@ -393,7 +393,37 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
       {/* Findings Analysis Cards */}
       <div className="space-y-space-md">
-        {filtered.length === 0 ? (
+        {project.findings.length === 0 ? (
+          <div className="bg-surface-container-lowest rounded-xl p-space-2xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">auto_awesome</span>
+            </div>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No findings extracted yet</h4>
+            <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
+              {eligibleSources.length > 0
+                ? 'Select uploaded documents above and click "Extract Knowledge with AI" to identify decisions, tasks, and risks.'
+                : 'Upload documents in Sources first, then run AI extraction to discover decisions, tasks, and risks.'}
+            </p>
+            {eligibleSources.length > 0 ? (
+              <button
+                onClick={() => handleRunAiExtraction()}
+                disabled={isAnalysing}
+                className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+              >
+                <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                <span>Extract Knowledge with AI</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setActiveView('sources')}
+                className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+              >
+                <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                <span>Upload Documents</span>
+              </button>
+            )}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 text-center text-xs text-outline">
             <span className="material-symbols-outlined text-[32px] text-outline mb-1 block">
               search_off

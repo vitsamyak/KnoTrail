@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const storage = getStorage();
     const certifiedProject = await storage.certifyHandover(
       workspaceId,
-      signerName || 'Elena Rostova & Marcus Vance'
+      signerName || 'Project Reviewer'
     );
 
     const markdown = generateHandoverMarkdown(certifiedProject);

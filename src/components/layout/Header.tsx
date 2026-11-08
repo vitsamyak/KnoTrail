@@ -67,7 +67,7 @@ export function Header() {
           onClick={() => runAiSync()}
           disabled={isSyncing}
           className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm border border-outline-variant/20 transition-all disabled:opacity-60"
-          title="Simulate Real-time AI Context Sync"
+          title="Synchronize Workspace with Server Storage"
         >
           <span
             className={`material-symbols-outlined text-[16px] text-primary ${
@@ -76,7 +76,7 @@ export function Header() {
           >
             sync
           </span>
-          <span>{isSyncing ? 'Syncing...' : 'Run AI Sync'}</span>
+          <span>{isSyncing ? 'Syncing...' : 'Sync Workspace'}</span>
         </button>
 
         {/* Frictionless Zero-Auth Demo Badge */}
@@ -123,31 +123,34 @@ export function Header() {
                   {pendingReviewCount} Pending
                 </span>
               </div>
-              <div className="py-2 space-y-2 text-body-sm">
-                <div
-                  onClick={() => {
-                    setActiveView('review');
-                    setShowNotifications(false);
-                  }}
-                  className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors"
-                >
-                  <p className="font-label-md text-on-surface font-semibold">Conflicting Cache Policy Detected</p>
-                  <p className="text-on-surface-variant text-xs mt-0.5">
-                    Notion RFC-042 and PR #119 disagree on Redis eviction strategy.
+              <div className="py-2 space-y-2 text-body-sm max-h-64 overflow-y-auto">
+                {pendingReviewCount === 0 ? (
+                  <p className="text-xs text-outline py-2 text-center">
+                    All findings up to date. No pending review alerts.
                   </p>
-                </div>
-                <div
-                  onClick={() => {
-                    setActiveView('review');
-                    setShowNotifications(false);
-                  }}
-                  className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors"
-                >
-                  <p className="font-label-md text-on-surface font-semibold">Missing Rollback Key Handoff</p>
-                  <p className="text-on-surface-variant text-xs mt-0.5">
-                    Production DB rollback key execution requires Marcus Vance dry run.
-                  </p>
-                </div>
+                ) : (
+                  project.findings
+                    .filter((f) => !f.approved && !f.rejected)
+                    .slice(0, 4)
+                    .map((f) => (
+                      <div
+                        key={f.id}
+                        onClick={() => {
+                          setActiveView('review');
+                          setShowNotifications(false);
+                        }}
+                        className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors"
+                      >
+                        <p className="font-label-md text-on-surface font-semibold truncate">
+                          {f.status === 'CONFLICTING' ? '⚠️ Conflict: ' : ''}
+                          {f.title}
+                        </p>
+                        <p className="text-on-surface-variant text-xs mt-0.5 line-clamp-1">
+                          {f.summary}
+                        </p>
+                      </div>
+                    ))
+                )}
               </div>
               <button
                 onClick={() => {
@@ -156,13 +159,13 @@ export function Header() {
                 }}
                 className="w-full mt-2 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm text-center font-medium hover:bg-primary-container transition-colors"
               >
-                Go to Human Review Center
+                Go to Review Center
               </button>
             </div>
           )}
         </div>
 
-        {/* Profile / Judge Role Indicator */}
+        {/* Profile / Contributor Role Indicator */}
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -205,10 +208,10 @@ export function Header() {
               </div>
               <div className="pt-space-xs pb-1 text-xs text-on-surface-variant space-y-1">
                 <p className="font-medium text-secondary">
-                  Active Demo Persona: <strong>Outgoing Technical Lead</strong>
+                  Role: <strong>{project.lead.role}</strong>
                 </p>
                 <p className="text-outline">
-                  Judges are automatically authenticated with full review, editing, and certification permissions. No signup required.
+                  Judges and reviewers have full access to review, edit, and certify findings. No login required.
                 </p>
               </div>
               <div className="pt-2 border-t border-outline-variant/30">

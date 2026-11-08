@@ -88,32 +88,41 @@ export async function extractWithGemini(
     });
     rawResponseText = res.text || (typeof res === 'string' ? res : JSON.stringify(res));
   } else {
-    // Official GoogleGenAI SDK call
+    // Official GoogleGenAI SDK call with transient retry & fallback
     const ai = new GoogleGenAI({ apiKey: apiKey! });
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          temperature: options.temperature ?? 0.1,
-        },
-      });
-    } catch (err: any) {
-      // If the model is 404 (e.g. gemini-2.5-flash deprecated for new accounts, migrate to gemini-3.5-flash)
-      if (err?.status === 404 && (modelName === 'gemini-2.5-flash' || err?.message?.includes('gemini-3.5-flash'))) {
-        response = await ai.models.generateContent({
-          model: 'gemini-3.5-flash',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            temperature: options.temperature ?? 0.1,
-          },
-        });
-      } else {
-        throw err;
+    const modelsToTry = [modelName, 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
+    const uniqueModels = Array.from(new Set(modelsToTry));
+    let lastError: any = null;
+    let response: any = null;
+
+    for (const model of uniqueModels) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              temperature: options.temperature ?? 0.1,
+            },
+          });
+          if (response?.text) break;
+        } catch (err: any) {
+          lastError = err;
+          // If transient capacity spike (503, 429), back off before retry
+          if (err?.status === 503 || err?.status === 429) {
+            await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+            continue;
+          }
+          // For other errors (e.g., 404), switch to next model immediately
+          break;
+        }
       }
+      if (response?.text) break;
+    }
+
+    if (!response || !response.text) {
+      throw lastError || new Error('No response received from Gemini API');
     }
     rawResponseText = response.text || '';
   }

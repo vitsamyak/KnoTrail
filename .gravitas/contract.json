@@ -1,23 +1,20 @@
 {
   "mode": "implement",
-  "objective": "Implement Phase D: Real AI Knowledge Extraction with Gemini API Integration & Evidence Grounding",
+  "objective": "Complete KnoTrail Application Cleanup: Remove all fabricated/dummy data across the entire application and rewrite Landing Page and Dashboard content in simple, professional English",
   "acceptance_criteria": [
-    "Google GenAI SDK (@google/genai) integrated through server-side backend API route (/api/analysis/extract)",
-    "Server-side environment key validation (GEMINI_API_KEY) with explicit configuration error feedback when missing; zero fake AI substitution",
-    "Structured extraction pipeline for 7 categories: Decisions (with reasoning/impact), Pending Tasks, Responsibilities, Risks, Dependencies, Unresolved Questions, and Next Actions",
-    "Strict Evidence Grounding: Backend independently verifies every supporting quote against original extracted document text and calculates exact source coordinates (PDF page numbers, TXT/MD line numbers)",
-    "Unverified or missing evidence is explicitly marked as UNCERTAIN or MISSING status with explanation; no fabricated citations or owners",
-    "Long document chunking and cross-chunk deduplication with context preservation",
-    "Human Review Integration: All newly generated findings default to approved: false, rejected: false and feed directly into Human Review Center without bypassing Phase A gates",
-    "AI Analysis UI upgraded with Analyse Project trigger, document selection, real progress telemetry, findings grouping, and API key configuration guidance",
-    "Data persistence: Extracted findings, citations, and analysis state persist in the workspace via DurableFileRepository",
-    "Automated test suite covering API configuration, JSON validation, entity extraction across all 7 categories, quote grounding verification, chunking, deduplication, persistence, and unapproved status defaults",
-    "Production build and typecheck pass with zero errors"
+    "Complete dummy data removal: No fictional stakeholders (Elena Rostova, Marcus Vance, Sophia Chen, David Miller), fake commits/hashes, fake repository records, fake Slack/Jira/Linear/Notion/PagerDuty connected statuses, hardcoded decisions/tasks/risks/dependencies, or fake timelines in production runtime",
+    "Application-wide invariant: Only information originating from actual user-provided sources or genuinely generated and validated AI results may appear as project findings",
+    "New workspaces start clean with 0 findings and 0 sources; honest empty states shown across all views (Dashboard, Workspace, Sources, Analysis, Evidence, Review, Handover)",
+    "Source Manager cleanup: Only real operational file ingestions (PDF, TXT, Markdown) shown as connected; unimplemented services marked as Coming Soon or moved to Upcoming Connectors",
+    "Dashboard content simplified: Rewritten in simple, professional English without jargon (Project Overview, Recent Activity, Important Decisions, Pending Tasks, Identified Risks, Connected Sources); metrics computed from real stored records",
+    "Landing Page content simplified: Hero heading 'Keep Your Project Knowledge Even When People Leave', hero description 'KnoTrail helps teams collect project information, find important decisions and pending work, and prepare clear handovers with links to the original sources', buttons 'Add Project Documents' & 'How It Works', 3 simple workflow steps, zero fake terminal/stream or fake metrics",
+    "Zero-Auth & Incognito Invariant preserved: 100% accessible in private/incognito windows without login/signup",
+    "Tests use isolated synthetic fixtures inside test files only and do not depend on dummy records in the actual app",
+    "All automated tests pass (npm test) and production build succeeds (npm run build) with zero errors"
   ],
   "non_goals": [
-    "Do not implement advanced cross-document contradiction resolution engine in this phase (Phase E)",
     "Do not alter Google Stitch design tokens or warm sage visual styling",
-    "Do not bypass Phase A handover integrity approval gates or Phase B anonymous workspace persistence",
+    "Do not break Phase A handover approval gates, Phase B persistence, Phase C document ingestion, or Phase D Gemini extraction",
     "Do not add login or signup"
   ],
   "risk": "medium",
@@ -25,8 +22,6 @@
   "allowed_write_scope": [
     "src/**",
     ".data/**",
-    "package.json",
-    "package-lock.json",
     ".planning/**",
     ".gravitas/**",
     "docs/**"
@@ -35,7 +30,7 @@
     "type": "executable_evidence",
     "command": "npm test && npm run build",
     "exit_code": 0,
-    "result": "46 of 46 automated tests pass across Phase A (Handover Integrity), Phase B (Data Persistence & Workspace Isolation), Phase C (Real Document Ingestion & Extraction), and Phase D (Real AI Knowledge Extraction & Evidence Grounding). Production build compiles cleanly with zero type or webpack errors.",
+    "result": "46 of 46 automated tests pass across Phase A (Handover Integrity & Gating), Phase B (Persistence & Workspace Isolation with isolated fixtures), Phase C (Real Document Ingestion & Extraction), and Phase D (Real AI Knowledge Extraction & Evidence Grounding with Google Gemini). Production build compiles cleanly with zero errors across all 13 API endpoints and 6 static pages.",
     "verdict": "PASS"
   }
 }

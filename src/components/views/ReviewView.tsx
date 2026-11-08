@@ -23,7 +23,7 @@ export function ReviewView() {
   const [editModalFinding, setEditModalFinding] = useState<KnowledgeFinding | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSummary, setEditSummary] = useState('');
-  const [signerName, setSignerName] = useState('Elena Rostova & Marcus Vance');
+  const [signerName, setSignerName] = useState(project.lead?.name || 'Project Reviewer');
   const [showCertifyConfirm, setShowCertifyConfirm] = useState(false);
 
   // Open conflict resolution modal
@@ -31,7 +31,7 @@ export function ReviewView() {
     setConflictModalFinding(finding);
     setConflictResolutionText(
       finding.conflictDetails?.resolution ||
-        'Adopt RFC-042 standard: Mandate `allkeys-lru` eviction policy across all financial cache clusters. Update Helm values in PR #145.'
+        'Adopt documented standard and update configuration files accordingly.'
     );
   };
 
@@ -39,7 +39,7 @@ export function ReviewView() {
   const handleResolveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!conflictModalFinding) return;
-    resolveConflict(conflictModalFinding.id, conflictResolutionText, 'Marcus Vance (Incoming Lead Architect)');
+    resolveConflict(conflictModalFinding.id, conflictResolutionText, signerName || project.lead?.name || 'Project Reviewer');
     setConflictModalFinding(null);
   };
 
@@ -73,7 +73,7 @@ export function ReviewView() {
               onClick={() => setActiveView('workspace')}
               className="hover:text-primary cursor-pointer transition-colors"
             >
-              Project Titan
+              {project.name}
             </span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-semibold">Review Center</span>
@@ -86,26 +86,19 @@ export function ReviewView() {
           </p>
         </div>
 
-        {/* Quick Session Stakeholders */}
+        {/* Active Reviewer Strip */}
         <div className="flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-full border border-outline-variant/30">
-          <div className="flex -space-x-2">
-            <img
-              src={project.lead.avatar}
-              alt="Elena Rostova"
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-lowest"
-            />
-            <img
-              src={project.stakeholders[1]?.avatar}
-              alt="Marcus Vance"
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-lowest"
-            />
-          </div>
+          <img
+            src={project.lead.avatar}
+            alt={project.lead.name}
+            className="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-lowest"
+          />
           <div className="flex flex-col text-left text-xs">
             <span className="font-label-sm text-label-sm text-on-surface font-semibold leading-tight">
-              Elena R. &amp; Marcus V.
+              {project.lead.name}
             </span>
             <span className="font-body-sm text-body-sm text-outline leading-tight">
-              Co-Reviewing Active
+              {project.lead.role}
             </span>
           </div>
         </div>
@@ -163,7 +156,25 @@ export function ReviewView() {
 
       {/* REVIEW FINDINGS STREAM */}
       <div className="space-y-space-md">
-        {project.findings.map((finding) => (
+        {project.findings.length === 0 ? (
+          <div className="bg-surface-container-lowest rounded-xl p-space-2xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">rule</span>
+            </div>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No findings to review yet</h4>
+            <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
+              Upload project documents and run AI extraction to populate the Review Center with decisions, tasks, and risks for human approval.
+            </p>
+            <button
+              onClick={() => setActiveView('sources')}
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">upload_file</span>
+              <span>Upload Documents</span>
+            </button>
+          </div>
+        ) : (
+          project.findings.map((finding) => (
           <div
             key={finding.id}
             className={`bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border transition-all ${
@@ -337,7 +348,7 @@ export function ReviewView() {
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </div>
 
       {/* CONFLICT RESOLUTION MODAL */}

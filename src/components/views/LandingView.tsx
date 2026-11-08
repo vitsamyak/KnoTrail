@@ -14,11 +14,11 @@ export function LandingView() {
           <div className="inline-flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-2xs rounded-full shadow-sm border border-outline-variant/30">
             <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
             <span className="font-label-sm text-label-sm text-secondary tracking-wide uppercase font-semibold">
-              Deployed by Team Deploy_or_Die
+              Built by Team Deploy_or_Die
             </span>
             <span className="font-body-sm text-body-sm text-outline">•</span>
             <span className="font-label-sm text-label-sm text-primary font-medium">
-              100% Free Public Demo (Zero Auth)
+              Free Open Access (Zero Login Required)
             </span>
           </div>
         </div>
@@ -30,26 +30,26 @@ export function LandingView() {
             <div className="lg:col-span-7 flex flex-col space-y-space-md pr-0 lg:pr-space-lg">
               <div className="space-y-space-xs">
                 <p className="font-label-md text-label-md text-secondary tracking-wider uppercase font-semibold">
-                  Project Knowledge Continuity
+                  Project Knowledge Handover
                 </p>
                 <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight leading-tight">
-                  Never Lose the Knowledge Behind Your Projects.
+                  Keep Your Project Knowledge Even When People Leave.
                 </h1>
               </div>
               <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl leading-relaxed">
-                KnoTrail turns scattered project information into clear, evidence-backed knowledge handovers when engineers and key contributors transition.
+                KnoTrail helps teams collect project information, find important decisions and pending work, and prepare clear handovers with links to the original sources.
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-wrap items-center gap-space-sm pt-space-xs">
                 <button
-                  onClick={() => setActiveView('dashboard')}
+                  onClick={() => setActiveView('sources')}
                   className="inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-primary hover:bg-inverse-surface text-on-primary rounded-lg shadow-sm transition-all duration-200 active:scale-95 group"
-                  id="cta-explore"
+                  id="cta-add-docs"
                 >
-                  <span className="font-headline-sm text-headline-sm font-semibold">Explore Demo</span>
+                  <span className="font-headline-sm text-headline-sm font-semibold">Add Project Documents</span>
                   <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">
-                    arrow_forward
+                    upload_file
                   </span>
                 </button>
                 <button
@@ -64,93 +64,99 @@ export function LandingView() {
                 </button>
               </div>
 
-              {/* Zero-Auth Frictionless Reassurance */}
+              {/* Zero-Auth Reassurance */}
               <div className="flex items-center gap-space-xs pt-space-2xs">
                 <span className="material-symbols-outlined text-base text-primary">verified_user</span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant">
-                  No sign-up, registration, or credit card required. Jump straight into the interactive workspace.
+                  No sign-up or registration required. Works immediately in any browser window.
                 </span>
               </div>
             </div>
 
-            {/* Right Column: Code/Artifact Live Inspection Mockup */}
+            {/* Right Column: Clean Workflow Preview Card */}
             <div className="lg:col-span-5 relative mt-space-lg lg:mt-0">
               <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-md border border-outline-variant/40 relative overflow-hidden">
                 <div className="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-low px-space-sm py-space-2xs rounded-lg border border-outline-variant/20">
                   <div className="flex items-center gap-space-xs">
-                    <span className="w-3 h-3 rounded-full bg-error"></span>
-                    <span className="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></span>
-                    <span className="w-3 h-3 rounded-full bg-primary"></span>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant ml-space-2xs font-mono">
-                      session-log_handover_v2.kt
+                    <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                    <span className="font-label-sm text-label-sm text-on-surface font-semibold">
+                      Handover Workflow Overview
                     </span>
                   </div>
-                  <span className="font-label-sm text-label-sm text-primary font-medium bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/30">
-                    Live Stream
+                  <span className="font-label-sm text-label-sm text-secondary bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/30">
+                    3-Step Process
                   </span>
                 </div>
 
-                {/* Simulated Findings Stream */}
-                <div className="space-y-space-xs font-mono text-body-sm">
+                {/* Workflow Preview Steps */}
+                <div className="space-y-space-xs">
                   <div className="p-space-xs bg-surface-container-low rounded-lg flex items-start gap-space-xs border border-outline-variant/20">
-                    <span className="material-symbols-outlined text-primary text-base mt-0.5">commit</span>
+                    <div className="w-7 h-7 rounded-md bg-primary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="material-symbols-outlined text-base">upload_file</span>
+                    </div>
                     <div>
                       <p className="font-label-sm text-label-sm text-on-surface font-semibold">
-                        Commit: 9f12ab7 — Auth Architecture Switch
+                        1. Collect Project Information
                       </p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant font-sans text-xs">
-                        Auth0 token exchange swapped for internal JWT service.
+                      <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+                        Upload architecture docs, specifications, and notes in PDF, Markdown, or text format.
                       </p>
                     </div>
                   </div>
+
                   <div className="p-space-xs bg-surface-container-low rounded-lg flex items-start gap-space-xs border border-outline-variant/20">
-                    <span className="material-symbols-outlined text-secondary text-base mt-0.5">forum</span>
+                    <div className="w-7 h-7 rounded-md bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="material-symbols-outlined text-base">auto_awesome</span>
+                    </div>
                     <div>
                       <p className="font-label-sm text-label-sm text-on-surface font-semibold">
-                        PR Discussion: #142 (Merged 8d ago)
+                        2. Find Important Knowledge
                       </p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant font-sans text-xs">
-                        &quot;DB migrations require manual rollback key in production.&quot;
+                      <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+                        Identify key decisions, pending tasks, risks, and dependencies linked to original sources.
                       </p>
                     </div>
                   </div>
-                  <div className="p-space-xs bg-surface-container rounded-lg flex items-center justify-between border border-outline-variant/20">
-                    <div className="flex items-center gap-space-2xs">
-                      <span className="material-symbols-outlined text-tertiary text-base">warning</span>
-                      <span className="font-label-sm text-label-sm text-on-surface font-semibold font-sans">
-                        Implicit Assumption Detected
-                      </span>
+
+                  <div className="p-space-xs bg-surface-container rounded-lg flex items-start gap-space-xs border border-outline-variant/20">
+                    <div className="w-7 h-7 rounded-md bg-primary text-on-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="material-symbols-outlined text-base">fact_check</span>
                     </div>
-                    <span className="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded-full font-sans font-semibold">
-                      Flagged for Review
-                    </span>
+                    <div>
+                      <p className="font-label-sm text-label-sm text-on-surface font-semibold">
+                        3. Review &amp; Handover
+                      </p>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+                        Review and approve findings, resolve any conflicting claims, and export a certified handover report.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Synthetic Metric Badge */}
+                {/* Footer Status */}
                 <div className="mt-space-md pt-space-xs border-t border-outline-variant/30 flex items-center justify-between text-xs text-outline">
-                  <div className="flex items-center gap-1 font-sans">
+                  <div className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                    <span>142 Citations Indexed</span>
+                    <span>Evidence-Backed Grounding</span>
                   </div>
-                  <span className="font-mono text-primary font-medium">0 Ungrounded Claims</span>
+                  <span className="text-primary font-medium">Zero Fabrications</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 3-Part Comparison Grid: The Knowledge Loss Problem */}
+        {/* The 3 Core Pillars */}
         <section className="w-full px-gutter mb-space-2xl">
           <div className="text-center max-w-2xl mx-auto mb-space-lg">
             <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">
-              The Critical Gap
+              The Problem
             </span>
             <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-              Why Project Handovers Fail Today
+              Why Project Handovers Need Evidence
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              When key team members depart, critical architectural rationale and operational risks vanish into thin air.
+              When teammates transition, important decisions and operational context are easily lost or misunderstood.
             </p>
           </div>
 
@@ -158,38 +164,38 @@ export function LandingView() {
             {/* Card 1 */}
             <div className="bg-surface-container-lowest p-space-lg rounded-xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center mb-space-sm">
-                  <span className="material-symbols-outlined text-[22px]">scatter_plot</span>
+                <div className="w-10 h-10 rounded-lg bg-surface-container-low text-primary flex items-center justify-center mb-space-sm">
+                  <span className="material-symbols-outlined text-[22px]">description</span>
                 </div>
                 <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">
-                  Fragmented &amp; Stale Documentation
+                  Scattered Documents
                 </h3>
                 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                  Confluence wikis rot quickly. True decisions are buried in PR review comments, Slack threads, and uncommitted mental notes.
+                  Project knowledge is spread across different documents and notes. When someone departs, finding what matters is slow and incomplete.
                 </p>
               </div>
-              <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center gap-1.5 text-xs text-error font-medium">
-                <span className="material-symbols-outlined text-[16px]">close</span>
-                <span>Average 42% context lost</span>
+              <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center gap-1.5 text-xs text-outline">
+                <span className="material-symbols-outlined text-[16px] text-primary">check</span>
+                <span>Centralize project files in one place</span>
               </div>
             </div>
 
             {/* Card 2 */}
             <div className="bg-surface-container-lowest p-space-lg rounded-xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center mb-space-sm">
-                  <span className="material-symbols-outlined text-[22px]">psychology_alt</span>
+                <div className="w-10 h-10 rounded-lg bg-surface-container-low text-secondary flex items-center justify-center mb-space-sm">
+                  <span className="material-symbols-outlined text-[22px]">search</span>
                 </div>
                 <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">
-                  Ungrounded AI Hallucinations
+                  Hidden Details &amp; Tasks
                 </h3>
                 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                  Generic LLMs summarize chat logs by inventing facts and assuming policies that do not match the actual codebase reality.
+                  Unfinished tasks, architectural decisions, and known risks get forgotten unless they are explicitly extracted and categorized.
                 </p>
               </div>
-              <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center gap-1.5 text-xs text-tertiary font-medium">
-                <span className="material-symbols-outlined text-[16px]">warning</span>
-                <span>Unverified assumptions become bugs</span>
+              <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center gap-1.5 text-xs text-outline">
+                <span className="material-symbols-outlined text-[16px] text-primary">check</span>
+                <span>Extract decisions, tasks, and risks</span>
               </div>
             </div>
 
@@ -197,97 +203,113 @@ export function LandingView() {
             <div className="bg-surface-container-lowest p-space-lg rounded-xl border border-primary/30 shadow-sm flex flex-col justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none"></div>
               <div>
-                <div className="w-10 h-10 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center mb-space-sm">
+                <div className="w-10 h-10 rounded-lg bg-primary-fixed text-primary flex items-center justify-center mb-space-sm">
                   <span className="material-symbols-outlined text-[22px]">verified</span>
                 </div>
                 <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">
-                  The KnoTrail Guarantee
+                  Source-Linked Proof
                 </h3>
                 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                  Every decision, task, and dependency is linked to verifiable Git commits, line numbers, and author timestamps. Sealed by human sign-off.
+                  Every finding links directly to exact quotes, page numbers, and line ranges in the original files, followed by required human sign-off.
                 </p>
               </div>
               <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center gap-1.5 text-xs text-primary font-medium">
                 <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>100% Cryptographically Traceable</span>
+                <span>Mandatory human review &amp; sign-off</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* How It Works: 4-Stage Workflow */}
+        {/* How It Works: 3 Simple Steps */}
         <section id="how-it-works" className="w-full px-gutter mb-space-2xl scroll-mt-8">
           <div className="bg-surface-container-low rounded-2xl p-space-xl border border-outline-variant/30">
             <div className="text-center max-w-2xl mx-auto mb-space-xl">
               <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">
-                Operating Cycle
+                Simple 3-Step Process
               </span>
               <h2 className="font-display-lg text-display-lg text-on-surface tracking-tight mt-1">
-                How KnoTrail Reconstructs Reality
+                How KnoTrail Works
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-                An auditable, human-in-the-loop pipeline designed for zero knowledge loss.
+                A clear, straightforward workflow designed to ensure complete handover accuracy.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
               {/* Step 1 */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/20 shadow-xs flex flex-col">
-                <div className="flex items-center justify-between mb-space-xs">
-                  <span className="font-label-sm text-label-sm text-outline font-mono">01 / RECONSTRUCT</span>
-                  <span className="material-symbols-outlined text-primary text-[20px]">hub</span>
+              <div className="bg-surface-container-lowest p-space-lg rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-space-xs">
+                    <span className="font-label-sm text-label-sm text-outline font-mono">STEP 1</span>
+                    <span className="material-symbols-outlined text-primary text-[22px]">upload_file</span>
+                  </div>
+                  <h4 className="font-headline-sm text-headline-sm text-on-surface mb-2">
+                    Collect Project Information
+                  </h4>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Upload your team&apos;s existing project files—architecture documents, specifications, runbooks, and meeting notes in PDF, Markdown, or text format.
+                  </p>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Source Ingestion</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Parses git commits, PR discussions, Slack channels, and RFC notes across authorized systems.
-                </p>
+                <div className="mt-4 pt-2 border-t border-outline-variant/20 text-xs text-outline">
+                  Supports PDF, TXT, and Markdown files
+                </div>
               </div>
 
               {/* Step 2 */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/20 shadow-xs flex flex-col">
-                <div className="flex items-center justify-between mb-space-xs">
-                  <span className="font-label-sm text-label-sm text-outline font-mono">02 / VERIFY</span>
-                  <span className="material-symbols-outlined text-primary text-[20px]">fact_check</span>
+              <div className="bg-surface-container-lowest p-space-lg rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-space-xs">
+                    <span className="font-label-sm text-label-sm text-outline font-mono">STEP 2</span>
+                    <span className="material-symbols-outlined text-primary text-[22px]">auto_awesome</span>
+                  </div>
+                  <h4 className="font-headline-sm text-headline-sm text-on-surface mb-2">
+                    Find Important Knowledge
+                  </h4>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    KnoTrail analyzes the documents to identify critical architectural decisions, pending tasks, known risks, and system dependencies, linking each finding to its original source quote.
+                  </p>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Evidence Linking</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Attaches file coordinates and SHAs. Flags claims as VERIFIED, UNCERTAIN, CONFLICTING, or MISSING.
-                </p>
+                <div className="mt-4 pt-2 border-t border-outline-variant/20 text-xs text-outline">
+                  Every finding grounded with exact quotes &amp; page/line numbers
+                </div>
               </div>
 
               {/* Step 3 */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/20 shadow-xs flex flex-col">
-                <div className="flex items-center justify-between mb-space-xs">
-                  <span className="font-label-sm text-label-sm text-outline font-mono">03 / REVIEW</span>
-                  <span className="material-symbols-outlined text-secondary text-[20px]">rule</span>
+              <div className="bg-surface-container-lowest p-space-lg rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-space-xs">
+                    <span className="font-label-sm text-label-sm text-outline font-mono">STEP 3</span>
+                    <span className="material-symbols-outlined text-secondary text-[22px]">rule</span>
+                  </div>
+                  <h4 className="font-headline-sm text-headline-sm text-on-surface mb-2">
+                    Review and Generate Handover
+                  </h4>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Team members review each finding, resolve any conflicting information, approve verified items, and produce a certified handover document ready to share or export.
+                  </p>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Human Approval</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Mandatory human review where outgoing and incoming leads resolve conflicts and certify facts.
-                </p>
-              </div>
-
-              {/* Step 4 */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/20 shadow-xs flex flex-col">
-                <div className="flex items-center justify-between mb-space-xs">
-                  <span className="font-label-sm text-label-sm text-outline font-mono">04 / HANDOVER</span>
-                  <span className="material-symbols-outlined text-primary text-[20px]">sync_alt</span>
+                <div className="mt-4 pt-2 border-t border-outline-variant/20 text-xs text-outline">
+                  Exportable to Markdown, JSON, and print-ready formats
                 </div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Certified Dossier</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Produces a tamper-evident handover package exportable in Markdown, JSON, and PDF formats.
-                </p>
               </div>
             </div>
 
             {/* Action Callout */}
             <div className="mt-space-xl text-center flex flex-col sm:flex-row items-center justify-center gap-space-sm">
               <button
-                onClick={() => setActiveView('dashboard')}
+                onClick={() => setActiveView('sources')}
                 className="inline-flex items-center gap-2 px-space-xl py-space-sm bg-primary hover:bg-inverse-surface text-on-primary rounded-lg font-headline-sm text-headline-sm shadow-md transition-all active:scale-95"
               >
-                <span>Launch Interactive Demo: Project Titan</span>
-                <span className="material-symbols-outlined text-[18px]">rocket_launch</span>
+                <span>Add Project Documents</span>
+                <span className="material-symbols-outlined text-[18px]">upload_file</span>
+              </button>
+              <button
+                onClick={() => setActiveView('workspace')}
+                className="inline-flex items-center gap-2 px-space-xl py-space-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-lg font-headline-sm text-headline-sm border border-outline-variant/30 transition-all"
+              >
+                <span>Open Project Workspace</span>
+                <span className="material-symbols-outlined text-[18px]">folder_open</span>
               </button>
             </div>
           </div>
@@ -298,7 +320,7 @@ export function LandingView() {
           <div className="flex items-center gap-2">
             <span className="font-semibold text-on-surface">KnoTrail</span>
             <span>•</span>
-            <span>&quot;Knowledge Never Leaves a Trail Behind.&quot;</span>
+            <span>Knowledge Handover Platform</span>
           </div>
           <div className="flex items-center gap-4">
             <span>CodersInPune Hackathon 2026</span>

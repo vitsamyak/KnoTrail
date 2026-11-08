@@ -176,7 +176,7 @@ export class DurableFileRepository implements StorageRepository {
       confidence: 96,
       category: 'User Ingested Notes',
       urgency: 'medium',
-      owner: project.lead?.name || 'Elena Rostova',
+      owner: project.lead?.name || 'Project Contributor',
       createdDate: new Date().toISOString().split('T')[0],
       approved: false,
       reviewerNotes: 'Pending human review in Review Center.',
@@ -414,7 +414,7 @@ export class DurableFileRepository implements StorageRepository {
     const updatedProject: ProjectData = {
       ...project,
       handoverCertified: true,
-      certifiedBy: signerName || 'Elena Rostova & Marcus Vance',
+      certifiedBy: signerName || project.lead?.name || 'Project Reviewer',
       certifiedDate: now,
       certificationHash,
     };

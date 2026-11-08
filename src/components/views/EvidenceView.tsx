@@ -50,7 +50,7 @@ export function EvidenceView() {
               onClick={() => setActiveView('workspace')}
               className="hover:text-primary cursor-pointer transition-colors"
             >
-              Project Titan
+              {project.name}
             </span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-semibold">Evidence Explorer</span>
@@ -165,7 +165,30 @@ export function EvidenceView() {
 
       {/* FINDINGS WITH CITATIONS */}
       <div className="space-y-space-lg">
-        {filteredFindings.map((finding) => (
+        {project.findings.length === 0 ? (
+          <div className="bg-surface-container-lowest rounded-xl p-space-2xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">fact_check</span>
+            </div>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No evidence records yet</h4>
+            <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
+              Upload project documents and run AI extraction to view source citations grounded with exact quotes and page/line references.
+            </p>
+            <button
+              onClick={() => setActiveView('sources')}
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">upload_file</span>
+              <span>Upload Documents</span>
+            </button>
+          </div>
+        ) : filteredFindings.length === 0 ? (
+          <div className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 text-center text-xs text-outline">
+            <span className="material-symbols-outlined text-[32px] text-outline mb-1 block">search_off</span>
+            <span>No evidence citations matching the selected filter or search.</span>
+          </div>
+        ) : (
+          filteredFindings.map((finding) => (
           <div
             key={finding.id}
             className={`bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border transition-all ${
@@ -286,7 +309,7 @@ export function EvidenceView() {
               </button>
             </div>
           </div>
-        ))}
+        )))}
       </div>
 
       {/* SIDE DRAWER / MODAL: CITATION PROVENANCE INSPECTOR */}

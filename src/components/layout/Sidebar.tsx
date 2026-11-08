@@ -127,11 +127,11 @@ export function Sidebar() {
           </div>
           <button
             onClick={() => {
-              if (confirm('Reset to initial Project Titan demonstration state?')) {
+              if (confirm('Reset workspace to clean empty state?')) {
                 resetDemoData();
               }
             }}
-            title="Reset Sample Data"
+            title="Reset Workspace"
             className="flex items-center gap-1 text-[11px] text-outline hover:text-primary transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">restart_alt</span>

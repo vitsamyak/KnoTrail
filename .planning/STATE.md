@@ -1,17 +1,17 @@
 ---
 gsd_state_version: "1.0"
-current_phase: D
-current_phase_name: Real AI Knowledge Extraction with Gemini API Integration & Evidence Grounding
+current_phase: Cleanup & UX Simplification
+current_phase_name: Complete Dummy Data Removal and UX Content Simplification
 status: complete
-stopped_at: Completed Phase D live Gemini API integration verification. Authenticated live request executed with Google Gemini, dynamically extracting 8 verified findings across all 7 categories from real uploaded document with exact verbatim quote grounding. 46/46 automated tests pass, Next.js production build passes with zero errors.
-last_updated: "2026-11-08T18:27:00.000Z"
+stopped_at: Completed full application cleanup under GSD and Gravitas. Removed all synthetic/fictional records (fictional members, fake commits, fake integrations, fake metrics) and preloaded Project Titan data. Fresh workspaces initialize with 0 findings and 0 sources. Rewrote Landing Page and Dashboard in simple, professional English. All 46 automated tests pass with isolated test fixtures. Next.js production build succeeds with 0 errors.
+last_updated: "2026-11-08T18:58:00.000Z"
 last_activity: 2026-11-08
 state_head: 7d165c8
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 7
-  completed_plans: 7
+  completed_phases: 6
+  total_plans: 8
+  completed_plans: 8
   percent: 100
 ---
 
@@ -22,11 +22,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-08)
 
 **Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval and zero ungrounded claims.  
-**Current focus:** Phase D Complete (Real AI Knowledge Extraction & Evidence Grounding). 46/46 tests passing.
+**Current focus:** Application Cleanup & UX Simplification Complete. 46/46 tests passing. Production build PASS.
 
 ## Current Position
 
-Phase: Phase D: Real AI Knowledge Extraction & Evidence Grounding  
+Phase: Complete Dummy Data Removal and UX Content Simplification  
 Status: Tests PASS (46/46) | Production Build PASS (13 API routes + 6 static pages)  
 Last activity: 2026-11-08
 
@@ -35,9 +35,16 @@ Progress: [██████████] 100%
 ## Performance Metrics
 
 **Velocity:**
-- Total screens completed: 8 of 8
+- Total screens completed: 8 of 8 (with honest empty states on all screens)
 - Total API endpoints implemented: 13 active REST endpoints (`/api/...` including `/api/analysis/extract`, `/api/sources/upload`, `/api/sources/[id]`)
-- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash / Gemini 3.5 Flash), live authenticated API verification PASS, structured JSON response mode
+- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash / Gemini 3.5 Flash / Gemini 3.1 Flash Lite), live authenticated API verification PASS, structured JSON response mode
+- Zero-Fake-Data Invariant: 100% enforced. New workspaces start with 0 findings and 0 sources.
+- UX Simplification: Landing page and Dashboard rewritten in clear, professional English without jargon.
+- Supported Integrations: PDF (.pdf), Markdown (.md), Plain Text (.txt) active; Cloud connectors (GitHub, Slack, Linear, Notion, Jira) honestly badged as Coming Soon.
+- Anonymous Workspace Isolation: 100% verified across concurrent visitor IDs
+- Zero-auth public access: 100% compliant (no login, no signup, 100% Incognito-compatible)
+- Automated test suite: 46 of 46 tests passing (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 16 tests)
+- Handover integrity gate: Verified (blocks access when unreviewed findings or conflicts exist; renders approved-only findings when certified)
 - Evidence Grounding Engine: Exact & normalized whitespace matching, PDF page & line detection, TXT/MD line ranges, SHA-256 snippet hashing
 - Grounding Statuses: `VERIFIED` (exact quote match), `UNCERTAIN` (unlocated quote with warning), `MISSING` (no quote provided), `CONFLICTING` (contradictory claims)
 - Operational Categories: 7 types (Decisions with reasoning/impact, Tasks, Risks, Dependencies, Contacts, Unresolved Questions, Next Actions)

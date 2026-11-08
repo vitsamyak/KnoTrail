@@ -7,6 +7,9 @@ import {
   getHandoverTasks,
   getHandoverRisks,
   getHandoverDependencies,
+  getHandoverNextActions,
+  getHandoverQuestions,
+  getHandoverContacts,
   generateHandoverMarkdown,
   generateHandoverJSON,
 } from '../../lib/handoverFilter';
@@ -20,6 +23,9 @@ export function HandoverView() {
   const approvedTasks = getHandoverTasks(project.findings);
   const approvedRisks = getHandoverRisks(project.findings);
   const approvedDependencies = getHandoverDependencies(project.findings);
+  const approvedNextActions = getHandoverNextActions(project.findings);
+  const approvedQuestions = getHandoverQuestions(project.findings);
+  const approvedContacts = getHandoverContacts(project.findings);
 
   // Export to Markdown using the central, strictly filtered generator
   const handleExportMarkdown = () => {
@@ -526,49 +532,65 @@ export function HandoverView() {
         )}
       </section>
 
-      {/* 5. 30-DAY TRANSITION ROADMAP */}
+      {/* 5. NEXT ACTIONS & UNRESOLVED QUESTIONS */}
       <section className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md">
-        <div className="flex items-center gap-2 border-b border-outline-variant/20 pb-space-xs">
-          <span className="material-symbols-outlined text-primary text-[22px]">timeline</span>
-          <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
-            5. The 30-Day Transition Roadmap
-          </h2>
+        <div className="flex items-center justify-between border-b border-outline-variant/20 pb-space-xs">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[22px]">pending_actions</span>
+            <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
+              5. Next Actions &amp; Open Questions ({approvedNextActions.length + approvedQuestions.length})
+            </h2>
+          </div>
+          <span className="text-xs text-outline font-mono">Transition Priorities</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
-          <div className="bg-surface-container-low p-space-md rounded-xl border border-outline-variant/30 flex flex-col gap-2">
-            <span className="font-mono text-xs font-bold text-primary uppercase">Days 1 – 7</span>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">Shadow &amp; Credential Handover</h4>
-            <ul className="text-xs text-on-surface-variant space-y-1.5 list-disc list-inside">
-              <li>Marcus Vance assumption of EKS cluster admin permissions</li>
-              <li>Dry run execution of manual DB rollback key procedure</li>
-              <li>Joint review of Kafka StickyAssignor lag metrics</li>
-            </ul>
+        {approvedNextActions.length > 0 || approvedQuestions.length > 0 ? (
+          <div className="space-y-space-sm">
+            {approvedNextActions.map((action) => (
+              <div
+                key={action.id}
+                className="bg-surface-container-low/50 rounded-xl p-space-md border border-outline-variant/30 flex items-start gap-3"
+              >
+                <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">task_alt</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-label-md text-label-md text-on-surface font-semibold">
+                      {action.title}
+                    </span>
+                    <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.2 rounded font-bold uppercase">
+                      Next Action
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5 leading-relaxed">{action.summary}</p>
+                </div>
+              </div>
+            ))}
+            {approvedQuestions.map((q) => (
+              <div
+                key={q.id}
+                className="bg-surface-container-low/50 rounded-xl p-space-md border border-outline-variant/30 flex items-start gap-3"
+              >
+                <span className="material-symbols-outlined text-secondary text-[20px] mt-0.5">help_outline</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-label-md text-label-md text-on-surface font-semibold">
+                      {q.title}
+                    </span>
+                    <span className="text-[10px] bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.2 rounded font-bold uppercase">
+                      Open Question
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5 leading-relaxed">{q.summary}</p>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="bg-surface-container-low p-space-md rounded-xl border border-outline-variant/30 flex flex-col gap-2">
-            <span className="font-mono text-xs font-bold text-secondary uppercase">Days 8 – 14</span>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">Primary Operational Shift</h4>
-            <ul className="text-xs text-on-surface-variant space-y-1.5 list-disc list-inside">
-              <li>Marcus Vance takes over primary PagerDuty on-call rotation</li>
-              <li>Execute staging disaster recovery failover drill</li>
-              <li>Deploy updated Redis Helm chart (allkeys-lru resolution)</li>
-            </ul>
-          </div>
-
-          <div className="bg-surface-container-low p-space-md rounded-xl border border-outline-variant/30 flex flex-col gap-2">
-            <span className="font-mono text-xs font-bold text-outline uppercase">Days 15 – 30</span>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">Full Autonomy &amp; Key Revocation</h4>
-            <ul className="text-xs text-on-surface-variant space-y-1.5 list-disc list-inside">
-              <li>Revoke Elena Rostova PGP keys and Vault access policies on July 15</li>
-              <li>Sunset legacy webhook adapters and lock Q3 billing ledger</li>
-              <li>Formal sign-off presentation to Director of Engineering</li>
-            </ul>
-          </div>
-        </div>
+        ) : (
+          <p className="text-xs text-outline italic">No approved next actions or open questions recorded.</p>
+        )}
       </section>
 
-      {/* FORMAL SIGN-OFF & CRYPTOGRAPHIC STAMP */}
+      {/* FORMAL SIGN-OFF & CERTIFICATION STAMP */}
       <section className="bg-inverse-surface text-inverse-on-surface rounded-xl p-space-xl border border-primary/40 shadow-md flex flex-col gap-space-md print-page-break">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md border-b border-white/10 pb-space-md">
           <div className="flex items-center gap-space-sm">
@@ -580,14 +602,14 @@ export function HandoverView() {
                 {project.handoverCertified ? 'Formally Certified & Approved' : 'Draft Handover Dossier'}
               </span>
               <span className="text-xs text-inverse-on-surface/70">
-                CodersInPune Hackathon 2026 • Knowledge Handover Protocol 4.1
+                KnoTrail Handover Platform • CodersInPune 2026
               </span>
             </div>
           </div>
 
           <div className="flex flex-col text-right font-mono text-xs text-primary-fixed">
             <span>
-              {project.handoverCertified ? `CERT-ID: #KT-9921-${project.code}` : 'STATUS: DRAFT'}
+              {project.handoverCertified ? `CERT-ID: #KT-${project.code}` : 'STATUS: DRAFT'}
             </span>
             <span className="text-[10px] text-inverse-on-surface/60">
               HASH: {project.handoverCertified ? project.certificationHash.slice(0, 32) + '...' : 'PENDING'}
@@ -597,26 +619,26 @@ export function HandoverView() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-lg pt-2 text-xs">
           <div className="flex flex-col gap-1 border-l-2 border-primary pl-space-md">
-            <span className="text-inverse-on-surface/60 uppercase text-[10px]">Outgoing Lead Attestation</span>
+            <span className="text-inverse-on-surface/60 uppercase text-[10px]">Project Lead Attestation</span>
             <span className="text-white font-semibold text-sm">{project.lead.name}</span>
-            <span className="text-inverse-on-surface/80">Principal Architect &amp; Handover Lead</span>
+            <span className="text-inverse-on-surface/80">{project.lead.role}</span>
             <span className="text-primary-fixed font-mono text-[11px] mt-1">
               {project.handoverCertified
-                ? `Signed: ${project.certifiedDate || 'July 8, 2025'} • Cryptographically Verified`
+                ? `Signed: ${project.certifiedDate || 'Certified'} • Verified`
                 : 'Pending Human Sign-off in Review Center'}
             </span>
           </div>
 
           <div className="flex flex-col gap-1 border-l-2 border-primary pl-space-md">
-            <span className="text-inverse-on-surface/60 uppercase text-[10px]">Incoming Lead Acceptance</span>
+            <span className="text-inverse-on-surface/60 uppercase text-[10px]">Reviewer Sign-Off &amp; Certification</span>
             <span className="text-white font-semibold text-sm">
-              {project.stakeholders[1]?.name || 'Marcus Vance'}
+              {project.certifiedBy || project.stakeholders[1]?.name || 'Assigned Reviewer'}
             </span>
-            <span className="text-inverse-on-surface/80">Incoming Architecture Lead &amp; Principal SRE</span>
+            <span className="text-inverse-on-surface/80">Authorized Handover Certifier</span>
             <span className="text-primary-fixed font-mono text-[11px] mt-1">
               {project.handoverCertified
-                ? `Accepted: ${project.certifiedDate || 'July 8, 2025'} • Full Operational Takeover`
-                : 'Pending Acceptance in Review Center'}
+                ? `Certified: ${project.certifiedDate || 'Certified'} • Human Reviewed`
+                : 'Pending Certification in Review Center'}
             </span>
           </div>
         </div>

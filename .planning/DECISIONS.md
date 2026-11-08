@@ -297,6 +297,56 @@ Following Phase C's real document source ingestion, KnoTrail needed to transform
 - Evaluators can test with real documents and verify exact quotes and page coordinates.
 - Validated by 16 automated test scenarios (`src/__tests__/aiExtraction.test.mjs`), bringing total passing test suite to 46 tests. Production build compiles cleanly with zero errors.
 
+---
+
+## ADR-011: Complete Synthetic Data Removal & UX Content Simplification
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Implemented
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+Following the successful completion of Phase D (Real AI Knowledge Extraction & Evidence Grounding), the application contained residual synthetic and hardcoded demo artifacts from earlier development phases. These included:
+1. Fictional project stakeholders (Elena Rostova, Marcus Vance, Sophia Chen, David Miller).
+2. Hardcoded preloaded findings, fake Git commit hashes, fake citations, fake sprint items (Sprint 37), and fake Slack/Linear/Notion integration statuses.
+3. Overly complex and speculative terminology on the Landing Page and Dashboard (e.g., "Modular Telemetry Matrix Active", "Recent Knowledge Reconstructions", "Handover Milestone Radar", "Epistemic Grounding Engine").
+4. A non-negotiable hackathon and enterprise invariant required that *only information originating from actual user-provided sources or genuinely generated and validated AI results may appear as project findings*.
+
+### Decision
+1. **Complete Dummy Data Removal**:
+   - Replaced `INITIAL_PROJECT_DATA` with `EMPTY_PROJECT_DATA` in `src/lib/demoData.ts`: fresh workspaces start clean with 0 findings and 0 sources.
+   - Removed all hardcoded fictional personas, avatars, and names across all views, storage methods, and API routes.
+   - Isolated synthetic test data strictly into test suites (`TEST_SEED_PROJECT` in `src/__tests__/persistence.test.mjs`), ensuring tests never pollute production runtime.
+2. **Honest Empty States Across All Views**:
+   - Implemented honest, actionable empty states across all screens:
+     - Dashboard: Prompt to start handover and upload documents.
+     - Workspace: Informative message when 0 findings or 0 team members exist.
+     - Sources: Clear invitation to upload PDF, Markdown, or Text files.
+     - Analysis: Direct guidance to select uploaded documents and run AI extraction.
+     - Evidence Explorer: Honest status indicating no grounded evidence yet.
+     - Review Center: Empty queue notice until documents are uploaded and extracted.
+     - Handover Dossier: Locked gate explaining prerequisite review steps.
+3. **Source Manager Cleanup**:
+   - Divided integrations into two transparent categories:
+     - Operational (Active): PDF (.pdf with page tracking), Markdown (.md with heading preservation), Plain Text (.txt with line tracking).
+     - Upcoming Cloud Connectors: GitHub, Slack, Linear, Notion, Jira—honestly labeled with "Coming Soon" badges.
+4. **Simple, Professional English Rewrite**:
+   - Landing Page:
+     - Hero heading: "Keep Your Project Knowledge Even When People Leave."
+     - Hero description: "KnoTrail helps teams collect project information, find important decisions and pending work, and prepare clear handovers with links to the original sources."
+     - Replaced simulated terminal streams and fake metrics with an honest 3-step workflow (1. Collect Project Information, 2. Find Important Knowledge, 3. Review and Generate Handover).
+   - Dashboard:
+     - Replaced complex jargon with plain terms ("Project Overview", "Recent Activity", "Important Decisions", "Pending Tasks", "Identified Risks", "Connected Sources").
+     - All metric cards display genuinely computed counts from active records.
+5. **Zero-Auth & Incognito Preservation**:
+   - Zero login, signup, or account barrier preserved; 100% functional in private/incognito windows.
+
+### Consequences
+- Application is 100% free of fictional claims, dummy personas, fake integration statuses, and speculative terminology.
+- 46/46 automated test scenarios pass cleanly with isolated fixtures.
+- Next.js production build compiles with zero errors (13 API endpoints + 6 static pages).
+
+
 
 
 

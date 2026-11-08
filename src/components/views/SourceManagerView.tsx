@@ -29,7 +29,7 @@ export function SourceManagerView() {
   const [isPasting, setIsPasting] = useState(false);
 
   // Filter & Search state for sources
-  const [sourceFilter, setSourceFilter] = useState<'ALL' | 'UPLOADED' | 'PRELOADED'>('ALL');
+  const [sourceFilter, setSourceFilter] = useState<'ALL' | 'UPLOADED' | 'NOTES'>('ALL');
 
   // Drag and drop handlers
   const handleDrag = (e: React.DragEvent) => {
@@ -103,12 +103,12 @@ export function SourceManagerView() {
   // Filter sources
   const filteredSources = project.sources.filter((s) => {
     if (sourceFilter === 'UPLOADED') return !!s.isUploaded;
-    if (sourceFilter === 'PRELOADED') return !s.isUploaded;
+    if (sourceFilter === 'NOTES') return !s.isUploaded || s.type === 'notes';
     return true;
   });
 
   const uploadedCount = project.sources.filter((s) => s.isUploaded).length;
-  const preloadedCount = project.sources.filter((s) => !s.isUploaded).length;
+  const notesCount = project.sources.filter((s) => !s.isUploaded || s.type === 'notes').length;
 
   return (
     <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
@@ -120,16 +120,16 @@ export function SourceManagerView() {
               onClick={() => setActiveView('workspace')}
               className="hover:text-primary cursor-pointer transition-colors"
             >
-              Project Titan
+              {project.name}
             </span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-semibold">Source Manager</span>
+            <span className="text-primary font-semibold">Sources</span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-            Connected Engineering Streams &amp; Documents
+            Project Documents &amp; Sources
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Ingest real PDF, Markdown, and text project documentation. Extracted text is grounded with exact line and page numbers.
+            Upload PDF, Markdown, and text project documentation. Extracted text is grounded with exact line and page numbers.
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export function SourceManagerView() {
             className="inline-flex items-center gap-2 px-space-md py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">edit_note</span>
-            <span>Paste Raw Notes</span>
+            <span>Paste Notes</span>
           </button>
 
           <button
@@ -163,7 +163,7 @@ export function SourceManagerView() {
             <span className={`material-symbols-outlined text-[18px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
               sync
             </span>
-            <span>{isSyncing ? 'Syncing...' : 'Sync Pipelines'}</span>
+            <span>{isSyncing ? 'Syncing...' : 'Sync Workspace'}</span>
           </button>
         </div>
       </div>
@@ -190,16 +190,6 @@ export function SourceManagerView() {
             }`}
           >
             Uploaded Documents ({uploadedCount})
-          </button>
-          <button
-            onClick={() => setSourceFilter('PRELOADED')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all ${
-              sourceFilter === 'PRELOADED'
-                ? 'bg-surface-container-lowest text-primary shadow-xs'
-                : 'text-outline hover:text-on-surface'
-            }`}
-          >
-            Demo Streams ({preloadedCount})
           </button>
         </div>
 
@@ -312,14 +302,125 @@ export function SourceManagerView() {
 
       {/* Empty State */}
       {filteredSources.length === 0 && (
-        <div className="bg-surface-container-lowest p-space-xl rounded-xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-2">
-          <span className="material-symbols-outlined text-[36px] text-outline">folder_off</span>
-          <h4 className="font-headline-sm text-headline-sm text-on-surface">No sources found in this category</h4>
-          <p className="text-xs text-outline max-w-md">
-            Upload real documents (.pdf, .txt, .md) to start extracting institutional knowledge.
+        <div className="bg-surface-container-lowest p-space-2xl rounded-xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+            <span className="material-symbols-outlined text-[28px]">upload_file</span>
+          </div>
+          <h4 className="font-headline-sm text-headline-sm text-on-surface">No documents uploaded yet</h4>
+          <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
+            Upload your team&apos;s architecture documents, runbooks, or specifications in PDF, Markdown (.md), or plain text (.txt) format to begin extracting decisions, tasks, and risks.
           </p>
+          <button
+            onClick={() => {
+              setSelectedFiles([]);
+              setUploadResults([]);
+              setShowUploadModal(true);
+            }}
+            className="mt-2 inline-flex items-center gap-2 px-space-lg py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]">upload_file</span>
+            <span>Upload Documents</span>
+          </button>
         </div>
       )}
+
+      {/* SUPPORTED & UPCOMING CONNECTORS */}
+      <div className="bg-surface-container-lowest rounded-xl p-space-lg border border-outline-variant/30 shadow-xs flex flex-col gap-space-md">
+        <div>
+          <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+            Integrations &amp; File Formats
+          </h3>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            Operational formats are processed locally on server. Cloud connectors are in active development.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-sm">
+          {/* Active 1: PDF */}
+          <div className="p-space-sm bg-surface-container-low/70 rounded-lg border border-primary/30 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-primary text-[22px]">picture_as_pdf</span>
+              <div>
+                <p className="font-label-md text-label-md text-on-surface font-semibold">PDF Documents</p>
+                <p className="text-[11px] text-outline">.pdf (Page coordinates tracked)</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+              Active
+            </span>
+          </div>
+
+          {/* Active 2: Markdown */}
+          <div className="p-space-sm bg-surface-container-low/70 rounded-lg border border-primary/30 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-primary text-[22px]">markdown</span>
+              <div>
+                <p className="font-label-md text-label-md text-on-surface font-semibold">Markdown Documents</p>
+                <p className="text-[11px] text-outline">.md, .markdown (Headings preserved)</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+              Active
+            </span>
+          </div>
+
+          {/* Active 3: Plain Text */}
+          <div className="p-space-sm bg-surface-container-low/70 rounded-lg border border-primary/30 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-primary text-[22px]">description</span>
+              <div>
+                <p className="font-label-md text-label-md text-on-surface font-semibold">Plain Text Notes</p>
+                <p className="text-[11px] text-outline">.txt (Line numbers preserved)</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+              Active
+            </span>
+          </div>
+
+          {/* Upcoming 1: GitHub */}
+          <div className="p-space-sm bg-surface-container-low/40 rounded-lg border border-outline-variant/20 flex items-center justify-between opacity-70">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-outline text-[22px]">commit</span>
+              <div>
+                <p className="font-label-md text-label-md text-on-surface font-medium">GitHub Repositories</p>
+                <p className="text-[11px] text-outline">Commits, PRs, diffs</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-surface-container text-outline px-2 py-0.5 rounded-full font-medium">
+              Coming Soon
+            </span>
+          </div>
+
+          {/* Upcoming 2: Slack */}
+          <div className="p-space-sm bg-surface-container-low/40 rounded-lg border border-outline-variant/20 flex items-center justify-between opacity-70">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-outline text-[22px]">forum</span>
+              <div>
+                <p className="font-label-md text-label-md text-on-surface font-medium">Slack Discussions</p>
+                <p className="text-[11px] text-outline">Channel threads &amp; alerts</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-surface-container text-outline px-2 py-0.5 rounded-full font-medium">
+              Coming Soon
+            </span>
+          </div>
+
+          {/* Upcoming 3: Notion / Linear */}
+          <div className="p-space-sm bg-surface-container-low/40 rounded-lg border border-outline-variant/20 flex items-center justify-between opacity-70">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-outline text-[22px]">check_box</span>
+              <div>
+                <p className="font-label-md text-label-md text-on-surface font-medium">Notion &amp; Linear</p>
+                <p className="text-[11px] text-outline">Wikis, tasks &amp; epics</p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-surface-container text-outline px-2 py-0.5 rounded-full font-medium">
+              Coming Soon
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* MODAL 1: FILE UPLOAD (DRAG & DROP + BROWSE) */}
       {showUploadModal && (

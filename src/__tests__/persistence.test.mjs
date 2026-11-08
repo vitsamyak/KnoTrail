@@ -7,6 +7,83 @@ import { isValidWorkspaceId, sanitizeWorkspaceId } from '../server/db/types.ts';
 
 const TEST_STORAGE_DIR = path.join(process.cwd(), '.data', 'test-workspaces');
 
+// Isolated synthetic test fixture defined inside the test file only
+const TEST_SEED_PROJECT = {
+  id: 'proj-test-fixture-001',
+  name: 'Test Handover Project',
+  code: 'TEST-PROJECT',
+  description: 'Isolated test fixture for persistence and conflict resolution tests.',
+  targetExitDate: 'July 15, 2026',
+  version: 'v1.0',
+  lastAnalysed: 'Just now',
+  executiveSummary: 'Test fixture summary for persistence tests.',
+  handoverCertified: false,
+  certificationHash: '',
+  lead: {
+    id: 'lead-01',
+    name: 'Test Lead',
+    role: 'Lead Architect',
+    email: 'test@example.com',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    outgoing: true,
+    transitionNotes: 'Active test lead.',
+  },
+  stakeholders: [],
+  sources: [
+    {
+      id: 'src-test-01',
+      name: 'architecture_doc.md',
+      type: 'notes',
+      status: 'connected',
+      lastSync: 'Just now',
+      recordCount: 10,
+      icon: 'description',
+      description: 'Test notes',
+      privacyLevel: 'LOCAL_READ_ONLY',
+    },
+  ],
+  findings: [
+    {
+      id: 'FIND-DEC-01',
+      type: 'decision',
+      title: 'Database Cluster Architecture',
+      summary: 'Adopted PostgreSQL for persistence.',
+      reasoning: 'ACID compliance.',
+      impact: 'Zero-downtime cutover.',
+      status: 'VERIFIED',
+      confidence: 95,
+      category: 'Architecture',
+      urgency: 'high',
+      owner: 'Test Lead',
+      createdDate: '2026-11-08',
+      approved: false,
+      rejected: false,
+      citations: [],
+    },
+    {
+      id: 'FIND-DEC-04',
+      type: 'decision',
+      title: 'Cache Policy Discrepancy',
+      summary: 'Conflicting cache policies.',
+      reasoning: 'Discrepancy detected.',
+      impact: 'Cache churn.',
+      status: 'CONFLICTING',
+      confidence: 60,
+      category: 'Infrastructure',
+      urgency: 'critical',
+      owner: 'Test Lead',
+      createdDate: '2026-11-08',
+      approved: false,
+      rejected: false,
+      conflictDetails: {
+        sourceA: { name: 'Doc A', claim: 'Claim A', reference: 'Ref A' },
+        sourceB: { name: 'Doc B', claim: 'Claim B', reference: 'Ref B' },
+      },
+      citations: [],
+    },
+  ],
+};
+
 // Helper to create clean test repository
 function createTestRepo() {
   if (fs.existsSync(TEST_STORAGE_DIR)) {
@@ -25,26 +102,26 @@ function cleanupTestRepo() {
 test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
   t.after(cleanupTestRepo);
 
-  await t.test('Scenario A & F: New anonymous workspace initializes preloaded Project Titan demo', async () => {
+  await t.test('Scenario A & F: New anonymous workspace initializes clean empty workspace', async () => {
     const repo = createTestRepo();
     const workspaceId = 'ws_anon_visitor_001';
 
     const project = await repo.createWorkspace(workspaceId);
     assert.ok(project, 'Project must be created');
-    assert.strictEqual(project.id, 'proj-titan-001');
-    assert.strictEqual(project.name, 'Project Titan Handover');
-    assert.ok(project.findings.length >= 10, 'Must have pre-seeded findings');
-    assert.ok(project.sources.length >= 4, 'Must have pre-seeded sources');
+    assert.strictEqual(project.id, 'proj-default-001');
+    assert.strictEqual(project.name, 'Knowledge Handover Workspace');
+    assert.strictEqual(project.findings.length, 0, 'Clean workspace must start with 0 findings');
+    assert.strictEqual(project.sources.length, 0, 'Clean workspace must start with 0 sources');
   });
 
   await t.test('Scenario B: Finding approval persists across fresh repository read', async () => {
     const repo = createTestRepo();
     const workspaceId = 'ws_anon_visitor_002';
-    await repo.createWorkspace(workspaceId);
+    await repo.createWorkspace(workspaceId, TEST_SEED_PROJECT);
 
-    // Target an unapproved finding
-    const targetFindingId = 'FIND-DEC-04'; // Cache Strategy Conflict
-    const reviewerNotes = 'Lead Architect human verification approved during audit.';
+    // Target finding FIND-DEC-01
+    const targetFindingId = 'FIND-DEC-01';
+    const reviewerNotes = 'Human reviewer verification approved during test run.';
 
     await repo.approveFinding(workspaceId, targetFindingId, reviewerNotes);
 
@@ -63,7 +140,7 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
   await t.test('Scenario C: Finding edit persists across fresh repository read', async () => {
     const repo = createTestRepo();
     const workspaceId = 'ws_anon_visitor_003';
-    await repo.createWorkspace(workspaceId);
+    await repo.createWorkspace(workspaceId, TEST_SEED_PROJECT);
 
     const targetFindingId = 'FIND-DEC-01';
     const newTitle = 'Updated PostgreSQL Cluster Migration Decision';
@@ -114,7 +191,7 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
   await t.test('Scenario E: Conflict resolution and handover certification persist', async () => {
     const repo = createTestRepo();
     const workspaceId = 'ws_anon_visitor_005';
-    const project = await repo.createWorkspace(workspaceId);
+    await repo.createWorkspace(workspaceId, TEST_SEED_PROJECT);
 
     // Resolve the conflicting finding FIND-DEC-04
     await repo.resolveConflict(
@@ -133,7 +210,7 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
     }
 
     // Now certify the handover
-    const certified = await repo.certifyHandover(workspaceId, 'Elena Rostova & Marcus Vance');
+    const certified = await repo.certifyHandover(workspaceId, 'Samyak Gedam & Sanshrey Sanagar');
     assert.strictEqual(certified.handoverCertified, true, 'Handover must be marked certified');
     assert.ok(certified.certificationHash.startsWith('SHA256:'), 'Certification hash must exist');
 
@@ -142,7 +219,7 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
     const reloaded = await freshRepo.getWorkspace(workspaceId);
 
     assert.strictEqual(reloaded.handoverCertified, true, 'Certification status must persist on reload');
-    assert.strictEqual(reloaded.certifiedBy, 'Elena Rostova & Marcus Vance');
+    assert.strictEqual(reloaded.certifiedBy, 'Samyak Gedam & Sanshrey Sanagar');
     assert.strictEqual(reloaded.certificationHash, certified.certificationHash);
   });
 
@@ -151,8 +228,8 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
     const workspaceA = 'ws_anon_user_alpha';
     const workspaceB = 'ws_anon_user_beta';
 
-    await repo.createWorkspace(workspaceA);
-    await repo.createWorkspace(workspaceB);
+    await repo.createWorkspace(workspaceA, TEST_SEED_PROJECT);
+    await repo.createWorkspace(workspaceB, TEST_SEED_PROJECT);
 
     // Mutate Workspace A: approve finding FIND-DEC-04, edit project title
     await repo.approveFinding(workspaceA, 'FIND-DEC-04', 'Reviewed only in Alpha');
@@ -173,23 +250,25 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
     assert.notStrictEqual(finding001InB.title, 'Alpha Custom Title', 'Workspace B must not be polluted by A');
   });
 
-  await t.test('Scenario G: Reset workspace restores clean initial demo data', async () => {
+  await t.test('Scenario G: Reset workspace restores clean initial empty data', async () => {
     const repo = createTestRepo();
     const workspaceId = 'ws_anon_reset_test';
-    await repo.createWorkspace(workspaceId);
+    await repo.createWorkspace(workspaceId, TEST_SEED_PROJECT);
 
     // Mutate finding
     await repo.approveFinding(workspaceId, 'FIND-DEC-04', 'Mutated');
     const mutated = await repo.getWorkspace(workspaceId);
     assert.strictEqual(mutated.findings.find((f) => f.id === 'FIND-DEC-04').approved, true);
 
-    // Reset
+    // Reset workspace
     const reset = await repo.resetWorkspace(workspaceId);
-    assert.strictEqual(reset.findings.find((f) => f.id === 'FIND-DEC-04').approved, false, 'Reset must restore unapproved state');
+    assert.strictEqual(reset.findings.length, 0, 'Reset must restore clean empty findings');
+    assert.strictEqual(reset.sources.length, 0, 'Reset must restore clean empty sources');
 
-    // Reload
+    // Reload from storage
     const fresh = await repo.getWorkspace(workspaceId);
-    assert.strictEqual(fresh.findings.find((f) => f.id === 'FIND-DEC-04').approved, false);
+    assert.strictEqual(fresh.findings.length, 0);
+    assert.strictEqual(fresh.sources.length, 0);
   });
 
   await t.test('Security: Workspace ID validation strictly prevents path traversal and invalid characters', async () => {
@@ -208,9 +287,9 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
   await t.test('Phase A Gate: Persistence prevents handover certification if blockers exist', async () => {
     const repo = createTestRepo();
     const workspaceId = 'ws_anon_blocked_cert';
-    await repo.createWorkspace(workspaceId);
+    await repo.createWorkspace(workspaceId, TEST_SEED_PROJECT);
 
-    // Initial project has unresolved conflict (FIND-009) and unreviewed items
+    // TEST_SEED_PROJECT has unresolved conflict FIND-DEC-04 and unapproved FIND-DEC-01
     await assert.rejects(
       async () => {
         await repo.certifyHandover(workspaceId, 'Signer');

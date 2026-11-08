@@ -72,25 +72,21 @@ export function WorkspaceView() {
           {/* Action Group */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-space-sm self-start xl:self-center">
             <button
-              onClick={() => runAiSync()}
-              disabled={isSyncing}
-              className="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-5 py-2.5 rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm active:scale-[0.98] disabled:opacity-60"
+              onClick={() => setActiveView('analysis')}
+              className="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-5 py-2.5 rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm active:scale-[0.98]"
               id="reanalyze-btn"
             >
-              <span
-                className={`material-symbols-outlined text-[20px] ${isSyncing ? 'animate-spin' : ''}`}
-                id="ai-icon"
-              >
-                bolt
+              <span className="material-symbols-outlined text-[20px]" id="ai-icon">
+                auto_awesome
               </span>
-              <span>{isSyncing ? 'Re-analysing...' : 'Re-analyse with AI'}</span>
+              <span>AI Analysis</span>
             </button>
             <button
-              onClick={() => setActiveView('handover')}
+              onClick={() => setActiveView('sources')}
               className="inline-flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface px-4 py-2.5 rounded-lg font-headline-sm text-headline-sm border border-outline-variant/30 transition-all"
             >
-              <span className="material-symbols-outlined text-[20px]">file_download</span>
-              <span>Export Report</span>
+              <span className="material-symbols-outlined text-[20px]">upload_file</span>
+              <span>Manage Sources</span>
             </button>
           </div>
         </div>
@@ -100,20 +96,47 @@ export function WorkspaceView() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div className="flex flex-col">
               <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">
-                Stakeholder Transition Pod
+                Project Team &amp; Stewards
               </span>
               <span className="font-body-sm text-body-sm text-on-surface-variant">
-                Ownership transfer from outgoing architect to incoming domain stewards
+                Team members and transition leads responsible for this handover
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs text-outline">
               <span className="w-2 h-2 rounded-full bg-primary"></span>
-              <span>All 4 stakeholders verified</span>
+              <span>
+                {project.stakeholders.length > 0
+                  ? `${project.stakeholders.length} stakeholder(s) registered`
+                  : 'Handover Lead configured'}
+              </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
-            {project.stakeholders.map((s) => (
+          {project.stakeholders.length === 0 ? (
+            <div className="p-space-md rounded-lg bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src={project.lead.avatar}
+                  alt={project.lead.name}
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30 shrink-0"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-label-md text-label-md text-on-surface font-semibold">
+                      {project.lead.name}
+                    </span>
+                    <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.2 rounded-full font-bold">
+                      {project.lead.role}
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5">{project.lead.transitionNotes}</p>
+                </div>
+              </div>
+              <span className="text-xs text-outline font-mono hidden sm:inline">{project.lead.email}</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+              {project.stakeholders.map((s) => (
               <div
                 key={s.id}
                 className={`p-space-sm rounded-lg border transition-all flex items-start gap-space-xs ${
@@ -146,8 +169,9 @@ export function WorkspaceView() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        )}
+      </div>
+    </section>
 
       {/* WORKSPACE FINDINGS EXPLORER */}
       <section className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-outline-variant/30 flex flex-col gap-space-md">
@@ -201,8 +225,24 @@ export function WorkspaceView() {
         </div>
 
         {/* Findings List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
-          {filteredFindings.map((finding) => (
+        {filteredFindings.length === 0 ? (
+          <div className="bg-surface-container-low/50 rounded-xl p-space-2xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-[32px] text-outline">search_off</span>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No findings recorded yet</h4>
+            <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
+              Upload project documents in Sources and extract knowledge to discover decisions, operational tasks, risks, and dependencies.
+            </p>
+            <button
+              onClick={() => setActiveView('sources')}
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">upload_file</span>
+              <span>Upload Project Documents</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+            {filteredFindings.map((finding) => (
             <div
               key={finding.id}
               className="bg-surface-container-low/50 hover:bg-surface-container-low rounded-xl p-space-md border border-outline-variant/30 transition-all flex flex-col justify-between group"
@@ -276,7 +316,8 @@ export function WorkspaceView() {
             </div>
           ))}
         </div>
-      </section>
-    </div>
-  );
+      )}
+    </section>
+  </div>
+);
 }
