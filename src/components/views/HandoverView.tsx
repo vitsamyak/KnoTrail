@@ -65,6 +65,41 @@ export function HandoverView() {
     }
   };
 
+  // Empty Handover state when no findings exist yet
+  if (stats.totalFindings === 0) {
+    return (
+      <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
+        <section className="bg-surface-container-lowest rounded-xl p-space-2xl shadow-sm border border-outline-variant/30 flex flex-col items-center text-center max-w-2xl mx-auto my-space-xl">
+          <div className="w-16 h-16 rounded-2xl bg-surface-container-low text-primary flex items-center justify-center mb-space-md shadow-xs">
+            <span className="material-symbols-outlined text-[36px]">description</span>
+          </div>
+          <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight">
+            No approved handover available.
+          </h1>
+          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md mt-2 leading-relaxed">
+            Upload project documents, extract knowledge with AI, and complete review in the Review Center to generate a certified handover package.
+          </p>
+          <div className="flex items-center gap-space-sm mt-space-lg">
+            <button
+              onClick={() => setActiveView('sources')}
+              className="inline-flex items-center gap-2 px-space-lg py-space-sm bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm shadow-sm transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">upload_file</span>
+              <span>Upload Documents</span>
+            </button>
+            <button
+              onClick={() => setActiveView('review')}
+              className="inline-flex items-center gap-2 px-space-md py-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-md text-label-md transition-colors border border-outline-variant/30"
+            >
+              <span className="material-symbols-outlined text-[18px]">rule</span>
+              <span>Review Center</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   // GATING CONDITION: Handover generation must be blocked until all required findings are reviewed and critical conflicts are resolved.
   if (stats.isHandoverBlocked) {
     return (

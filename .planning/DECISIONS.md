@@ -346,6 +346,47 @@ Following the successful completion of Phase D (Real AI Knowledge Extraction & E
 - 46/46 automated test scenarios pass cleanly with isolated fixtures.
 - Next.js production build compiles with zero errors (13 API endpoints + 6 static pages).
 
+---
+
+## ADR-012: Complete Runtime Data Purge, Cache Migration, and Empty Workspace Architecture
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Implemented
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+Following ADR-011, runtime user workspaces created prior to the cleanup still contained persisted JSON files holding fictional "Project Titan Handover" records, fake stakeholders (Elena Rostova, Marcus Vance, Sophia Chen, David Miller), 6 fake connected sources, and 12 synthetic findings. In addition, browser `localStorage` retained legacy cached payloads (`knotrail_cache_`), and user-facing headers and sidebars displayed "Demo Mode" and fictional profile cards.
+
+### Decision
+1. **Server Storage Sanitization & Disk Purge**:
+   - Implemented automated `sanitizeProjectData` in `storage.ts` that strips all fake sources (`src-gh-01`, `src-lin-02`, `src-slk-03`, `src-not-04`, `src-pd-05`, `src-jira-06`), fictional stakeholders, and synthetic findings on read and write.
+   - Reset the active visitor workspace file `.data/workspaces/ws_anon_mw7gr569_lmoh1q.json` to clean `EMPTY_PROJECT_DATA`.
+   - Copied sample testing document `KnoTrail_Source_Ingestion_Test_Document.pdf` to `public/samples/` for on-demand evaluation.
+2. **Client-Side Cache Migration**:
+   - Bumped cache prefix from `knotrail_cache_` to `knotrail_cache_v4_` in `ProjectContext.tsx`.
+   - On hydration, automatically purges all legacy `knotrail_cache_` keys and discards any payload containing fictional Titan or Elena records.
+3. **Interactive Project Creation**:
+   - Implemented `CreateProjectModal` accessible globally from the Header, Dashboard, and Projects views.
+   - Provides fields for Project Name (required), Project Description, Domain/Category, Target Handover Date, and Handover Lead Name & Role.
+   - Saves to persistent server storage via `POST /api/workspaces` and opens the workspace without authentication.
+4. **Exact Empty State Copy Across All 8 Screens**:
+   - **Dashboard**: Heading: "Your Project Overview", Description: "Upload your project documents to discover important decisions, pending tasks, risks and dependencies.", 0-valued metrics, buttons "Create Project" & "Upload Documents".
+   - **Projects**: Heading: "No projects yet.", Description: "Create your first project to start organising and preserving project knowledge.", button "Create Project".
+   - **Sources**: Heading: "No project documents uploaded yet.", Buttons: Upload PDF, Upload TXT, Upload Markdown, Add Project Notes.
+   - **AI Analysis**: Heading: "No analysis available.", Description: "Upload project documents and run AI analysis to discover important project information."
+   - **Evidence Explorer**: Heading: "No evidence available yet."
+   - **Review Center**: Heading: "No findings awaiting review."
+   - **Handover**: Heading: "No approved handover available."
+5. **Header & Sidebar Modernization**:
+   - Removed "Demo Mode (Zero-Auth Open Access)" badge.
+   - Replaced Elena Rostova profile with neutral "Your Workspace" anonymous session indicator and quick actions (Create New Project, Reset Workspace, Back to Landing).
+   - Replaced Active Sprint card with "Workspace Ready" / active project name.
+
+### Consequences
+- Active browser sessions immediately refresh to clean, honest empty states with 0 fake stakeholders, 0 fake sources, and 0 fake findings.
+- Zero-auth incognito invariant strictly preserved.
+- All 46 automated tests pass and production build succeeds with 0 errors.
+
 
 
 

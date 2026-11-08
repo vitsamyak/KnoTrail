@@ -170,7 +170,7 @@ export function EvidenceView() {
             <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-[28px]">fact_check</span>
             </div>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">No evidence records yet</h4>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No evidence available yet.</h4>
             <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
               Upload project documents and run AI extraction to view source citations grounded with exact quotes and page/line references.
             </p>

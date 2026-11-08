@@ -49,6 +49,17 @@ interface ProjectContextType {
   resolveConflict: (id: string, resolution: string, resolvedBy: string) => Promise<void>;
   certifyHandover: (signerName: string) => Promise<void>;
   resetDemoData: () => Promise<void>;
+  createProject: (data: {
+    name: string;
+    description?: string;
+    category?: string;
+    targetExitDate?: string;
+    leadName?: string;
+    leadRole?: string;
+  }) => Promise<void>;
+  isProjectCreated: boolean;
+  showCreateProjectModal: boolean;
+  setShowCreateProjectModal: (show: boolean) => void;
   stats: {
     totalSources: number;
     totalFindings: number;
@@ -77,7 +88,7 @@ interface ProjectContextType {
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 const WORKSPACE_COOKIE_KEY = 'knotrail_workspace_id';
-const CACHE_PREFIX = 'knotrail_cache_';
+const CACHE_PREFIX = 'knotrail_cache_v4_';
 
 function generateAnonymousWorkspaceId(): string {
   const timestamp = Date.now().toString(36);
@@ -93,6 +104,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [evidenceFilter, setEvidenceFilter] = useState<'ALL' | EvidenceStatus>('ALL');
@@ -127,6 +139,20 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Purge legacy cache keys or any cached data with fictional Titan records
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('knotrail_cache_') && !key.startsWith(CACHE_PREFIX)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {
+      console.warn('Cache purge notice:', e);
+    }
+
     // 1. Determine workspace ID from URL params or localStorage
     const params = new URLSearchParams(window.location.search);
     let wsId = params.get('ws') || localStorage.getItem(WORKSPACE_COOKIE_KEY);
@@ -146,7 +172,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (cachedData) {
       try {
         const parsed = JSON.parse(cachedData);
-        if (parsed && parsed.id) {
+        const isFictional =
+          parsed?.name === 'Project Titan Handover' ||
+          parsed?.name?.includes('Titan') ||
+          parsed?.lead?.name === 'Elena Rostova' ||
+          parsed?.stakeholders?.some((s: any) => s.name === 'Elena Rostova' || s.name === 'Marcus Vance');
+        if (isFictional) {
+          localStorage.removeItem(`${CACHE_PREFIX}${wsId}`);
+        } else if (parsed && parsed.id) {
           setProject(parsed);
           setIsLoading(false);
         }
@@ -769,6 +802,79 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Create a new project workspace and persist to server
+  const createProject = async (data: {
+    name: string;
+    description?: string;
+    category?: string;
+    targetExitDate?: string;
+    leadName?: string;
+    leadRole?: string;
+  }) => {
+    setIsSaving(true);
+    setSaveError(null);
+
+    const updatedProject: ProjectData = {
+      ...project,
+      id: `proj-${Date.now().toString(36)}`,
+      name: data.name.trim(),
+      code:
+        data.name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, 'X') +
+        '-' +
+        Math.floor(100 + Math.random() * 900),
+      description: data.description?.trim() || `Knowledge handover workspace for ${data.name.trim()}.`,
+      targetExitDate: data.targetExitDate?.trim() || 'Flexible',
+      version: 'v1.0',
+      lastAnalysed: 'Never',
+      executiveSummary: `Project ${data.name.trim()} initialized. Upload documents to extract operational decisions, pending tasks, risks, and dependencies.`,
+      isCreated: true,
+      category: data.category || 'Software Engineering',
+      lead: {
+        id: `lead-${Date.now().toString(36)}`,
+        name: data.leadName?.trim() || 'Project Contributor',
+        role: data.leadRole?.trim() || 'Handover Lead',
+        email: `${(data.leadName || 'contributor').toLowerCase().replace(/\s+/g, '.')}@knotrail.internal`,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        outgoing: true,
+        transitionNotes: 'Lead contributor.',
+      },
+      stakeholders: [],
+      sources: project.sources || [],
+      findings: project.findings || [],
+      handoverCertified: false,
+      certificationHash: '',
+    };
+
+    setProject(updatedProject);
+    persistToLocalCache(workspaceId, updatedProject);
+
+    try {
+      const res = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId, project: updatedProject }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const respData = await res.json();
+      if (respData?.project) {
+        setProject(respData.project);
+        persistToLocalCache(workspaceId, respData.project);
+      }
+    } catch (err: any) {
+      console.warn('Backend sync error for createProject:', err);
+      setSaveError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isProjectCreated = Boolean(
+    project.isCreated ||
+      (project.name &&
+        project.name !== 'Knowledge Handover Workspace' &&
+        project.id !== 'proj-default-001')
+  );
+
   // Calculate live statistics
   const totalSources = project.sources.length;
   const totalFindings = project.findings.length;
@@ -830,6 +936,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         resolveConflict,
         certifyHandover,
         resetDemoData,
+        createProject,
+        isProjectCreated,
+        showCreateProjectModal,
+        setShowCreateProjectModal,
         stats: {
           totalSources,
           totalFindings,

@@ -34,6 +34,56 @@ export interface StorageRepository {
   listWorkspaces(): Promise<string[]>;
 }
 
+export function sanitizeProjectData(project: ProjectData): ProjectData {
+  if (!project) return project;
+  const p = { ...project };
+
+  // 1. Clean Project Name & Description if fictional Titan demo
+  if (p.name === 'Project Titan Handover' || p.name?.includes('Titan')) {
+    p.name = 'Knowledge Handover Workspace';
+    p.code = 'KNO-001';
+    p.description = 'Upload project documents (PDF, TXT, Markdown) to extract important decisions, pending tasks, risks, and dependencies with verified source evidence.';
+  }
+
+  // 2. Clean Lead if fictional Elena Rostova
+  if (p.lead?.name === 'Elena Rostova' || p.lead?.email?.includes('titan.internal')) {
+    p.lead = {
+      id: 'user-lead-01',
+      name: 'Project Contributor',
+      role: 'Handover Lead',
+      email: 'contributor@knotrail.internal',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      outgoing: true,
+      transitionNotes: 'Active handover contributor.',
+    };
+  }
+
+  // 3. Purge Fictional Stakeholders
+  p.stakeholders = (p.stakeholders || []).filter(
+    (s) =>
+      !['Elena Rostova', 'Marcus Vance', 'Sophia Chen', 'David Miller'].includes(s.name) &&
+      !s.email?.includes('titan.internal')
+  );
+
+  // 4. Purge Fake Sources (keep ONLY real uploaded sources or user-added non-synthetic notes)
+  const fakeSourceIds = new Set(['src-gh-01', 'src-lin-02', 'src-slk-03', 'src-not-04', 'src-pd-05', 'src-jira-06']);
+  p.sources = (p.sources || []).filter((s) => {
+    if (fakeSourceIds.has(s.id)) return false;
+    if (s.name?.toLowerCase().includes('titan')) return false;
+    if (s.privacyLevel === 'SYNTHETIC_DEMO') return false;
+    return true;
+  });
+
+  // 5. Purge Fake Findings (findings citing fake sources or authored by fictional members)
+  p.findings = (p.findings || []).filter((f) => {
+    if (['Elena Rostova', 'Marcus Vance', 'Sophia Chen', 'David Miller'].includes(f.owner)) return false;
+    if (f.citations?.some((c) => fakeSourceIds.has(c.sourceId) || c.sourceName?.toLowerCase().includes('titan'))) return false;
+    return true;
+  });
+
+  return p;
+}
+
 /**
  * Durable server-side repository for persistent workspace storage.
  * Stores data in JSON files with atomic writes, ensuring durability across server restarts.
@@ -72,7 +122,8 @@ export class DurableFileRepository implements StorageRepository {
     try {
       const content = await fs.promises.readFile(filePath, 'utf-8');
       const parsed = JSON.parse(content) as WorkspaceRecord;
-      return parsed.project || null;
+      if (!parsed.project) return null;
+      return sanitizeProjectData(parsed.project);
     } catch (err) {
       console.error(`Error reading workspace file for ${workspaceId}:`, err);
       return null;

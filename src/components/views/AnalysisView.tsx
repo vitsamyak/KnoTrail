@@ -398,11 +398,9 @@ GEMINI_API_KEY=your_gemini_api_key_here
             <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-[28px]">auto_awesome</span>
             </div>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">No findings extracted yet</h4>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No analysis available.</h4>
             <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
-              {eligibleSources.length > 0
-                ? 'Select uploaded documents above and click "Extract Knowledge with AI" to identify decisions, tasks, and risks.'
-                : 'Upload documents in Sources first, then run AI extraction to discover decisions, tasks, and risks.'}
+              Upload project documents and run AI analysis to discover important project information.
             </p>
             {eligibleSources.length > 0 ? (
               <button

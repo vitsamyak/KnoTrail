@@ -16,6 +16,7 @@ export const EMPTY_PROJECT_DATA: ProjectData = {
   executiveSummary: 'No project documents uploaded yet. Upload project specifications, meeting notes, or task records in the Sources tab to begin extracting project knowledge.',
   handoverCertified: false,
   certificationHash: '',
+  isCreated: false,
   lead: {
     id: 'user-lead-01',
     name: 'Project Contributor',
@@ -50,6 +51,7 @@ export const TEST_FIXTURE_PROJECT_DATA: ProjectData = {
   executiveSummary: 'Test fixture summary for verifying storage mutations and conflict gates.',
   handoverCertified: false,
   certificationHash: '',
+  isCreated: false,
   lead: {
     id: 'test-lead-01',
     name: 'Test Lead',

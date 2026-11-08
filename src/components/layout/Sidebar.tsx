@@ -12,7 +12,7 @@ interface NavItem {
 }
 
 export function Sidebar() {
-  const { activeView, setActiveView, stats, project, resetDemoData } = useProject();
+  const { activeView, setActiveView, stats, project, resetDemoData, isProjectCreated } = useProject();
 
   const navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
@@ -98,12 +98,12 @@ export function Sidebar() {
         <div className="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs border border-outline-variant/30">
           <div className="flex items-center justify-between">
             <span className="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">
-              Active Sprint
+              {isProjectCreated ? 'Active Handover' : 'Workspace Ready'}
             </span>
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           </div>
-          <span className="font-body-sm text-body-sm text-on-surface font-medium truncate" title={project.name}>
-            {project.name}
+          <span className="font-body-sm text-body-sm text-on-surface font-medium truncate" title={isProjectCreated ? project.name : 'Workspace Ready'}>
+            {isProjectCreated ? project.name : 'Workspace Ready'}
           </span>
           <div className="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden">
             <div

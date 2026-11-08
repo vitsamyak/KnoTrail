@@ -106,6 +106,8 @@ export interface ProjectData {
   certifiedDate?: string;
   certifiedBy?: string;
   executiveSummary: string;
+  isCreated?: boolean;
+  category?: string;
 }
 
 export type ActiveView = 

@@ -14,11 +14,14 @@ export function Header() {
     runAiSync,
     isSaving,
     workspaceId,
+    resetDemoData,
+    isProjectCreated,
+    setShowCreateProjectModal,
   } = useProject();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const pendingReviewCount = stats.totalFindings - stats.approvedCount;
+  const pendingReviewCount = stats.unreviewedCount;
 
   return (
     <header className="fixed top-4 left-[18rem] right-4 h-16 bg-surface-container-lowest/95 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] border border-outline-variant/30 z-40 flex items-center justify-between px-space-lg transition-all">
@@ -32,7 +35,7 @@ export function Header() {
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           <span className="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[200px]">
-            {project.name}
+            {isProjectCreated ? project.name : 'Your Workspace'}
           </span>
           <span className="material-symbols-outlined text-[18px] text-outline group-hover:text-primary transition-colors">
             folder_open
@@ -60,7 +63,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* Right Group: Public Demo Indicator, Sync, Notifications, Profile */}
+      {/* Right Group: Sync, Notifications, Workspace Profile */}
       <div className="flex items-center gap-space-md">
         {/* Sync Button */}
         <button
@@ -78,12 +81,6 @@ export function Header() {
           </span>
           <span>{isSyncing ? 'Syncing...' : 'Sync Workspace'}</span>
         </button>
-
-        {/* Frictionless Zero-Auth Demo Badge */}
-        <div className="hidden md:flex items-center gap-space-2xs bg-secondary-container/90 text-on-secondary-container px-space-sm py-1 rounded-full font-label-sm text-label-sm font-medium border border-primary/10 shadow-xs">
-          <span className="material-symbols-outlined text-[14px]">public</span>
-          <span>Demo Mode (Zero-Auth Open Access)</span>
-        </div>
 
         {/* Persistence & Auto-Save Telemetry Badge */}
         <div
@@ -165,25 +162,22 @@ export function Header() {
           )}
         </div>
 
-        {/* Profile / Contributor Role Indicator */}
+        {/* Workspace Identity & Actions */}
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-space-xs pl-space-xs text-left group cursor-pointer focus:outline-none"
+            aria-label="Workspace Options"
           >
-            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/60 transition-all bg-surface-container">
-              <img
-                src={project.lead.avatar}
-                alt={project.lead.name}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/60 transition-all">
+              <span className="material-symbols-outlined text-[18px]">account_circle</span>
             </div>
             <div className="hidden md:flex flex-col text-left">
               <span className="font-label-md text-label-md text-on-surface font-semibold leading-tight group-hover:text-primary transition-colors">
-                {project.lead.name}
+                Your Workspace
               </span>
               <span className="font-label-sm text-label-sm text-outline leading-tight">
-                {project.lead.role.split('&')[0].trim()}
+                {isProjectCreated ? project.name : 'Handover Ready'}
               </span>
             </div>
             <span className="material-symbols-outlined text-[16px] text-outline hidden md:inline">
@@ -194,36 +188,56 @@ export function Header() {
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-72 bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.12)] border border-outline-variant/40 p-space-md z-50 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center gap-space-sm pb-space-sm border-b border-outline-variant/30">
-                <img
-                  src={project.lead.avatar}
-                  alt={project.lead.name}
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30"
-                />
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[24px]">shield_person</span>
+                </div>
                 <div className="flex flex-col">
                   <span className="font-headline-sm text-headline-sm text-on-surface font-semibold leading-tight">
-                    {project.lead.name}
+                    Your Workspace
                   </span>
-                  <span className="text-xs text-outline">{project.lead.email}</span>
+                  <span className="text-xs text-outline font-mono truncate max-w-[180px]">{workspaceId}</span>
                 </div>
               </div>
               <div className="pt-space-xs pb-1 text-xs text-on-surface-variant space-y-1">
                 <p className="font-medium text-secondary">
-                  Role: <strong>{project.lead.role}</strong>
+                  Zero-Auth Private Session
                 </p>
                 <p className="text-outline">
-                  Judges and reviewers have full access to review, edit, and certify findings. No login required.
+                  Judges and reviewers have full access to create projects, upload documents, review findings, and certify handovers with zero login.
                 </p>
               </div>
-              <div className="pt-2 border-t border-outline-variant/30">
+              <div className="pt-2 border-t border-outline-variant/30 flex flex-col gap-1.5">
+                <button
+                  onClick={() => {
+                    setShowCreateProjectModal(true);
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full py-1 text-xs font-medium text-primary hover:underline text-left flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[15px]">create_new_folder</span>
+                  <span>Create New Project</span>
+                </button>
                 <button
                   onClick={() => {
                     setActiveView('landing');
                     setShowProfileMenu(false);
                   }}
-                  className="w-full py-1 text-xs font-medium text-primary hover:underline text-left flex items-center gap-1"
+                  className="w-full py-1 text-xs font-medium text-on-surface-variant hover:text-on-surface hover:underline text-left flex items-center gap-1.5"
                 >
-                  <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                  <span className="material-symbols-outlined text-[15px]">arrow_back</span>
                   <span>Back to Product Landing Page</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm('Reset workspace to clean empty state?')) {
+                      resetDemoData();
+                      setShowProfileMenu(false);
+                    }
+                  }}
+                  className="w-full py-1 text-xs font-medium text-error hover:underline text-left flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[15px]">restart_alt</span>
+                  <span>Reset Workspace Data</span>
                 </button>
               </div>
             </div>

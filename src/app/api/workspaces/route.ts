@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { workspaceId, initialProject } = body;
+    const { workspaceId, initialProject, project: incomingProject } = body;
 
     if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
       return NextResponse.json(
@@ -51,15 +51,20 @@ export async function POST(request: NextRequest) {
     }
 
     const storage = getStorage();
-    const project = await storage.createWorkspace(workspaceId, initialProject);
+    let project;
+    if (incomingProject) {
+      project = await storage.saveProject(workspaceId, incomingProject);
+    } else {
+      project = await storage.createWorkspace(workspaceId, initialProject);
+    }
 
     return NextResponse.json(
       {
         workspaceId,
         project,
-        status: 'created',
+        status: incomingProject ? 'saved' : 'created',
       },
-      { status: 201 }
+      { status: incomingProject ? 200 : 201 }
     );
   } catch (error: any) {
     console.error('API Error in POST /api/workspaces:', error);

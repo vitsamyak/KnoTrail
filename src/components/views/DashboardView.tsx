@@ -4,7 +4,16 @@ import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 
 export function DashboardView() {
-  const { project, stats, setActiveView, runAiSync, isSyncing } = useProject();
+  const {
+    project,
+    stats,
+    setActiveView,
+    runAiSync,
+    isSyncing,
+    isProjectCreated,
+    showCreateProjectModal,
+    setShowCreateProjectModal,
+  } = useProject();
 
   const hasFindings = project.findings.length > 0;
   const hasSources = project.sources.length > 0;
@@ -17,19 +26,27 @@ export function DashboardView() {
           <div className="flex items-center gap-space-xs">
             <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-primary animate-ping"></span>
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">
-              Project Handover • {project.name}
+              {isProjectCreated ? `Project Handover • ${project.name}` : 'Knowledge Handover Workspace'}
             </span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-            Project Overview
+            Your Project Overview
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Track uploaded sources, extracted knowledge, review progress, and handover readiness.
+            Upload your project documents to discover important decisions, pending tasks, risks and dependencies.
           </p>
         </div>
 
         {/* Action Group */}
         <div className="flex items-center gap-space-xs flex-wrap">
+          <button
+            onClick={() => setShowCreateProjectModal(true)}
+            className="inline-flex items-center gap-space-2xs px-space-md py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30"
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[18px]">create_new_folder</span>
+            <span>Create Project</span>
+          </button>
           <button
             onClick={() => setActiveView('sources')}
             className="inline-flex items-center gap-space-2xs px-space-md py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm"
@@ -207,21 +224,22 @@ export function DashboardView() {
             Start Your Knowledge Handover
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-lg leading-relaxed">
-            No project documents or findings yet. Upload your team&apos;s documents to start discovering decisions, pending tasks, risks, and dependencies.
+            Upload your project documents to discover important decisions, pending tasks, risks and dependencies.
           </p>
           <div className="flex items-center gap-space-sm mt-space-lg">
+            <button
+              onClick={() => setShowCreateProjectModal(true)}
+              className="inline-flex items-center gap-2 px-space-md py-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-headline-sm text-headline-sm transition-colors border border-outline-variant/30"
+            >
+              <span className="material-symbols-outlined text-[18px]">create_new_folder</span>
+              <span>Create Project</span>
+            </button>
             <button
               onClick={() => setActiveView('sources')}
               className="inline-flex items-center gap-2 px-space-lg py-space-sm bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm shadow-sm transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">upload_file</span>
               <span>Upload Documents</span>
-            </button>
-            <button
-              onClick={() => setActiveView('workspace')}
-              className="inline-flex items-center gap-2 px-space-md py-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-md text-label-md transition-colors"
-            >
-              <span>View Workspace</span>
             </button>
           </div>
         </div>

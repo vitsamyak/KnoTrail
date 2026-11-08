@@ -4,9 +4,18 @@ import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { CreateProjectModal } from '../modals/CreateProjectModal';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { activeView, setActiveView, isSyncing, syncProgress, syncStatusMessage } = useProject();
+  const {
+    activeView,
+    setActiveView,
+    isSyncing,
+    syncProgress,
+    syncStatusMessage,
+    showCreateProjectModal,
+    setShowCreateProjectModal,
+  } = useProject();
 
   // If on Landing page, render clean landing canvas without side rail
   if (activeView === 'landing') {
@@ -61,6 +70,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
+
+      {/* Global Create Project Modal */}
+      <CreateProjectModal
+        isOpen={showCreateProjectModal}
+        onClose={() => setShowCreateProjectModal(false)}
+        onSuccess={() => setActiveView('workspace')}
+      />
     </div>
   );
 }

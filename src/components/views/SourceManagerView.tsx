@@ -306,21 +306,52 @@ export function SourceManagerView() {
           <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px]">upload_file</span>
           </div>
-          <h4 className="font-headline-sm text-headline-sm text-on-surface">No documents uploaded yet</h4>
+          <h4 className="font-headline-sm text-headline-sm text-on-surface">No project documents uploaded yet.</h4>
           <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
             Upload your team&apos;s architecture documents, runbooks, or specifications in PDF, Markdown (.md), or plain text (.txt) format to begin extracting decisions, tasks, and risks.
           </p>
-          <button
-            onClick={() => {
-              setSelectedFiles([]);
-              setUploadResults([]);
-              setShowUploadModal(true);
-            }}
-            className="mt-2 inline-flex items-center gap-2 px-space-lg py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px]">upload_file</span>
-            <span>Upload Documents</span>
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+            <button
+              onClick={() => {
+                setSelectedFiles([]);
+                setUploadResults([]);
+                setShowUploadModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold shadow-sm transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              <span>Upload PDF</span>
+            </button>
+            <button
+              onClick={() => {
+                setSelectedFiles([]);
+                setUploadResults([]);
+                setShowUploadModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-outline-variant/30 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">description</span>
+              <span>Upload TXT</span>
+            </button>
+            <button
+              onClick={() => {
+                setSelectedFiles([]);
+                setUploadResults([]);
+                setShowUploadModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-outline-variant/30 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">markdown</span>
+              <span>Upload Markdown</span>
+            </button>
+            <button
+              onClick={() => setShowPasteModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-outline-variant/30 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">edit_note</span>
+              <span>Add Project Notes</span>
+            </button>
+          </div>
         </div>
       )}
 

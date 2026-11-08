@@ -161,7 +161,7 @@ export function ReviewView() {
             <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-[28px]">rule</span>
             </div>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">No findings to review yet</h4>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">No findings awaiting review.</h4>
             <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
               Upload project documents and run AI extraction to populate the Review Center with decisions, tasks, and risks for human approval.
             </p>
