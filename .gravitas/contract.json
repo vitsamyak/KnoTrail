@@ -1,0 +1,25 @@
+{
+  "mode": "plan",
+  "objective": "Initialize KnoTrail project memory, GSD structure, and development governance",
+  "acceptance_criteria": [
+    "Complete GSD project memory files created: PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, DECISIONS.md, OPEN_QUESTIONS.md, TEAM.md",
+    "GSD health diagnostics pass with 0 errors and valid consistency",
+    "Persistent session instructions configured in GEMINI.md",
+    "Original knowledge-handover problem statement preserved with explicit ADR-001 and OQ-001 for organizer email discrepancy",
+    "Strict 2-person team constraint and 72-hour timeline documented",
+    "No premature application code written"
+  ],
+  "non_goals": [
+    "Do not write frontend or backend code",
+    "Do not install application dependencies prematurely",
+    "Do not pivot to brand-governance product"
+  ],
+  "risk": "low",
+  "budget": "eco",
+  "allowed_write_scope": [
+    ".planning/**",
+    "GEMINI.md",
+    ".gravitas/**"
+  ],
+  "verification": "targeted"
+}

@@ -1,0 +1,123 @@
+# Roadmap: KnoTrail
+
+## Overview
+
+KnoTrail is engineered across three major hackathon milestones:
+1. **Round 1 (Planning & Proposal)**: Conceptual proposal, evidence-linked handover architecture, editable Draw.io diagrams, and Round 2 qualification. [COMPLETED]
+2. **Round 2 (The Build — Current Milestone)**: 72-hour engineering sprint (8 Nov 2026 10:00 AM IST to 11 Nov 2026 10:00 AM IST) delivering an end-to-end, functional, permission-aware knowledge handover application testable standalone by hackathon judges. [ACTIVE]
+3. **Round 3 (Refinement & Final Delivery)**: Multi-workspace synchronization, live collaborative annotations, and real-time enterprise connectors (Slack, Jira, Linear). [PLANNED]
+
+## Phases
+
+- [ ] **Phase 1: Core Domain Models, Provenance Schema & Storage Foundation** - Define data schemas for knowledge nodes, evidence links, RBAC permissions, and local SQLite/vector storage.
+- [ ] **Phase 2: Multi-Source Ingestion & Extraction Pipeline** - Build parsers for Git history, Markdown documentation, task items, and technical decision records.
+- [ ] **Phase 3: Evidence Grounding, Conflict & Uncertainty Engine** - Implement cross-source verification, contradiction detection, and citation linking.
+- [ ] **Phase 4: Human Review, Correction & Handover Approval Workflow** - Construct the reviewer dashboard for inspecting, editing, and officially approving handovers.
+- [ ] **Phase 5: Handover Viewer, Incoming Member Explorer & Permission Filtering** - Create the interactive handover explorer with role-based redaction and export.
+- [ ] **Phase 6: End-to-End System Integration, Verification & Standalone Judge Packaging** - Wire all components into a seamless, self-contained deployment with demo sample data and full verification.
+
+## Phase Details
+
+### Phase 1: Core Domain Models, Provenance Schema & Storage Foundation
+**Goal**: Establish authoritative data schemas for reconstructed project state, evidence citations, RBAC security profiles, and local persistence.  
+**Depends on**: Nothing (first phase)  
+**Requirements**: INGEST-04, EVID-01, SEC-01  
+**Success Criteria** (what must be TRUE):
+  1. Typed data schemas exist for Knowledge Findings (Decisions, Tasks, Risks, Contacts, Next Actions).
+  2. Every Knowledge Finding entity strictly requires an immutable provenance citation schema (source, location, hash/sha, timestamp, clearance).
+  3. Relational storage (SQLite) models and vector embeddings storage are configured and testable.
+  4. RBAC role models (Admin/Reviewer, Incoming Member, Auditor) are defined with explicit read/review permissions.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01: Define domain models, provenance schemas, and security access tiers
+- [ ] 01-02: Setup local SQLite persistence, migrations, and vector storage integration
+
+### Phase 2: Multi-Source Ingestion & Extraction Pipeline
+**Goal**: Ingest heterogeneous project artifacts (Git repositories, Markdown notes, commit logs) and extract structured operational state.  
+**Depends on**: Phase 1  
+**Requirements**: INGEST-01, INGEST-02, INGEST-03, EXTRACT-01, EXTRACT-02, EXTRACT-03, EXTRACT-04  
+**Success Criteria** (what must be TRUE):
+  1. System parses raw Git commits and commit messages into activity timelines and contributor attribution.
+  2. System parses markdown documents, readmes, and meeting notes into discrete candidate findings.
+  3. Extractor isolates explicit architectural decisions and rationale from source texts.
+  4. Extractor detects unfinished tasks, open PR/issue items, technical risks, and project contacts with evidence coordinates.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01: Implement Git repository and document ingestion parsers with metadata preservation
+- [ ] 02-02: Build structured knowledge extraction pipelines for decisions, tasks, risks, and contacts
+
+### Phase 3: Evidence Grounding, Conflict & Uncertainty Engine
+**Goal**: Couple every extracted finding with immutable source proof, detect cross-source contradictions, and categorize confidence.  
+**Depends on**: Phase 2  
+**Requirements**: EVID-02, EVID-03, CONF-01, CONF-02, CONF-03  
+**Success Criteria** (what must be TRUE):
+  1. Every generated finding has a clickable link or exact coordinate to the supporting source snippet.
+  2. Contradictory statements between sources (e.g. outdated spec vs active code) are detected and flagged as CONFLICT.
+  3. Speculative or ambiguous statements are tagged with UNCERTAIN and rationale.
+  4. Critical gaps (e.g. key task without assigned owner, unverified decision) are listed as MISSING EVIDENCE.
+  5. Any finding with zero verifiable evidence is blocked from publication.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01: Implement evidence attachment engine and source-snippet resolver
+- [ ] 03-02: Build conflict detection, uncertainty scoring, and missing evidence register
+
+### Phase 4: Human Review, Correction & Handover Approval Workflow
+**Goal**: Provide a web interface for the departing member or team lead to review, edit, reject, and formally approve the handover package.  
+**Depends on**: Phase 3  
+**Requirements**: REV-01, REV-02, REV-03  
+**Success Criteria** (what must be TRUE):
+  1. Human reviewer can view all reconstructed findings organized into Decisions, Tasks, Risks, Contacts, and Next Actions.
+  2. Reviewer can edit summaries, override conflict flags, provide clarifying notes, or reject false findings.
+  3. An explicit "Approve Handover" action locks the package and transitions it from Draft to Approved.
+  4. System audit log records reviewer identity, modification history, and approval timestamp.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01: Build human review frontend interface and state management
+- [ ] 04-02: Implement review modification, annotation, and cryptographic/audit approval locks
+
+### Phase 5: Handover Viewer, Incoming Member Explorer & Permission Filtering
+**Goal**: Allow incoming team members to explore the approved handover package interactively while strictly enforcing permission boundaries.  
+**Depends on**: Phase 4  
+**Requirements**: HAND-01, HAND-02, HAND-03, SEC-02, SEC-03  
+**Success Criteria** (what must be TRUE):
+  1. Incoming team member can search and navigate approved decisions, tasks, risks, and contacts with source citations.
+  2. Permission-aware filter scrubs confidential sources/snippets when viewed by a role lacking clearance.
+  3. Export functionality produces structured JSON and readable markdown/PDF handover summaries.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 05-01: Build incoming member interactive handover explorer and topic search
+- [ ] 05-02: Enforce RBAC redaction engine and export generation (JSON/Markdown/PDF)
+
+### Phase 6: End-to-End System Integration, Verification & Standalone Judge Packaging
+**Goal**: Integrate all frontend and backend modules into a self-contained, turnkey application with demo scenarios for hackathon evaluation.  
+**Depends on**: Phase 5  
+**Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03  
+**Success Criteria** (what must be TRUE):
+  1. The complete end-to-end user workflow (Ingest → Reconstruct → Verify → Review → Approve → Handover) operates without human developer intervention.
+  2. Bundled sample project data allows a judge to test the platform in under 3 minutes.
+  3. Incognito window verification passes with zero broken assets or authentication roadblocks.
+  4. Project documentation, source repository, and demo video/links are prepared for Round 2 submission.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01: End-to-end workflow wiring, sample data seeding, and standalone execution testing
+- [ ] 06-02: Deployment packaging, incognito browser verification, and Round 2 submission bundle
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Core Domain Models, Provenance Schema & Storage Foundation | 0/2 | Not started | - |
+| 2. Multi-Source Ingestion & Extraction Pipeline | 0/2 | Not started | - |
+| 3. Evidence Grounding, Conflict & Uncertainty Engine | 0/2 | Not started | - |
+| 4. Human Review, Correction & Handover Approval Workflow | 0/2 | Not started | - |
+| 5. Handover Viewer, Incoming Member Explorer & Permission Filtering | 0/2 | Not started | - |
+| 6. End-to-End System Integration, Verification & Standalone Judge Packaging | 0/2 | Not started | - |
