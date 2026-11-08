@@ -674,3 +674,4 @@ test('Phase D: Real AI Knowledge Extraction Test Suite', async (t) => {
     assert.ok(findings[0].supportingQuote, 'Live findings must include supporting quotes');
   });
 });
+

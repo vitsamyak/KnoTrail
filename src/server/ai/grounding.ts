@@ -292,3 +292,4 @@ export function buildKnowledgeFinding(
 
   return finding;
 }
+

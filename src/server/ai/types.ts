@@ -68,3 +68,4 @@ export interface ExtractionResponse {
   error?: string;
   configured?: boolean;
 }
+
