@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"on-primary-fixed":"#002114","on-surface":"#161d18","on-primary-container":"#f5fff7","on-tertiary-fixed-variant":"#5d4200","primary-fixed":"#c5ebd5","secondary-fixed":"#cde9d8","on-tertiary":"#ffffff","tertiary-fixed":"#ffdea6","secondary-fixed-dim":"#b1cdbc","on-error":"#ffffff","inverse-primary":"#aacfba","on-secondary":"#ffffff","surface":"#f3fcf2","tertiary-container":"#966e13","inverse-surface":"#2a322c","on-surface-variant":"#414844","primary-fixed-dim":"#aacfba","surface-container-highest":"#dce5db","secondary":"#4a6456","primary-container":"#597c6a","on-primary":"#ffffff","tertiary-fixed-dim":"#f0bf5f","secondary-container":"#cae6d5","on-error-container":"#93000a","primary":"#416352","surface-container":"#e7f0e7","surface-container-low":"#edf6ec","inverse-on-surface":"#eaf3e9","error-container":"#ffdad6","on-tertiary-fixed":"#271900","surface-container-lowest":"#ffffff","surface-variant":"#dce5db","surface-container-high":"#e2ebe1","on-secondary-fixed-variant":"#334c3f","on-primary-fixed-variant":"#2c4d3d","on-tertiary-container":"#fffbff","surface-bright":"#f3fcf2","surface-dim":"#d4dcd3","outline-variant":"#c1c8c2","outline":"#727973","on-background":"#161d18","on-secondary-container":"#4f685a","background":"#f3fcf2","surface-tint":"#446554","tertiary":"#785600","on-secondary-fixed":"#072015","error":"#ba1a1a"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"1.5rem","space-lg":"1.25rem","margin":"2rem","space-xs":"0.5rem","space-2xl":"2rem","space-sm":"0.75rem","margin-mobile":"1rem","gutter-mobile":"0.75rem","gutter":"1.25rem","space-md":"1rem","space-2xs":"0.25rem"},"fontFamily":{"label-sm":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"label-md":["Inter"],"headline-md":["Inter"],"metric-xl":["Inter"],"body-lg":["Inter"],"body-md":["Inter"],"display-lg":["Inter"]},"fontSize":{"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"18px","fontWeight":"500"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"metric-xl":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"600"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-50 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] flex flex-col justify-between py-space-lg px-space-md"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-xs"><img alt="KnoTrail Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V9FTR8ORWAnKhDErKGsUrz5zEkhskDOW2RxKJ3l3cxOmv7bbLf9cSPBdBPYVqB8NaUhC24e3NctCF6DoEQGhMkD6YUa4uwtYfjo6IccfyodoR469WojSqHlFrQ8qrrxDhnsTmH3oIyo4KburI3I9eSnMy6cyJ6DhrYK3glLRAORxydIX_f6a3M7Vr13oxYJQcOFr5Eg4cQQZQbqAS3uLhp1PmPQu0TGAe4sxVZ1e5m"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">KnoTrail</span><span class="font-label-sm text-label-sm text-outline mt-0.5 leading-none">Knowledge Handover</span></div></div><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-md text-label-md">Dashboard</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl transition-all group bg-primary-container text-on-primary-container font-semibold shadow-sm" data-path="projects" href="#"><span class="material-symbols-outlined text-[20px]">folder_open</span><span class="font-label-md text-label-md">Projects</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="sources" href="#"><span class="material-symbols-outlined text-[20px]">dataset</span><span class="font-label-md text-label-md">Sources</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="ai-analysis" href="#"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="font-label-md text-label-md">AI Analysis</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="evidence-explorer" href="#"><span class="material-symbols-outlined text-[20px]">fact_check</span><span class="font-label-md text-label-md">Evidence Explorer</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="review-center" href="#"><span class="material-symbols-outlined text-[20px]">rule</span><span class="font-label-md text-label-md">Review Center</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="handovers" href="#"><span class="material-symbols-outlined text-[20px]">sync_alt</span><span class="font-label-md text-label-md">Handovers</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-md text-label-md">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm px-space-xs"><div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs"><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Active Sprint</span><span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Titan Core Handover</span><div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden"><div class="bg-primary h-full w-[78%] rounded-full"></div></div><div class="flex items-center justify-between font-label-sm text-label-sm text-outline mt-0.5"><span>Progress</span><span>78%</span></div></div><div class="flex items-center justify-between text-outline px-space-xs pt-space-xs"><span class="font-label-sm text-label-sm">v2.4.0-stable</span><span class="material-symbols-outlined text-[18px] hover:text-on-surface cursor-pointer transition-colors">help_outline</span></div></div></aside><div class="pl-[18rem]"><header class="fixed top-4 left-[18rem] right-4 h-16 bg-surface-container-lowest/90 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-full text-on-surface cursor-pointer hover:bg-surface-container transition-colors"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[200px]">Project Titan Handover</span><span class="material-symbols-outlined text-[18px] text-outline">unfold_more</span></div><div class="relative hidden xl:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="bg-surface-container-low text-on-surface pl-9 pr-space-md py-1.5 rounded-full font-body-sm text-body-sm w-72 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/70 transition-all" placeholder="Search decisions, tasks, evidence..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-sm py-1 rounded-full font-label-sm text-label-sm font-medium"><span class="material-symbols-outlined text-[14px]">public</span><span>Demo Mode (100% Public Access)</span></div><button aria-label="Notifications" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span></button><div class="flex items-center gap-space-xs pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8Zg8xWo2aUQBR1ELc4iWB6IablNHLBqsP_9RL1ICWHXnc9sC1pAGSYKNdiPskrqMEj4-Cn8rz5xbNF_FAzc8A1Sl7-r6JZZe58ugUnw6SqFReXJN_39atDtDiJcj5IQnny0oFoiiuqVVqjJadXGkc7eUX8OGXRKGuUUE8-6PJtzGNRsDu8yfhlNPxH1Deku8ATB8C8x5T_fZBenz9EdFaZIU9IEStJIXK9Yvxv4vH"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Elena Rostova</span><span class="font-label-sm text-label-sm text-outline leading-tight">Handover Lead</span></div></div></div></header><main class="relative pt-16 pr-4 pb-space-2xl min-h-screen bg-background mt-4"><div class="flex flex-col w-full">
+<!-- Dynamic Top Banner / Master Project Header -->
+<section class="relative bg-surface-container-lowest rounded-xl p-space-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] overflow-hidden">
+<!-- Ambient organic backdrop highlight -->
+<div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+<div class="relative flex flex-col xl:flex-row xl:items-start justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs max-w-3xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm uppercase tracking-wide">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Handover Active • Target Date: July 15, 2025
+          </span>
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+            Core Ledger v3.4
+          </span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight mt-1">
+          Project Titan Handover
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+          Cloud-native streaming data pipeline and billing ledger rewrite. Handover preparation for outgoing Technical Lead (Elena Rostova).
+        </p>
+<!-- Meta Bar -->
+<div class="flex flex-wrap items-center gap-y-2 gap-x-space-md pt-space-xs text-outline font-label-md text-label-md">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">schedule</span>
+<span>Last analysed: <strong class="text-on-surface font-medium">14 mins ago</strong> by KnoTrail Engine v2.4</span>
+</div>
+<span class="inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span>4 Key Stakeholders</span>
+</div>
+<span class="inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-secondary">hub</span>
+<span>6 Connected Sources Active</span>
+</div>
+</div>
+</div>
+<!-- Action Group -->
+<div class="flex flex-wrap sm:flex-nowrap items-center gap-space-sm self-start xl:self-center">
+<button class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-5 py-2.5 rounded-lg font-headline-sm text-headline-sm transition-all shadow-sm active:scale-[0.98]" id="reanalyze-btn">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-500 group-hover:rotate-180" id="ai-icon">bolt</span>
+<span>Re-analyse with AI</span>
+</button>
+<button class="inline-flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface px-4 py-2.5 rounded-lg font-headline-sm text-headline-sm transition-all">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+<span>Export Report</span>
+</button>
+</div>
+</div>
+<!-- Stakeholders Strip -->
+<div class="mt-space-lg pt-space-md bg-surface-container-low/70 rounded-xl p-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Stakeholder Transition Pod</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ownership transfer from outgoing architect to incoming domain stewards</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-md">
+<!-- Outgoing Lead -->
+<div class="flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg shadow-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Close-up professional headshot of Elena Rostova, an engineering technical lead with dark hair in a clean minimalist architectural office setting, soft sage green lighting accents, corporate editorial portrait photography style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbUJAcDRzlXfs47HP2xXN684_2t3XB6hwBj7wPngfOZXQiwQen8ttyZqmSH5l_5NXf0a3IeFdZlqPI-I-R-5Bi1nzYhxSQ3ht_lrueLLNuH8y5VwtTnQHcbbqfpuRFjDA4hA9wGV8YWAvb8OojHmENbNU-kUv3Ft8beLePqbOnpUqirHBEqVUdTp1b_5Qnv0FV92zkfu5ra4CBJ7HabBEvW2ZeIPEbHdLJretoG7db"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Elena Rostova</span>
+<span class="font-label-sm text-label-sm text-tertiary font-medium leading-tight">Outgoing Tech Lead</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px] hidden lg:block">east</span>
+<!-- Incoming Lead -->
+<div class="flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg shadow-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Professional modern studio portrait of Marcus Vance, a senior system architect in a slate jacket against a textured off-white wall, confident calm expression, natural documentary lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe9tvcjJO4fWiLX_EfPzpf1FJpCjt8ctdDLPE0BFOfzIAkYgFRciFkXrhkrjhf7ArKEuXD9J1-l7-GCjCgPqSKpG3lsHygCyGGOYB_Q-BSwfGwD0l6UJgMv7UGqJDwEg54qj0zhB9zhzsLMOJaNk2nERMoWaZKApRCl_rDN_ESJVIjp98wCNUzrgAYU6fzRIERqKjSMtkhA1DKn3PlJmnCR1XnHKGL8GsIuGcVFjXd"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Marcus Vance</span>
+<span class="font-label-sm text-label-sm text-primary font-medium leading-tight">Incoming Lead / Architect</span>
+</div>
+</div>
+<!-- DevOps -->
+<div class="flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg shadow-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Portrait of Sophia Chen, SRE engineer smiling warmly wearing modern glasses in a warm sunlit technical studio with soft sage and timber tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAslP8duNXsy-I9Y7x28LCpqHoF9cnQ6NcEyzG-N52nffnZM3x0oZlF2N0RdUvwunHaO_vV9mtXbpwfE16iOmtBmzhjf51OroKDPS8xclQSCNrgAfOLa7NbEUFA0XYJGcWkcg_XU4ftn87Xx_U3dxFIjvdJmKhARSEjHRwwIl6JCe9XRhDFzimUt3M6imoUfkzugssiYUN92ORqRCI5RkAcBQrOitiW4ZEY34kKaEjF"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Sophia Chen</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium leading-tight">DevOps &amp; SRE</span>
+</div>
+</div>
+<!-- Product Owner -->
+<div class="flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg shadow-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-label-md text-label-md font-semibold">
+            DM
+          </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">David Miller</span>
+<span class="font-label-sm text-label-sm text-outline font-medium leading-tight">Product Owner</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Health & Readiness KPI Bento Grid -->
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md mt-space-md">
+<!-- Metric 1: Decisions -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Decisions Documented</span>
+<span class="material-symbols-outlined text-primary text-[20px]">fact_check</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">42</span>
+<span class="font-label-md text-label-md text-primary font-medium">95% Verified</span>
+</div>
+<!-- Mini Sparkline inline SVG -->
+<div class="flex items-center justify-between text-outline font-body-sm text-body-sm pt-2">
+<span class="text-on-surface-variant font-medium">2 pending sign-off</span>
+<svg class="w-20 h-5 text-primary" fill="none" stroke="currentColor" viewbox="0 0 80 20">
+<path d="M1 15 L16 12 L32 14 L48 8 L64 6 L79 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Metric 2: Pending Tasks -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Pending Work Items</span>
+<span class="material-symbols-outlined text-tertiary text-[20px]">pending_actions</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">19</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">7 Critical</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+<div class="bg-tertiary h-full w-[63%] rounded-full"></div>
+</div>
+<span class="font-body-sm text-body-sm text-outline mt-1.5">12 non-blocking / tech debt</span>
+</div>
+<!-- Metric 3: Active Risks -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Active Risks</span>
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">5</span>
+<span class="font-label-md text-label-md text-error font-medium">1 Needs Mitigation</span>
+</div>
+<div class="flex items-center gap-1.5 text-body-sm text-body-sm text-on-surface-variant pt-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span>Terraform State Key single point</span>
+</div>
+</div>
+<!-- Metric 4: Blocking Questions -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Unresolved Questions</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">help_center</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">3</span>
+<span class="font-label-md text-label-md text-tertiary font-medium">Blocking Sign-off</span>
+</div>
+<div class="flex items-center justify-between text-body-sm text-body-sm pt-2">
+<span class="text-outline">Assigned to: Elena</span>
+<span class="text-primary font-semibold cursor-pointer hover:underline">Review Now →</span>
+</div>
+</div>
+</section>
+<!-- Interactive Workspace Tabs & Data Stream Sections -->
+<section class="mt-space-lg flex flex-col gap-space-md">
+<!-- Tab Controls Header -->
+<div class="flex flex-wrap items-center justify-between gap-space-md bg-surface-container-lowest p-2 rounded-xl shadow-sm">
+<div class="flex items-center gap-1 overflow-x-auto" id="tab-nav">
+<button class="tab-button active inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary font-headline-sm text-headline-sm transition-colors" data-tab="tab-decisions">
+<span class="material-symbols-outlined text-[18px]">account_tree</span>
+<span>Architecture &amp; Decisions (42)</span>
+</button>
+<button class="tab-button inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-headline-sm text-headline-sm transition-colors" data-tab="tab-work">
+<span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+<span>Pending Work &amp; Debt (19)</span>
+</button>
+<button class="tab-button inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-headline-sm text-headline-sm transition-colors" data-tab="tab-risks">
+<span class="material-symbols-outlined text-[18px]">shield_with_heart</span>
+<span>Active Risks &amp; Mitigations (5)</span>
+</button>
+<button class="tab-button inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-headline-sm text-headline-sm transition-colors" data-tab="tab-sources">
+<span class="material-symbols-outlined text-[18px]">cloud_sync</span>
+<span>Connected Sources (6)</span>
+</button>
+</div>
+<!-- Search & Filters in workspace -->
+<div class="flex items-center gap-2 px-2">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[16px]">filter_list</span>
+<input class="bg-surface-container-low text-on-surface pl-8 pr-3 py-1.5 rounded-lg font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-primary w-48 transition-all" id="tab-filter-input" placeholder="Filter items in view..." type="text"/>
+</div>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant" title="Download Section JSON">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</button>
+</div>
+</div>
+<!-- TAB 1: Key Decisions & Architecture -->
+<div class="tab-content flex flex-col gap-space-md" id="tab-decisions">
+<!-- Feature Card 1 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-space-md">
+<div class="flex flex-col gap-2 max-w-4xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Verified Architecture Decision</span>
+<span class="font-label-sm text-label-sm text-outline">ADR-009</span>
+<span class="inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Approved by Architecture Council</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">
+              Choice of Apache Kafka vs AWS SQS
+            </h3>
+<div class="bg-surface-container-low p-space-sm rounded-lg mt-1">
+<p class="font-body-md text-body-md text-on-surface font-medium">
+<span class="text-primary font-semibold">Decision Outcome:</span> Selected Apache Kafka cluster for ledger ingress pipeline instead of SQS to guarantee strict partition replayability, deterministic offset tracking, and 14-day stream backfill for external reconciliation.
+              </p>
+</div>
+<!-- Evidence Ledger Trail -->
+<div class="flex flex-wrap items-center gap-space-sm pt-2">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Audited Evidence:</span>
+<div class="inline-flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded font-body-sm text-body-sm text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">description</span>
+<span>ADR-009-kafka-ingress.md</span>
+</div>
+<div class="inline-flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded font-body-sm text-body-sm text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">commit</span>
+<span>Commit 8f2a1b • Added offset store</span>
+</div>
+<div class="inline-flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded font-body-sm text-body-sm text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px] text-tertiary">article</span>
+<span>Notion / Core Ledger Specs § 4.2</span>
+</div>
+</div>
+</div>
+<!-- Sign-off card block -->
+<div class="lg:w-72 bg-surface-container-low rounded-xl p-space-md flex flex-col gap-2 shrink-0">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Knowledge Transfer Status</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Handover Verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Elena walked Marcus through partition compaction and failure modes during Session 2.</p>
+<div class="pt-2 flex items-center justify-between text-label-sm text-label-sm text-outline">
+<span>Sign-off: Marcus Vance</span>
+<span class="text-primary font-medium">Jul 02, 2025</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Feature Card 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-space-md">
+<div class="flex flex-col gap-2 max-w-4xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Verified Architecture Decision</span>
+<span class="font-label-sm text-label-sm text-outline">RFC-12</span>
+<span class="inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cross-Region DR Protocol</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">
+              Multi-region Failover Architecture
+            </h3>
+<div class="bg-surface-container-low p-space-sm rounded-lg mt-1">
+<p class="font-body-md text-body-md text-on-surface font-medium">
+<span class="text-primary font-semibold">Decision Outcome:</span> Adopted Active-Passive model (us-east-1 primary, us-west-2 standby) paired with automated Route53 health checks &amp; latency record flips. Avoided Active-Active to circumvent distributed two-phase lock hazards on transactional ledgers.
+              </p>
+</div>
+<!-- Evidence Ledger Trail -->
+<div class="flex flex-wrap items-center gap-space-sm pt-2">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Audited Evidence:</span>
+<div class="inline-flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded font-body-sm text-body-sm text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">description</span>
+<span>RFC-12-disaster-recovery.md</span>
+</div>
+<div class="inline-flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded font-body-sm text-body-sm text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud</span>
+<span>Terraform • modules/route53_failover</span>
+</div>
+</div>
+</div>
+<!-- Sign-off card block -->
+<div class="lg:w-72 bg-surface-container-low rounded-xl p-space-md flex flex-col gap-2 shrink-0">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Knowledge Transfer Status</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Handover Verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Validated live game-day failover script with Sophia Chen on June 29.</p>
+<div class="pt-2 flex items-center justify-between text-label-sm text-label-sm text-outline">
+<span>Sign-off: Sophia Chen</span>
+<span class="text-primary font-medium">Jun 29, 2025</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+<!-- TAB 2: Pending Work & Technical Debt -->
+<div class="tab-content hidden flex-col gap-space-md" id="tab-work">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Work item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">Critical Handover Item</span>
+<span class="font-label-sm text-label-sm text-outline font-medium">Due: July 12, 2025</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Complete shard rebalancing script</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              The database partitioner needs an automated dry-run validation flag before scaling ledger storage beyond 64 shards. Script draft is 70% complete in PR #219.
+            </p>
+</div>
+<div class="flex items-center justify-between pt-space-xs bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Portrait of Marcus Vance, senior architect with glasses, calm and focused expression, dressed in modern technical workwear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5RglqsiceiYK8CoA6yNXs11ZkhLK8Qju6WqNBTKSSDfaIEs4JYQRLNWlsmeuxJ3Zn6exSX0DSFuie6L4O1QKSwQCB3DzS7rbDr8CCWRHaBz3JIA61z-AbrwtupN8voro_D2V0O-i7UDTtfSJjeqvlZaS8b5lTQYYxDXxkxgnNvueOluReu4gwUL_XaQAvio6keVMRiUJpETNm-izm7Yn_k51CJDJcVFdJt7yRZiwu"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Assigned Lead</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Marcus Vance (Incoming)</span>
+</div>
+</div>
+<button class="px-3 py-1.5 bg-primary text-on-primary rounded-lg font-label-sm text-label-sm hover:bg-primary-container transition-colors">
+              Review PR #219
+            </button>
+</div>
+</div>
+<!-- Work item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">Technical Debt</span>
+<span class="font-label-sm text-label-sm text-outline font-medium">Due: July 18, 2025</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Migrate legacy Stripe webhook signatures</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Replace deprecated v2 webhook parsing logic with cryptographic HMAC timestamp validation to prevent replay attacks during network partition retries.
+            </p>
+</div>
+<div class="flex items-center justify-between pt-space-xs bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Small avatar portrait of Sophia Chen SRE engineer smiling in casual tech attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTLniOPzI0znxVsDXJdLkh0Sh5PzyxZxfefaFD6WyzcHHoqQeDDNIbQUiIpgeSCr3kd9o1YKOKHS7aSiCj0wzRjTJJJIOskhQMTXF176MESfW-JE7mG3nesLAe9mRmxL95gMq5qQBWSFKzQn1FlsyGE-LvgjW0zWp3jVxqHNagr5mq-v1CoFXJCxAV5o2agHogmTjeQxGO96GqmdWgB2q-KSkMp-p6ylMeXL5NSgLE"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Assigned Lead</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Sophia Chen (SRE)</span>
+</div>
+</div>
+<button class="px-3 py-1.5 bg-surface-container-highest text-on-surface rounded-lg font-label-sm text-label-sm hover:bg-surface-container transition-colors">
+              Track in Linear
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB 3: Active Risks & Mitigations -->
+<div class="tab-content hidden flex-col gap-space-md" id="tab-risks">
+<!-- Risk 1 (Critical) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-2 max-w-3xl">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">High Severity • Single Point Dependency</span>
+<span class="font-label-sm text-label-sm text-outline">Risk ID: RSK-01</span>
+</div>
+<h4 class="font-headline-lg text-headline-lg text-on-surface">Single person dependency on Terraform cloud state keys</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Production encryption keys for Titan Terraform Cloud organization are linked solely to Elena's YubiKey hardware token. Loss of device halts deployments.
+          </p>
+<div class="mt-2 bg-surface-container-low p-space-sm rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">task_alt</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">
+<strong class="text-primary">Mitigation in place:</strong> Key rotation ceremony scheduled for Thursday 2:00 PM UTC with Marcus and DevOps rotation vault.
+            </span>
+</div>
+</div>
+<div class="shrink-0 flex flex-col gap-2 items-start lg:items-end">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Action In Progress</span>
+<span class="font-body-sm text-body-sm text-outline">Ceremony calendar invite sent</span>
+</div>
+</div>
+<!-- Risk 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-2 max-w-3xl">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">Medium Severity • Performance</span>
+<span class="font-label-sm text-label-sm text-outline">Risk ID: RSK-04</span>
+</div>
+<h4 class="font-headline-lg text-headline-lg text-on-surface">Unmonitored memory leak in high-throughput worker pool</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Ingress pods experience gradual RSS memory escalation during sustained bursts over 40,000 events/sec, triggering k8s OOM restarts every ~72 hours.
+          </p>
+<div class="mt-2 bg-surface-container-low p-space-sm rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">task_alt</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">
+<strong class="text-primary">Mitigation in place:</strong> Memory profiling ticket TITAN-402 filed. Heap dump analyzer added to staging cluster.
+            </span>
+</div>
+</div>
+<div class="shrink-0 flex flex-col gap-2 items-start lg:items-end">
+<span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">Investigation</span>
+<span class="font-body-sm text-body-sm text-outline">Assignee: Sophia Chen</span>
+</div>
+</div>
+</div>
+<!-- TAB 4: Connected Source Status -->
+<div class="tab-content hidden flex-col gap-space-md" id="tab-sources">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Source 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">GitHub</span>
+<span class="font-body-sm text-body-sm text-outline">org/titan-core</span>
+</div>
+</div>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+              Live Sync
+            </span>
+</div>
+<div class="my-space-sm pt-space-xs flex flex-col gap-1">
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Sync Status</span>
+<span class="text-on-surface font-medium">Up to date (3m ago)</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">ADR Files Tracked</span>
+<span class="text-on-surface font-medium">18 documents</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Commits Indexed</span>
+<span class="text-on-surface font-medium">1,482 commits</span>
+</div>
+</div>
+<button class="w-full py-1.5 bg-surface-container hover:bg-surface-container-high rounded-lg font-label-md text-label-md text-on-surface transition-colors">
+            Configure Webhook
+          </button>
+</div>
+<!-- Source 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Notion Workspace</span>
+<span class="font-body-sm text-body-sm text-outline">Architecture Specs</span>
+</div>
+</div>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+              Parsed
+            </span>
+</div>
+<div class="my-space-sm pt-space-xs flex flex-col gap-1">
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Pages Ingested</span>
+<span class="text-on-surface font-medium">28 pages</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Extracted Entities</span>
+<span class="text-on-surface font-medium">142 concepts</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Last Re-index</span>
+<span class="text-on-surface font-medium">Today at 10:14 AM</span>
+</div>
+</div>
+<button class="w-full py-1.5 bg-surface-container hover:bg-surface-container-high rounded-lg font-label-md text-label-md text-on-surface transition-colors">
+            View Page Mappings
+          </button>
+</div>
+<!-- Source 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[20px]">view_kanban</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Jira / Linear Board</span>
+<span class="font-body-sm text-body-sm text-outline">TITAN Project Sprint</span>
+</div>
+</div>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+              94 Tracked
+            </span>
+</div>
+<div class="my-space-sm pt-space-xs flex flex-col gap-1">
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Active Epics</span>
+<span class="text-on-surface font-medium">4 tracked</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Resolved Handover Tasks</span>
+<span class="text-on-surface font-medium">38 completed</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-outline">Automated Flagging</span>
+<span class="text-on-surface font-medium">Enabled (KnoTrail)</span>
+</div>
+</div>
+<button class="w-full py-1.5 bg-surface-container hover:bg-surface-container-high rounded-lg font-label-md text-label-md text-on-surface transition-colors">
+            Resync Issues
+          </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Script for Tabs and Simulation Actions -->
+<script>
+    // Tab switching micro-interactions
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-tab');
+        
+        tabButtons.forEach(b => {
+          b.classList.remove('bg-primary', 'text-on-primary', 'active');
+          b.classList.add('text-on-surface-variant');
+        });
+        
+        btn.classList.add('bg-primary', 'text-on-primary', 'active');
+        btn.classList.remove('text-on-surface-variant');
+
+        tabContents.forEach(content => {
+          if (content.id === target) {
+            content.classList.remove('hidden');
+            content.classList.add('flex');
+          } else {
+            content.classList.add('hidden');
+            content.classList.remove('flex');
+          }
+        });
+      });
+    });
+
+    // Re-analyse Project with AI animation
+    const reanalyzeBtn = document.getElementById('reanalyze-btn');
+    const aiIcon = document.getElementById('ai-icon');
+
+    if (reanalyzeBtn && aiIcon) {
+      reanalyzeBtn.addEventListener('click', () => {
+        aiIcon.classList.add('animate-spin');
+        const originalText = reanalyzeBtn.querySelector('span:last-child').textContent;
+        reanalyzeBtn.querySelector('span:last-child').textContent = 'Analyzing 6 Sources...';
+        
+        setTimeout(() => {
+          aiIcon.classList.remove('animate-spin');
+          reanalyzeBtn.querySelector('span:last-child').textContent = 'Analysis Up-to-Date!';
+          setTimeout(() => {
+            reanalyzeBtn.querySelector('span:last-child').textContent = originalText;
+          }, 2000);
+        }, 1500);
+      });
+    }
+
+    // Quick filter simulation
+    const filterInput = document.getElementById('tab-filter-input');
+    if (filterInput) {
+      filterInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const activeContent = document.querySelector('.tab-content:not(.hidden)');
+        if (activeContent) {
+          const cards = activeContent.querySelectorAll('article, .bg-surface-container-lowest');
+          cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if (text.includes(term)) {
+              card.style.display = '';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        }
+      });
+    }
+  </script>
+</div></main></div></body></html>

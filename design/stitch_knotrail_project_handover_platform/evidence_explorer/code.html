@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"on-primary-fixed":"#002114","on-surface":"#161d18","on-primary-container":"#f5fff7","on-tertiary-fixed-variant":"#5d4200","primary-fixed":"#c5ebd5","secondary-fixed":"#cde9d8","on-tertiary":"#ffffff","tertiary-fixed":"#ffdea6","secondary-fixed-dim":"#b1cdbc","on-error":"#ffffff","inverse-primary":"#aacfba","on-secondary":"#ffffff","surface":"#f3fcf2","tertiary-container":"#966e13","inverse-surface":"#2a322c","on-surface-variant":"#414844","primary-fixed-dim":"#aacfba","surface-container-highest":"#dce5db","secondary":"#4a6456","primary-container":"#597c6a","on-primary":"#ffffff","tertiary-fixed-dim":"#f0bf5f","secondary-container":"#cae6d5","on-error-container":"#93000a","primary":"#416352","surface-container":"#e7f0e7","surface-container-low":"#edf6ec","inverse-on-surface":"#eaf3e9","error-container":"#ffdad6","on-tertiary-fixed":"#271900","surface-container-lowest":"#ffffff","surface-variant":"#dce5db","surface-container-high":"#e2ebe1","on-secondary-fixed-variant":"#334c3f","on-primary-fixed-variant":"#2c4d3d","on-tertiary-container":"#fffbff","surface-bright":"#f3fcf2","surface-dim":"#d4dcd3","outline-variant":"#c1c8c2","outline":"#727973","on-background":"#161d18","on-secondary-container":"#4f685a","background":"#f3fcf2","surface-tint":"#446554","tertiary":"#785600","on-secondary-fixed":"#072015","error":"#ba1a1a"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"1.5rem","space-lg":"1.25rem","margin":"2rem","space-xs":"0.5rem","space-2xl":"2rem","space-sm":"0.75rem","margin-mobile":"1rem","gutter-mobile":"0.75rem","gutter":"1.25rem","space-md":"1rem","space-2xs":"0.25rem"},"fontFamily":{"label-sm":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"label-md":["Inter"],"headline-md":["Inter"],"metric-xl":["Inter"],"body-lg":["Inter"],"body-md":["Inter"],"display-lg":["Inter"]},"fontSize":{"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"18px","fontWeight":"500"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"metric-xl":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"600"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-50 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] flex flex-col justify-between py-space-lg px-space-md"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-xs"><img alt="KnoTrail Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V9FTR8ORWAnKhDErKGsUrz5zEkhskDOW2RxKJ3l3cxOmv7bbLf9cSPBdBPYVqB8NaUhC24e3NctCF6DoEQGhMkD6YUa4uwtYfjo6IccfyodoR469WojSqHlFrQ8qrrxDhnsTmH3oIyo4KburI3I9eSnMy6cyJ6DhrYK3glLRAORxydIX_f6a3M7Vr13oxYJQcOFr5Eg4cQQZQbqAS3uLhp1PmPQu0TGAe4sxVZ1e5m"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">KnoTrail</span><span class="font-label-sm text-label-sm text-outline mt-0.5 leading-none">Knowledge Handover</span></div></div><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="projects" href="#"><span class="material-symbols-outlined text-[20px]">folder_open</span><span class="font-label-md text-label-md">Projects</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="sources" href="#"><span class="material-symbols-outlined text-[20px]">dataset</span><span class="font-label-md text-label-md">Sources</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="ai-analysis" href="#"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="font-label-md text-label-md">AI Analysis</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="evidence-explorer" href="#"><span class="material-symbols-outlined text-[20px]">fact_check</span><span class="font-label-md text-label-md">Evidence Explorer</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="review-center" href="#"><span class="material-symbols-outlined text-[20px]">rule</span><span class="font-label-md text-label-md">Review Center</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="handovers" href="#"><span class="material-symbols-outlined text-[20px]">sync_alt</span><span class="font-label-md text-label-md">Handovers</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-md text-label-md">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm px-space-xs"><div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs"><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Active Sprint</span><span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Titan Core Handover</span><div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden"><div class="bg-primary h-full w-[78%] rounded-full"></div></div><div class="flex items-center justify-between font-label-sm text-label-sm text-outline mt-0.5"><span>Progress</span><span>78%</span></div></div><div class="flex items-center justify-between text-outline px-space-xs pt-space-xs"><span class="font-label-sm text-label-sm">v2.4.0-stable</span><span class="material-symbols-outlined text-[18px] hover:text-on-surface cursor-pointer transition-colors">help_outline</span></div></div></aside><div class="pl-[18rem]"><header class="fixed top-4 left-[18rem] right-4 h-16 bg-surface-container-lowest/90 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-full text-on-surface cursor-pointer hover:bg-surface-container transition-colors"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[200px]">Project Titan Handover</span><span class="material-symbols-outlined text-[18px] text-outline">unfold_more</span></div><div class="relative hidden xl:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="bg-surface-container-low text-on-surface pl-9 pr-space-md py-1.5 rounded-full font-body-sm text-body-sm w-72 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/70 transition-all" placeholder="Search decisions, tasks, evidence..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-sm py-1 rounded-full font-label-sm text-label-sm font-medium"><span class="material-symbols-outlined text-[14px]">public</span><span>Demo Mode (100% Public Access)</span></div><button aria-label="Notifications" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span></button><div class="flex items-center gap-space-xs pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8Zg8xWo2aUQBR1ELc4iWB6IablNHLBqsP_9RL1ICWHXnc9sC1pAGSYKNdiPskrqMEj4-Cn8rz5xbNF_FAzc8A1Sl7-r6JZZe58ugUnw6SqFReXJN_39atDtDiJcj5IQnny0oFoiiuqVVqjJadXGkc7eUX8OGXRKGuUUE8-6PJtzGNRsDu8yfhlNPxH1Deku8ATB8C8x5T_fZBenz9EdFaZIU9IEStJIXK9Yvxv4vH"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Elena Rostova</span><span class="font-label-sm text-label-sm text-outline leading-tight">Handover Lead</span></div></div></div></header><main class="relative pt-16 pr-4 pb-space-2xl min-h-screen bg-background mt-4"><div class="flex flex-col w-full">
+<script>
+    (function highlightActiveNav() {
+      const activeLink = document.querySelector('aside nav a[data-path="evidence-explorer"]');
+      if (activeLink) {
+        activeLink.classList.remove('text-on-surface-variant');
+        activeLink.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-sm');
+      }
+    })();
+  </script>
+<!-- Top Context Header & Statistics Strip -->
+<div class="flex flex-col gap-space-lg mb-space-lg">
+<!-- Breadcrumbs & Title Block -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span>Projects</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Project Titan Handover</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Evidence Explorer</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+          Evidence Traceability &amp; Lineage
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          Inspect immutable source commits, AST parser diffs, meeting transcripts, and verified cryptographic anchors behind generated handover statements.
+        </p>
+</div>
+<!-- Quick Actions / Export -->
+<div class="flex items-center gap-space-sm self-start lg:self-center">
+<button class="flex items-center gap-space-xs bg-surface-container-lowest text-on-surface px-space-md py-2 rounded-xl shadow-sm hover:bg-surface-container transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px] text-secondary">tune</span>
+<span>Lineage Rules</span>
+</button>
+<button class="flex items-center gap-space-xs bg-primary text-on-primary px-space-md py-2 rounded-xl shadow-sm hover:bg-primary-container hover:text-on-primary-container transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Verify Batch (190 Nodes)</span>
+</button>
+</div>
+</div>
+<!-- Metric Summaries & Status Filter Strip -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Verified Filter Tile -->
+<button class="evidence-filter-btn active text-left bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer" data-filter="verified">
+<div class="flex items-center justify-between w-full">
+<span class="flex items-center gap-space-2xs font-label-sm text-label-sm font-semibold tracking-wider uppercase text-primary">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+            Verified
+          </span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]">check_circle</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">142</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container px-space-xs py-0.5 rounded-full">74.7% Coverage</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline mt-1">Direct AST code or signed ADR matches</span>
+</button>
+<!-- Uncertain Filter Tile -->
+<button class="evidence-filter-btn text-left bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer" data-filter="uncertain">
+<div class="flex items-center justify-between w-full">
+<span class="flex items-center gap-space-2xs font-label-sm text-label-sm font-semibold tracking-wider uppercase text-tertiary">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+            Uncertain
+          </span>
+<span class="material-symbols-outlined text-outline group-hover:text-tertiary transition-colors text-[20px]">help</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">28</span>
+<span class="font-label-sm text-label-sm text-tertiary bg-tertiary-fixed px-space-xs py-0.5 rounded-full">14.7% Ambiguous</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline mt-1">Slack discussions or informal logs</span>
+</button>
+<!-- Conflicting Filter Tile -->
+<button class="evidence-filter-btn text-left bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer" data-filter="conflicting">
+<div class="flex items-center justify-between w-full">
+<span class="flex items-center gap-space-2xs font-label-sm text-label-sm font-semibold tracking-wider uppercase text-error">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+            Conflicting
+          </span>
+<span class="material-symbols-outlined text-outline group-hover:text-error transition-colors text-[20px]">error_outline</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">12</span>
+<span class="font-label-sm text-label-sm text-error bg-error-container text-on-error-container px-space-xs py-0.5 rounded-full">Urgent Action</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline mt-1">Doc vs implementation divergences</span>
+</button>
+<!-- Missing Evidence Tile -->
+<button class="evidence-filter-btn text-left bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer" data-filter="missing">
+<div class="flex items-center justify-between w-full">
+<span class="flex items-center gap-space-2xs font-label-sm text-label-sm font-semibold tracking-wider uppercase text-outline">
+<span class="w-2.5 h-2.5 rounded-full bg-outline"></span>
+            Missing Evidence
+          </span>
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface transition-colors text-[20px]">history_toggle_off</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold">8</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-highest px-space-xs py-0.5 rounded-full">Unverified</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline mt-1">Oral statements without repo artifacts</span>
+</button>
+</div>
+<!-- Search & Active Query Filter Bar -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="relative w-full sm:max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">search</span>
+<input class="w-full bg-surface-container-low text-on-surface pl-9 pr-space-md py-2 rounded-lg font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest transition-colors placeholder:text-outline" id="evidenceSearchInput" placeholder="Filter statement text, commit SHA (e.g. 4b3e9a), file path..." type="text"/>
+</div>
+<div class="flex items-center gap-space-xs w-full sm:w-auto justify-between sm:justify-end">
+<div class="flex items-center gap-space-2xs text-outline font-label-sm text-label-sm px-space-xs">
+<span>Sort by:</span>
+<button class="text-on-surface font-semibold hover:text-primary flex items-center gap-0.5">
+            Confidence Index <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+<button class="bg-surface-container-low hover:bg-surface-container text-on-surface-variant px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm transition-colors flex items-center gap-1" id="resetFiltersBtn">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+<span>Reset</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Master-Detail Evidence Workspace -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- LEFT COLUMN (Evidence Feed List - 7 Cols on XL) -->
+<div class="xl:col-span-7 flex flex-col gap-space-md" id="evidenceFeedContainer">
+<!-- ITEM 1: CONFLICTING (High Priority Inspection) -->
+<article class="evidence-card cursor-pointer bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-md" data-id="ev-02" data-status="conflicting">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="inline-flex items-center gap-1.5 bg-error-container text-on-error-container font-label-sm text-label-sm px-space-sm py-1 rounded-full font-semibold">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+              CONFLICTING (Requires Lead Resolution)
+            </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-space-xs py-0.5 rounded">
+              ID: TITAN-EV-1082
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-error font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">flag</span> High Discrepancy
+          </span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold leading-snug">
+            Primary database failover RTO is documented as 30s in Wiki, but Terraform health check TTL is configured to 120s.
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Documented SLA in Notion architecture specification guarantees a 30-second seamless promotion, but infrastructure code defines a 2-minute query heartbeat interval.
+          </p>
+</div>
+<!-- Conflict Comparison Preview Pill Box -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
+<div class="bg-surface-container-lowest p-space-sm rounded flex flex-col gap-1">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span class="font-semibold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">article</span> Source A: Notion ADR-012
+              </span>
+<span>Updated 3w ago</span>
+</div>
+<code class="font-body-sm text-body-sm text-on-surface font-mono bg-surface-container-low px-1.5 py-1 rounded mt-1">
+              max_downtime_rto = "30s"
+            </code>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded flex flex-col gap-1">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span class="font-semibold text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">code</span> Source B: main.tf #4b3e9a
+              </span>
+<span>Committed 4d ago</span>
+</div>
+<code class="font-body-sm text-body-sm text-error font-mono bg-error-container/30 px-1.5 py-1 rounded mt-1">
+              interval_seconds = 120
+            </code>
+</div>
+</div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-outline">account_circle</span>
+              Elena Rostova vs CI/CD
+            </span>
+<span>•</span>
+<span>Extracted via AST Conflict Pipeline</span>
+</div>
+<button class="text-primary font-semibold hover:underline flex items-center gap-0.5">
+            Inspect Diffs <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- ITEM 2: VERIFIED (AST Direct Lineage) -->
+<article class="evidence-card cursor-pointer bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-md" data-id="ev-01" data-status="verified">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-space-sm py-1 rounded-full font-semibold">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+              VERIFIED (Confidence 98%)
+            </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-space-xs py-0.5 rounded">
+              ID: TITAN-EV-1049
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified_user</span> Semantic AST Lineage
+          </span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold leading-snug">
+            Database failover protocol uses Route53 latency DNS records with 15s health check.
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Matches architectural consensus between production Terraform release modules and high-availability network diagrams.
+          </p>
+</div>
+<!-- Code Excerpt Preview -->
+<div class="bg-inverse-surface text-inverse-on-surface p-space-sm rounded-lg font-mono text-body-sm">
+<div class="flex items-center justify-between text-outline-variant font-label-sm pb-1 mb-2">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+              infra/modules/route53_failover.tf: lines 42-47
+            </span>
+<span class="text-inverse-primary">SHA: c78b01a</span>
+</div>
+<div class="overflow-x-auto">
+<span class="text-outline">42</span> resource "aws_route53_health_check" "db_primary" {<br/>
+<span class="text-outline">43</span>   type              = "TCP"<br/>
+<span class="text-inverse-primary font-semibold">44   request_interval  = 15</span> <span class="text-outline"># Verified 15s check</span><br/>
+<span class="text-outline">45</span>   failure_threshold = 3<br/>
+<span class="text-outline">46</span> }
+          </div>
+</div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-outline">description</span>
+              Notion Wiki §4.2 + Terraform GitHub
+            </span>
+<span>•</span>
+<span>Committed 6d ago</span>
+</div>
+<button class="text-primary font-semibold hover:underline flex items-center gap-0.5">
+            Trace Provenance <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- ITEM 3: UNCERTAIN (Slack Thread without PR) -->
+<article class="evidence-card cursor-pointer bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-md" data-id="ev-03" data-status="uncertain">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="inline-flex items-center gap-1.5 bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm px-space-sm py-1 rounded-full font-semibold">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+              UNCERTAIN - Needs Confirmation
+            </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-space-xs py-0.5 rounded">
+              ID: TITAN-EV-0974
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">chat_bubble_outline</span> Slack Discourse Only
+          </span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold leading-snug">
+            Auth0 token migration planned for Sprint 18 deprecation.
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Extracted from Slack thread #proj-titan with no formal Jira epic, Linear task, or merge request discovered during codebase scan.
+          </p>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col gap-2">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-tertiary">forum</span>
+              #proj-titan • Thread: Auth Migration Timeline
+            </span>
+<span>2 days ago</span>
+</div>
+<blockquote class="italic text-on-surface-variant font-body-sm text-body-sm pl-3 border-l-2 border-tertiary-fixed-dim">
+            "Elena: We're likely cutting off the Auth0 legacy callbacks by Sprint 18 once the OAuth proxy is live. Don't build new adapters for it."
+          </blockquote>
+</div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="text-tertiary font-semibold">Risk: Uncommitted Roadmap</span>
+<span>•</span>
+<span>Extracted via Conversational AI Ingest</span>
+</div>
+<button class="text-primary font-semibold hover:underline flex items-center gap-0.5">
+            Convert to Ticket <span class="material-symbols-outlined text-[14px]">add_task</span>
+</button>
+</div>
+</article>
+<!-- ITEM 4: MISSING EVIDENCE -->
+<article class="evidence-card cursor-pointer bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-md" data-id="ev-04" data-status="missing">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="inline-flex items-center gap-1.5 bg-surface-container-highest text-on-surface font-label-sm text-label-sm px-space-sm py-1 rounded-full font-semibold">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+              MISSING EVIDENCE (0 Artifacts)
+            </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-space-xs py-0.5 rounded">
+              ID: TITAN-EV-0812
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">search_off</span> Audit Gap
+          </span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold leading-snug">
+            Disaster recovery runbook credentials rotated quarterly.
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Stated in Handover Meeting #3 recording transcript, but no AWS KMS key rotation logs or HashiCorp Vault audit trail exist for this tenant.
+          </p>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-lg flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-space-xs text-outline">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+<span>Handover_Session_03.m4a [Timestamp 34:12]</span>
+</div>
+<span class="font-label-sm text-label-sm text-error bg-error-container text-on-error-container px-2 py-0.5 rounded">No KMS Trail Found</span>
+</div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-space-xs">
+<span class="text-on-surface-variant">Requires Infrastructure Lead Verification</span>
+<button class="text-primary font-semibold hover:underline flex items-center gap-0.5">
+            Request Log Proof <span class="material-symbols-outlined text-[14px]">mail</span>
+</button>
+</div>
+</article>
+</div>
+<!-- RIGHT COLUMN (Deep Evidence Inspector Drawer - 5 Cols on XL) -->
+<div class="xl:col-span-5 flex flex-col gap-space-md">
+<!-- Sticky Deep Provenance Panel -->
+<div class="sticky top-24 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg" id="inspectionPanel">
+<!-- Panel Header -->
+<div class="flex items-start justify-between pb-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider font-semibold">Active Inspector Node</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold mt-0.5" id="inspectorTitle">
+              Detailed Lineage &amp; Attestation
+            </h3>
+</div>
+<div class="flex items-center gap-space-2xs">
+<button class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors" title="Copy Node URL">
+<span class="material-symbols-outlined text-[20px]">link</span>
+</button>
+<button class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors" title="Export Audit JSON">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<!-- Node Confidence Gauge Block (Organic reference aesthetic) -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Confidence Metric</span>
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold mt-0.5" id="inspectorConfidenceScore">98.4%</span>
+<span class="font-body-sm text-body-sm text-secondary flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px]">verified</span> High Integrity Anchor
+            </span>
+</div>
+<!-- SVG Donut Chart Indicator (Pure inline thematic visual) -->
+<div class="relative w-20 h-20 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-highest stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3.5"></path>
+<path class="text-primary stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="98, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-label-md text-label-md font-semibold text-on-surface">98%</span>
+</div>
+</div>
+<!-- Statement Blockquote Card -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Handover Statement Claim</span>
+<div class="p-space-md bg-surface-container-low rounded-xl text-on-surface font-body-md text-body-md leading-relaxed" id="inspectorStatementText">
+            "Database failover protocol uses Route53 latency DNS records with 15s health check."
+          </div>
+</div>
+<!-- Primary Source Lineage Trace -->
+<div class="flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Primary Artifact Lineage</span>
+<!-- Source Item 1 -->
+<div class="flex items-start gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="w-8 h-8 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">route53_failover.tf</span>
+<span class="font-label-sm text-label-sm text-primary font-mono">commit #c78b01a</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline truncate">titan-core/infra/modules/dns</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Author: Elena Rostova (4 days ago)</span>
+</div>
+</div>
+<!-- Source Item 2 -->
+<div class="flex items-start gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Notion ADR-012: Failover Strategy</span>
+<span class="font-label-sm text-label-sm text-outline">v2.1 Approved</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline truncate">Engineering Handbook &gt; Titan &gt; Architecture</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Signed by: Alex Chen (VP Architecture)</span>
+</div>
+</div>
+</div>
+<!-- Attestation Signature & Review Anchor -->
+<div class="p-space-md rounded-xl bg-surface-container-high/40 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Cryptographic Hash</span>
+<span class="font-label-sm text-label-sm text-secondary font-mono">sha256:7f9a2e...1c4b</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Indexed in KnoTrail audit ledger during automated ingestion run #4092. Lineage guaranteed immutable.
+          </p>
+</div>
+<!-- Action Bar -->
+<div class="flex flex-col sm:flex-row items-center gap-space-sm pt-space-xs">
+<button class="w-full sm:flex-1 bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container px-space-md py-2.5 rounded-xl font-label-md text-label-md font-semibold transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Affirm to Handover</span>
+</button>
+<button class="w-full sm:w-auto bg-surface-container-low hover:bg-surface-container text-on-surface px-space-md py-2.5 rounded-xl font-label-md text-label-md transition-all flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">rule</span>
+<span>Open in Review Center</span>
+</button>
+</div>
+</div>
+<!-- Historical Verification Activity Card (Editorial Style) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Lineage Audit Activity</span>
+<span class="font-label-sm text-label-sm text-primary hover:underline cursor-pointer">Live Feed</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>12 AST lines verified from main branch</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">12m ago</span>
+</div>
+<div class="flex items-center justify-between text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>Conflict flagged on TTL interval</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">1h ago</span>
+</div>
+<div class="flex items-center justify-between text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Slack thread tagged as informal citation</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">3h ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Filter & Inspector JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const filterButtons = document.querySelectorAll('.evidence-filter-btn');
+      const cards = document.querySelectorAll('.evidence-card');
+      const searchInput = document.getElementById('evidenceSearchInput');
+      const resetBtn = document.getElementById('resetFiltersBtn');
+
+      let currentStatusFilter = 'all';
+
+      // Status Filter Logic
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const filter = btn.dataset.filter;
+          if (btn.classList.contains('active-pill')) {
+            btn.classList.remove('active-pill', 'ring-2', 'ring-primary');
+            currentStatusFilter = 'all';
+          } else {
+            filterButtons.forEach(b => b.classList.remove('active-pill', 'ring-2', 'ring-primary'));
+            btn.classList.add('active-pill', 'ring-2', 'ring-primary');
+            currentStatusFilter = filter;
+          }
+          applyFilters();
+        });
+      });
+
+      // Search Filter
+      searchInput.addEventListener('input', () => {
+        applyFilters();
+      });
+
+      resetBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        currentStatusFilter = 'all';
+        filterButtons.forEach(b => b.classList.remove('active-pill', 'ring-2', 'ring-primary'));
+        applyFilters();
+      });
+
+      function applyFilters() {
+        const query = searchInput.value.toLowerCase().trim();
+        cards.forEach(card => {
+          const statusMatch = (currentStatusFilter === 'all') || (card.dataset.status === currentStatusFilter);
+          const textMatch = !query || card.innerText.toLowerCase().includes(query);
+
+          if (statusMatch && textMatch) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      }
+
+      // Card Click -> Update Right Inspection Drawer
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          cards.forEach(c => c.classList.remove('ring-2', 'ring-primary'));
+          card.classList.add('ring-2', 'ring-primary');
+
+          const heading = card.querySelector('h2')?.innerText;
+          const status = card.dataset.status;
+
+          if (heading) {
+            document.getElementById('inspectorStatementText').innerText = `"${heading}"`;
+          }
+
+          const scoreElem = document.getElementById('inspectorConfidenceScore');
+          if (status === 'verified') {
+            scoreElem.innerText = '98.4%';
+            scoreElem.className = 'font-metric-xl text-metric-xl text-primary font-semibold mt-0.5';
+          } else if (status === 'conflicting') {
+            scoreElem.innerText = '32.1%';
+            scoreElem.className = 'font-metric-xl text-metric-xl text-error font-semibold mt-0.5';
+          } else if (status === 'uncertain') {
+            scoreElem.innerText = '61.8%';
+            scoreElem.className = 'font-metric-xl text-metric-xl text-tertiary font-semibold mt-0.5';
+          } else {
+            scoreElem.innerText = '12.0%';
+            scoreElem.className = 'font-metric-xl text-metric-xl text-outline font-semibold mt-0.5';
+          }
+        });
+      });
+    });
+  </script>
+</div></main></div></body></html>

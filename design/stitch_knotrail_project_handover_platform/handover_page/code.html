@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"on-primary-fixed":"#002114","on-surface":"#161d18","on-primary-container":"#f5fff7","on-tertiary-fixed-variant":"#5d4200","primary-fixed":"#c5ebd5","secondary-fixed":"#cde9d8","on-tertiary":"#ffffff","tertiary-fixed":"#ffdea6","secondary-fixed-dim":"#b1cdbc","on-error":"#ffffff","inverse-primary":"#aacfba","on-secondary":"#ffffff","surface":"#f3fcf2","tertiary-container":"#966e13","inverse-surface":"#2a322c","on-surface-variant":"#414844","primary-fixed-dim":"#aacfba","surface-container-highest":"#dce5db","secondary":"#4a6456","primary-container":"#597c6a","on-primary":"#ffffff","tertiary-fixed-dim":"#f0bf5f","secondary-container":"#cae6d5","on-error-container":"#93000a","primary":"#416352","surface-container":"#e7f0e7","surface-container-low":"#edf6ec","inverse-on-surface":"#eaf3e9","error-container":"#ffdad6","on-tertiary-fixed":"#271900","surface-container-lowest":"#ffffff","surface-variant":"#dce5db","surface-container-high":"#e2ebe1","on-secondary-fixed-variant":"#334c3f","on-primary-fixed-variant":"#2c4d3d","on-tertiary-container":"#fffbff","surface-bright":"#f3fcf2","surface-dim":"#d4dcd3","outline-variant":"#c1c8c2","outline":"#727973","on-background":"#161d18","on-secondary-container":"#4f685a","background":"#f3fcf2","surface-tint":"#446554","tertiary":"#785600","on-secondary-fixed":"#072015","error":"#ba1a1a"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"1.5rem","space-lg":"1.25rem","margin":"2rem","space-xs":"0.5rem","space-2xl":"2rem","space-sm":"0.75rem","margin-mobile":"1rem","gutter-mobile":"0.75rem","gutter":"1.25rem","space-md":"1rem","space-2xs":"0.25rem"},"fontFamily":{"label-sm":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"label-md":["Inter"],"headline-md":["Inter"],"metric-xl":["Inter"],"body-lg":["Inter"],"body-md":["Inter"],"display-lg":["Inter"]},"fontSize":{"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"18px","fontWeight":"500"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"metric-xl":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"600"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-50 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] flex flex-col justify-between py-space-lg px-space-md"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-xs"><img alt="KnoTrail Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V9FTR8ORWAnKhDErKGsUrz5zEkhskDOW2RxKJ3l3cxOmv7bbLf9cSPBdBPYVqB8NaUhC24e3NctCF6DoEQGhMkD6YUa4uwtYfjo6IccfyodoR469WojSqHlFrQ8qrrxDhnsTmH3oIyo4KburI3I9eSnMy6cyJ6DhrYK3glLRAORxydIX_f6a3M7Vr13oxYJQcOFr5Eg4cQQZQbqAS3uLhp1PmPQu0TGAe4sxVZ1e5m"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">KnoTrail</span><span class="font-label-sm text-label-sm text-outline mt-0.5 leading-none">Knowledge Handover</span></div></div><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="projects" href="#"><span class="material-symbols-outlined text-[20px]">folder_open</span><span class="font-label-md text-label-md">Projects</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="sources" href="#"><span class="material-symbols-outlined text-[20px]">dataset</span><span class="font-label-md text-label-md">Sources</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="ai-analysis" href="#"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="font-label-md text-label-md">AI Analysis</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="evidence-explorer" href="#"><span class="material-symbols-outlined text-[20px]">fact_check</span><span class="font-label-md text-label-md">Evidence Explorer</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="review-center" href="#"><span class="material-symbols-outlined text-[20px]">rule</span><span class="font-label-md text-label-md">Review Center</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="handovers" href="#"><span class="material-symbols-outlined text-[20px]">sync_alt</span><span class="font-label-md text-label-md">Handovers</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-md text-label-md">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm px-space-xs"><div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs"><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Active Sprint</span><span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Titan Core Handover</span><div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden"><div class="bg-primary h-full w-[78%] rounded-full"></div></div><div class="flex items-center justify-between font-label-sm text-label-sm text-outline mt-0.5"><span>Progress</span><span>78%</span></div></div><div class="flex items-center justify-between text-outline px-space-xs pt-space-xs"><span class="font-label-sm text-label-sm">v2.4.0-stable</span><span class="material-symbols-outlined text-[18px] hover:text-on-surface cursor-pointer transition-colors">help_outline</span></div></div></aside><div class="pl-[18rem]"><header class="fixed top-4 left-[18rem] right-4 h-16 bg-surface-container-lowest/90 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-full text-on-surface cursor-pointer hover:bg-surface-container transition-colors"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[200px]">Project Titan Handover</span><span class="material-symbols-outlined text-[18px] text-outline">unfold_more</span></div><div class="relative hidden xl:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="bg-surface-container-low text-on-surface pl-9 pr-space-md py-1.5 rounded-full font-body-sm text-body-sm w-72 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/70 transition-all" placeholder="Search decisions, tasks, evidence..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-sm py-1 rounded-full font-label-sm text-label-sm font-medium"><span class="material-symbols-outlined text-[14px]">public</span><span>Demo Mode (100% Public Access)</span></div><button aria-label="Notifications" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span></button><div class="flex items-center gap-space-xs pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8Zg8xWo2aUQBR1ELc4iWB6IablNHLBqsP_9RL1ICWHXnc9sC1pAGSYKNdiPskrqMEj4-Cn8rz5xbNF_FAzc8A1Sl7-r6JZZe58ugUnw6SqFReXJN_39atDtDiJcj5IQnny0oFoiiuqVVqjJadXGkc7eUX8OGXRKGuUUE8-6PJtzGNRsDu8yfhlNPxH1Deku8ATB8C8x5T_fZBenz9EdFaZIU9IEStJIXK9Yvxv4vH"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Elena Rostova</span><span class="font-label-sm text-label-sm text-outline leading-tight">Handover Lead</span></div></div></div></header><main class="relative pt-16 pr-4 pb-space-2xl min-h-screen bg-background mt-4"><div class="flex flex-col w-full gap-space-lg">
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const links = document.querySelectorAll('aside nav a[data-path]');
+      links.forEach(l => {
+        if (l.getAttribute('data-path') === 'handovers') {
+          l.className = "flex items-center gap-space-sm px-space-md py-space-xs rounded-xl bg-primary-container text-on-primary-container font-semibold shadow-sm transition-all";
+        } else {
+          l.className = "flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group";
+        }
+      });
+    });
+  </script>
+<!-- Dossier Header & Document Actions Bar -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-md">
+<!-- Breadcrumb & Title -->
+<div class="flex flex-col gap-space-2xs min-w-0">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+<span class="hover:text-primary cursor-pointer transition-colors">Projects</span>
+<span class="material-symbols-outlined text-[13px]">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Project Titan Handover</span>
+<span class="material-symbols-outlined text-[13px]">chevron_right</span>
+<span class="text-on-surface font-semibold">Final Dossier v1.0</span>
+</div>
+<div class="flex items-center gap-space-sm mt-1 flex-wrap">
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight">Project Titan Engineering Handover Dossier</h1>
+<span class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[15px] text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+            Certified &amp; Signed Off
+          </span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-xs flex-wrap">
+<button class="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md" id="copy-link-btn" onclick="navigator.clipboard?.writeText(window.location.href); this.innerText='Link Copied!';">
+<span class="material-symbols-outlined text-[17px]">link</span>
+<span>Share Link</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md" onclick="window.print()">
+<span class="material-symbols-outlined text-[17px]">print</span>
+<span>Print View</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-[17px]">markdown</span>
+<span>Export Markdown</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-inverse-surface shadow-sm transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[17px]">download</span>
+<span>Export PDF</span>
+</button>
+</div>
+</div>
+<!-- Metadata Strip -->
+<div class="flex flex-wrap items-center gap-y-2 gap-x-space-lg pt-space-xs text-outline font-label-md text-label-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">person_remove</span>
+<span>Outgoing Lead:</span>
+<strong class="text-on-surface font-semibold">Elena Rostova</strong>
+</div>
+<span class="hidden sm:inline text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">person_add</span>
+<span>Incoming Lead:</span>
+<strong class="text-on-surface font-semibold">Marcus Vance</strong>
+</div>
+<span class="hidden sm:inline text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>Compiled:</span>
+<strong class="text-on-surface font-semibold">July 10, 2025</strong>
+</div>
+<span class="hidden sm:inline text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-tertiary">fingerprint</span>
+<span>Audit Trail:</span>
+<code class="text-on-surface font-semibold bg-surface-container-low px-1.5 py-0.5 rounded">#KT-9921-TITAN</code>
+</div>
+</div>
+</section>
+<!-- Executive Summary & Verification Metrics Bar -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-lg flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Decisions Documented</span>
+<span class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="font-metric-xl text-metric-xl text-on-surface">42</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+          100% Verified
+        </span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full w-full rounded-full"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-lg flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Transferred Assets</span>
+<span class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="font-metric-xl text-metric-xl text-on-surface">8 Services</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">4 AWS Secrets</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full w-full rounded-full"></div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-lg flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Mitigated Risks</span>
+<span class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">shield</span>
+</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="font-metric-xl text-metric-xl text-on-surface">5 of 5</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold">0 Blockers Open</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full w-full rounded-full"></div>
+</div>
+</div>
+<!-- Card 4 (Inverted Accent Highlight) -->
+<div class="bg-primary text-on-primary rounded-xl p-space-lg flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary-fixed font-medium">Traceability Score</span>
+<span class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="font-metric-xl text-metric-xl text-on-primary">98.4%</div>
+<span class="font-label-sm text-label-sm text-secondary-fixed font-semibold">Commit Backed</span>
+</div>
+<div class="w-full bg-on-primary/20 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary-fixed h-full w-[98.4%] rounded-full"></div>
+</div>
+</div>
+</section>
+<!-- Document Body Grid: Left Navigation / Sticky TOC + Right Dossier Content -->
+<div class="grid grid-cols-12 gap-space-gutter items-start">
+<!-- Sticky Dossier Quick Navigation (Left 3 columns on XL) -->
+<aside class="col-span-12 xl:col-span-3 sticky top-24 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-md flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider px-space-xs">Document Index</span>
+<nav class="flex flex-col gap-1 font-label-md text-label-md text-on-surface-variant">
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg bg-surface-container text-on-surface font-semibold transition-all" href="#sec-overview">
+<span>1. Architecture &amp; SLA</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-decisions">
+<span>2. Key Decisions (ADRs)</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-debt">
+<span>3. Technical Debt &amp; Tasks</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-access">
+<span>4. Ownership &amp; Credentials</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-risks">
+<span>5. Risks &amp; Mitigation Runbooks</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-dependencies">
+<span>6. System Dependencies</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-qa">
+<span>7. Q&amp;A &amp; Clarifications</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-roadmap">
+<span>8. 30-60-90 Day Roadmap</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all" href="#sec-signoff">
+<span>9. Formal Lead Sign-Off</span>
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+</a>
+</nav>
+</div>
+<!-- Quick Lead Card for Marcus Vance -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Professional headshot portrait of Marcus Vance, incoming lead engineer, friendly expression, natural studio lighting, soft warm green background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhfM3gsi_6ARuAvUckKtW3lVwUnpoTrwc0dHJDXLNICYJp1yGncxdYhjm_KlGGus8pttu3XMnMFVfrsvVDDy-hCc8pSVAaNY0qfuw732Lgz6NVMpGeXTU2Pai9tZ4WHeFpzAVzApM3kN6TXcS55raCJ3a3Gj_IiESRVErB24ZtYFG_lbC8N6TBfI2hbwKWiJ1pmE9h0_daU8_VqrJurIpL_H6CaFsW5n4YfqNr8c_U"/>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Marcus Vance</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Incoming Principal Engineer</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Handover package reviewed. All repository writes, AWS KMS rotations, and alert schedules received on July 09, 2025.
+        </p>
+<button class="w-full py-1.5 px-space-sm rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+<span>Open Slack Handoff Thread</span>
+</button>
+</div>
+</aside>
+<!-- Main Dossier Document Container (Right 9 columns on XL) -->
+<div class="col-span-12 xl:col-span-9 flex flex-col gap-space-xl">
+<!-- SECTION 1: Architecture & Topology -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-overview">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">01</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Project Overview &amp; System Architecture</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Topology v3.2</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          Project Titan provides fault-tolerant event ingestion, schema-validation, and near real-time transformation across 3 internal product units. The pipeline processes an average of 42,000 sustained EPS (events per second) with strict p99 latency guarantees below 140ms.
+        </p>
+<!-- Visual Architecture Card & SVG Schema Flow -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Data Flow Pipeline Topology</span>
+<span class="font-label-sm text-label-sm text-primary font-medium bg-surface-container-lowest px-2 py-0.5 rounded-full">SLA: 99.98% Uptime</span>
+</div>
+<!-- Inline SVG Pipeline Flow Diagram -->
+<div class="w-full bg-surface-container-lowest rounded-lg p-space-md flex flex-col items-center justify-center overflow-x-auto">
+<svg class="w-full max-w-2xl h-36" fill="none" viewbox="0 0 680 120" xmlns="http://www.w3.org/2000/svg">
+<!-- Edge Connectors -->
+<path d="M 120 60 L 180 60" stroke="#727973" stroke-dasharray="4 4" stroke-width="2"></path>
+<path d="M 300 60 L 360 60" stroke="#416352" stroke-width="2"></path>
+<path d="M 480 60 L 540 60" stroke="#416352" stroke-width="2"></path>
+<!-- Node 1: Ingestion API -->
+<rect fill="#E7F0E7" height="72" rx="12" width="110" x="10" y="24"></rect>
+<text fill="#161D18" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="65" y="54">EDGE INGEST</text>
+<text fill="#414844" font-family="Inter" font-size="10" text-anchor="middle" x="65" y="72">FastAPI / Envoy</text>
+<!-- Node 2: Stream Buffer -->
+<rect fill="#416352" height="80" rx="12" width="120" x="180" y="20"></rect>
+<text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="240" y="52">KAFKA CLUSTER</text>
+<text fill="#C5EBD5" font-family="Inter" font-size="10" text-anchor="middle" x="240" y="70">12 Partitions (AWS)</text>
+<!-- Node 3: Streaming Consumer -->
+<rect fill="#E7F0E7" height="72" rx="12" width="120" x="360" y="24"></rect>
+<text fill="#161D18" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="420" y="54">TITAN PROCESSOR</text>
+<text fill="#414844" font-family="Inter" font-size="10" text-anchor="middle" x="420" y="72">Rust Worker Pool</text>
+<!-- Node 4: Warehousing & OLAP -->
+<rect fill="#EDF6EC" height="72" rx="12" width="130" x="540" y="24"></rect>
+<text fill="#161D18" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="605" y="54">SNOWFLAKE / REDIS</text>
+<text fill="#414844" font-family="Inter" font-size="10" text-anchor="middle" x="605" y="72">OLAP Sink + State Cache</text>
+</svg>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm pt-space-2xs">
+<div class="p-space-sm bg-surface-container-lowest rounded-lg">
+<span class="font-label-sm text-label-sm text-outline">Target SLA</span>
+<p class="font-headline-sm text-headline-sm text-on-surface mt-1">99.98% / Monthly</p>
+<span class="font-body-sm text-body-sm text-secondary">No recorded breaches Q2</span>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg">
+<span class="font-label-sm text-label-sm text-outline">Throughput Ceiling</span>
+<p class="font-headline-sm text-headline-sm text-on-surface mt-1">115,000 EPS Peak</p>
+<span class="font-body-sm text-body-sm text-secondary">Auto-scale via KEDA</span>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg">
+<span class="font-label-sm text-label-sm text-outline">Storage Retention</span>
+<p class="font-headline-sm text-headline-sm text-on-surface mt-1">14 Days Kafka / Inf. S3</p>
+<span class="font-body-sm text-body-sm text-secondary">Parquet ice-box tier</span>
+</div>
+</div>
+</div>
+</article>
+<!-- SECTION 2: Important Architectural Decisions (ADRs) -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-decisions">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">02</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Important Architectural Decisions (ADRs)</h2>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-medium">3 Landmark Decisions Verified</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Historical trade-offs agreed during sprint cycles, preserving exact context, rationale, and underlying commit diffs.
+        </p>
+<div class="flex flex-col gap-space-sm">
+<!-- ADR 1 -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">ADR-041: Migration from Go Worker to Rust Ingestion Daemon</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Accepted</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Date: April 14, 2025</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+<strong>Rationale:</strong> Go GC pauses at 60k EPS caused sporadic p99 spikes exceeding 450ms. Re-architecting with zero-allocation Tokio streams in Rust locked p99 jitter down to 34ms while reducing compute instances by 40%.
+            </p>
+<div class="flex items-center gap-space-sm mt-2 pt-2 text-outline font-label-sm text-label-sm">
+<span class="inline-flex items-center gap-1 text-primary hover:underline cursor-pointer">
+<span class="material-symbols-outlined text-[15px]">commit</span>
+                Commit #8a1f9c0 (Rust Runtime PR #302)
+              </span>
+<span>•</span>
+<span class="text-on-surface-variant">Deciders: E. Rostova, M. Vance, D. Klein</span>
+</div>
+</div>
+<!-- ADR 2 -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">ADR-038: Dual-write Fallback via Redis Cluster During Kafka Partition Rebalance</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Accepted</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Date: Feb 22, 2025</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+<strong>Rationale:</strong> During dynamic cluster rebalances, producer buffers breached memory limits. A temporary ephemeral write-buffer to local Redis nodes prevents client 503 drops.
+            </p>
+<div class="flex items-center gap-space-sm mt-2 pt-2 text-outline font-label-sm text-label-sm">
+<span class="inline-flex items-center gap-1 text-primary hover:underline cursor-pointer">
+<span class="material-symbols-outlined text-[15px]">fact_check</span>
+                Evidence Specs #SPEC-084-REDIS
+              </span>
+<span>•</span>
+<span class="text-on-surface-variant">Deciders: E. Rostova, S. Chen</span>
+</div>
+</div>
+<!-- ADR 3 -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">ADR-035: Envelope Encryption Using Customer-Managed AWS KMS Keys</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Accepted</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Date: Jan 11, 2025</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+<strong>Rationale:</strong> SOC2 and ISO27001 requirements mandated per-tenant isolation of payload encryption keys prior to resting on S3 cold storage.
+            </p>
+<div class="flex items-center gap-space-sm mt-2 pt-2 text-outline font-label-sm text-label-sm">
+<span class="inline-flex items-center gap-1 text-primary hover:underline cursor-pointer">
+<span class="material-symbols-outlined text-[15px]">security</span>
+                Security Review SEC-TITAN-09
+              </span>
+<span>•</span>
+<span class="text-on-surface-variant">Deciders: SecOps Audit Board</span>
+</div>
+</div>
+</div>
+</article>
+<!-- SECTION 3: Pending Tasks & Technical Debt -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-debt">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">03</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Pending Tasks &amp; Technical Debt Checklist</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Prioritized for Incoming Lead</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Non-critical items identified prior to departure with explicit risk appraisals and suggested timelines.
+        </p>
+<div class="flex flex-col gap-space-xs">
+<!-- Item 1 -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<input checked="" class="mt-1 accent-primary w-4 h-4 rounded cursor-pointer" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Drain Legacy Python Ingestion SQS Queue</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Completed July 06. Old consumer deployment safely decommissioned.</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold whitespace-nowrap">Resolved</span>
+</div>
+<!-- Item 2 -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<input class="mt-1 accent-primary w-4 h-4 rounded cursor-pointer" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Upgrade Rust Tokio runtime to 1.38.0 for memory allocator tune</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Linear TITAN-419: Minor jemalloc configuration tweak for container limits.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm whitespace-nowrap">
+<span class="font-label-sm text-label-sm text-outline">Est: 2 days</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">Sprint 44</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<input class="mt-1 accent-primary w-4 h-4 rounded cursor-pointer" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Snowflake Micro-Batch Compaction Script Optimization</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Linear TITAN-442: Reduce clustering credit costs by grouping small files.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm whitespace-nowrap">
+<span class="font-label-sm text-label-sm text-outline">Est: 3 days</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">Sprint 45</span>
+</div>
+</div>
+</div>
+</article>
+<!-- SECTION 4: Responsibilities & Access Credentials Map -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-access">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">04</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Responsibilities &amp; Access Credentials Map</h2>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-medium">100% Transferred</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Audit matrix documenting asset handover from Elena Rostova to Marcus Vance and devops counterparts.
+        </p>
+<!-- Access Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container text-on-surface font-semibold text-label-sm">
+<th class="p-space-sm rounded-l-lg">Service / Asset Name</th>
+<th class="p-space-sm">Outgoing Owner</th>
+<th class="p-space-sm">Designated Successor</th>
+<th class="p-space-sm">Vault Secret Path</th>
+<th class="p-space-sm rounded-r-lg">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-space-sm font-semibold text-on-surface">Titan Kafka Ingestion (Prod)</td>
+<td class="p-space-sm text-on-surface-variant">Elena Rostova</td>
+<td class="p-space-sm text-primary font-medium">Marcus Vance</td>
+<td class="p-space-sm font-mono text-[11px] text-outline">vault/titan/prod/kafka-sasl</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 text-primary font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]">done_all</span> Verified
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-space-sm font-semibold text-on-surface">KMS Payload Master Keys</td>
+<td class="p-space-sm text-on-surface-variant">Elena Rostova</td>
+<td class="p-space-sm text-primary font-medium">Sophia Chen (Infra)</td>
+<td class="p-space-sm font-mono text-[11px] text-outline">aws:kms:us-east-1:key-90f7a</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 text-primary font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]">done_all</span> Rotated &amp; Bound
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-space-sm font-semibold text-on-surface">Snowflake Warehouse Loader Role</td>
+<td class="p-space-sm text-on-surface-variant">Elena Rostova</td>
+<td class="p-space-sm text-primary font-medium">Marcus Vance</td>
+<td class="p-space-sm font-mono text-[11px] text-outline">vault/titan/snowflake/rw</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 text-primary font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]">done_all</span> Verified
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-space-sm font-semibold text-on-surface">PagerDuty Primary On-Call Escalation</td>
+<td class="p-space-sm text-on-surface-variant">Elena Rostova</td>
+<td class="p-space-sm text-primary font-medium">Marcus Vance</td>
+<td class="p-space-sm font-mono text-[11px] text-outline">pd:schedule/titan-tier1</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 text-primary font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]">done_all</span> Effective July 14
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</article>
+<!-- SECTION 5: Identified Risks & Mitigation Runbooks -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-risks">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">05</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Identified Risks &amp; Mitigation Runbooks</h2>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Runbooks Validated</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Risk 1 -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-sm">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-error font-semibold uppercase">Risk Scenario A</span>
+<span class="text-outline font-label-sm text-label-sm">Severity: Medium</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Kafka Partition Lag Surge during Daily Reindex</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                If lag exceeds 500,000 offsets during the 02:00 UTC pipeline run, backpressure may trigger Redis buffer fills.
+              </p>
+</div>
+<a class="inline-flex items-center gap-1.5 text-primary font-label-md text-label-md font-semibold hover:underline mt-2" href="#">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+<span>Open Runbook RB-TITAN-LAG-RECOVERY</span>
+</a>
+</div>
+<!-- Risk 2 -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-sm">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-error font-semibold uppercase">Risk Scenario B</span>
+<span class="text-outline font-label-sm text-label-sm">Severity: Low</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Snowflake Schema Drift from Analytics Team</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Unannounced additions to JSON nested payload may be rejected by strict Rust deserialization schema.
+              </p>
+</div>
+<a class="inline-flex items-center gap-1.5 text-primary font-label-md text-label-md font-semibold hover:underline mt-2" href="#">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+<span>Open Runbook RB-SCHEMA-EVOLUTION</span>
+</a>
+</div>
+</div>
+</article>
+<!-- SECTION 6: System Dependencies & External Integrations -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-dependencies">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">06</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">System Dependencies &amp; External Integrations</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">5 Active Connectors</span>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-space-sm text-center">
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[24px] text-primary">hub</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Apache Kafka</span>
+<span class="font-body-sm text-body-sm text-outline">v3.6 MSK</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[24px] text-primary">cloud_lock</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">AWS KMS</span>
+<span class="font-body-sm text-body-sm text-outline">Managed Keys</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[24px] text-primary">storage</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Snowflake</span>
+<span class="font-body-sm text-body-sm text-outline">Enterprise DWH</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[24px] text-primary">memory</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Redis Cache</span>
+<span class="font-body-sm text-body-sm text-outline">Cluster 7.2</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[24px] text-primary">task_alt</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Linear API</span>
+<span class="font-body-sm text-body-sm text-outline">Board Sync</span>
+</div>
+</div>
+</article>
+<!-- SECTION 7: Unresolved Questions & Clarifications -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-qa">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">07</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Clarifications &amp; Transition Q&amp;A Sessions</h2>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-medium">All 4 Answered</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-1">
+<div class="flex items-center gap-space-xs text-on-surface font-semibold font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">help</span>
+<span>Marcus Vance: "What is the failover strategy if AWS us-east-1 KMS endpoint degrades?"</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pl-6 mt-1">
+<strong>Elena Rostova:</strong> The ingestion workers maintain local wrapped data-key tokens for up to 30 minutes in RAM, allowing pipeline continuity during transient AWS KMS timeouts without halting writes.
+            </p>
+</div>
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-1">
+<div class="flex items-center gap-space-xs text-on-surface font-semibold font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">help</span>
+<span>Marcus Vance: "Who approves production database schema modifications on the Snowflake ingest pipeline?"</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pl-6 mt-1">
+<strong>Elena Rostova:</strong> Co-approval between Marcus Vance (now incoming lead) and Carlos Garcia (Head of Data Architecture). Documented in CI rule <code>.github/CODEOWNERS</code>.
+            </p>
+</div>
+</div>
+</article>
+<!-- SECTION 8: Recommended Next 30-60-90 Day Actions -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(32,40,34,0.04),0_2px_6px_-1px_rgba(32,40,34,0.02)] p-space-xl flex flex-col gap-space-md scroll-mt-24" id="sec-roadmap">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">08</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Recommended 30-60-90 Day Success Roadmap</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Q3 2025 Objective</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- 30 Days -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold">First 30 Days</span>
+<span class="material-symbols-outlined text-primary text-[20px]">flag</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-2">Stability &amp; Monitoring</h3>
+<ul class="font-body-sm text-body-sm text-on-surface-variant flex flex-col gap-1.5 list-disc pl-4 mt-1">
+<li>Shadow Elena through next two on-call rotations.</li>
+<li>Perform test failover drill of Redis cluster buffering.</li>
+<li>Confirm audit logs in Datadog dashboard #Titan-Core.</li>
+</ul>
+</div>
+<!-- 60 Days -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm font-bold">60 Days</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">trending_up</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-2">Optimization &amp; Tuning</h3>
+<ul class="font-body-sm text-body-sm text-on-surface-variant flex flex-col gap-1.5 list-disc pl-4 mt-1">
+<li>Merge Tokio runtime upgrade (Linear TITAN-419).</li>
+<li>Re-evaluate Kafka auto-compaction thresholds.</li>
+<li>Conduct post-handover retrospective with stakeholders.</li>
+</ul>
+</div>
+<!-- 90 Days -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm font-bold">90 Days</span>
+<span class="material-symbols-outlined text-outline text-[20px]">rocket_launch</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-2">Titan v2 Architecture</h3>
+<ul class="font-body-sm text-body-sm text-on-surface-variant flex flex-col gap-1.5 list-disc pl-4 mt-1">
+<li>Initiate multi-region Kafka active-active plan.</li>
+<li>Hand off secondary support roles to junior engineers.</li>
+<li>Lead quarterly engineering architecture briefing.</li>
+</ul>
+</div>
+</div>
+</article>
+<!-- SECTION 9: Formal Sign-Off & Verification Footer Card -->
+<article class="bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] p-space-xl flex flex-col gap-space-lg scroll-mt-24" id="sec-signoff">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Cryptographic Sign-Off &amp; Formal Certification</h2>
+<span class="font-body-sm text-body-sm text-outline">Immutable audit trail verified on the internal engineering governance ledger</span>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md font-semibold">
+            Status: Fully Executed
+          </span>
+</div>
+<!-- 3 Signature Boxes -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Sig 1: Elena -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Elena Rostova smiling confident corporate profile photo, technical lead, natural lighting, off-white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG3mLLRS7M1BnOZ4cBG7U79A0ohMum9AnTUNwpPaScwr9Ov2l14MCLPbUcWyJENsg1ZiRtzrwz2u3PT-uevvKmkpZXGRazfcfI2BRPZ6xALIMOYtq0w7Xy0T5zTgKN_8eGuWMFWrTeZc4ZJaCaYZSycQyuQPDlOLCypZWZYH5HnUcWF76yFvQUllPe02U53jK7Ug10pvg7X5dqM5H3WXCgmvXXMuPZnETHzP1zzlrV"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Elena Rostova</span>
+<span class="font-label-sm text-label-sm text-outline">Outgoing Technical Lead</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">draw</span> Signed via Okta SAML
+              </span>
+<span class="font-body-sm text-body-sm text-outline">July 08, 2025 at 16:42 UTC</span>
+</div>
+</div>
+<!-- Sig 2: Marcus -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Marcus Vance formal tech leader profile, dark hair, soft green background, natural expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn9yIbAaiZD1IYae6MFNc0yh3VKXSmmpWRRBuLhW1CY2xygdEkEypzJQrN8fgqfVmzlmBci_1tmTylBz4PTWL2WnCkeOPnxr6NbcqPChRyAHrLbgJ4uid6D1eCi1rpwAqXg1THD_PjEEmatkPgAdm10RpCk9QjdTXzoFAz90c4_ZyfSjnrdgKslcGM9B_WajyRBOyAQQVW1R8b3Af2DySkzE4WRSbO5sS7Kovlq2lH"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Marcus Vance</span>
+<span class="font-label-sm text-label-sm text-outline">Incoming Technical Lead</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">draw</span> Signed via Okta SAML
+              </span>
+<span class="font-body-sm text-body-sm text-outline">July 09, 2025 at 09:14 UTC</span>
+</div>
+</div>
+<!-- Sig 3: Sophia -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Sophia Chen DevOps infrastructure engineer professional headshot, confident smile, clean studio portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxFYFAjjEHRABL9DkOWKRaa0GVCQxDRwjuy9D8s3nhEKJXKQPEHs0amBp3KtSjR2y7t-38-1I7Q_vdY72Ys36772108MugVP1_m6zZTh2Pis8KhExK22Cka2flzMoRP8CH4YRNiPB6hCj8Nuf3mdNE2RMdWLazMec6Ewitqkx3VYrv9LycsbbOS8Mpo_sDrw3Z_hSZPABbnqkNQU3fcZbL_t3jyTbYGWkYnC0-4ose"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Sophia Chen</span>
+<span class="font-label-sm text-label-sm text-outline">DevOps &amp; Infra Lead</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">draw</span> Signed via Okta SAML
+              </span>
+<span class="font-body-sm text-body-sm text-outline">July 09, 2025 at 14:30 UTC</span>
+</div>
+</div>
+</div>
+<!-- SHA256 Cryptographic Evidence Seal Strip -->
+<div class="p-space-md rounded-xl bg-surface-container flex flex-wrap items-center justify-between gap-space-sm font-mono text-[12px] text-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">lock</span>
+<span class="font-bold text-on-surface">SHA-256 Digest:</span>
+<span class="select-all break-all text-on-surface-variant">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="text-primary font-semibold font-label-sm text-label-sm">Immutable Record Stored</span>
+<button class="px-2 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center gap-1 font-sans">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copy Hash</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</div>
+</div></main></div></body></html>

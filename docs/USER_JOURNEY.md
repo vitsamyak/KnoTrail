@@ -120,3 +120,4 @@ KnoTrail is designed as a frictionless web application accessible to hackathon j
   - Click any finding to inspect underlying proof.
   - Toggle between clearance perspectives (Public vs. Internal view).
   - One-click export options: Structured JSON, formatted Markdown, or printable PDF.
+

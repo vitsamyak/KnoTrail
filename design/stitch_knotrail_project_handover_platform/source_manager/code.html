@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"on-primary-fixed":"#002114","on-surface":"#161d18","on-primary-container":"#f5fff7","on-tertiary-fixed-variant":"#5d4200","primary-fixed":"#c5ebd5","secondary-fixed":"#cde9d8","on-tertiary":"#ffffff","tertiary-fixed":"#ffdea6","secondary-fixed-dim":"#b1cdbc","on-error":"#ffffff","inverse-primary":"#aacfba","on-secondary":"#ffffff","surface":"#f3fcf2","tertiary-container":"#966e13","inverse-surface":"#2a322c","on-surface-variant":"#414844","primary-fixed-dim":"#aacfba","surface-container-highest":"#dce5db","secondary":"#4a6456","primary-container":"#597c6a","on-primary":"#ffffff","tertiary-fixed-dim":"#f0bf5f","secondary-container":"#cae6d5","on-error-container":"#93000a","primary":"#416352","surface-container":"#e7f0e7","surface-container-low":"#edf6ec","inverse-on-surface":"#eaf3e9","error-container":"#ffdad6","on-tertiary-fixed":"#271900","surface-container-lowest":"#ffffff","surface-variant":"#dce5db","surface-container-high":"#e2ebe1","on-secondary-fixed-variant":"#334c3f","on-primary-fixed-variant":"#2c4d3d","on-tertiary-container":"#fffbff","surface-bright":"#f3fcf2","surface-dim":"#d4dcd3","outline-variant":"#c1c8c2","outline":"#727973","on-background":"#161d18","on-secondary-container":"#4f685a","background":"#f3fcf2","surface-tint":"#446554","tertiary":"#785600","on-secondary-fixed":"#072015","error":"#ba1a1a"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"1.5rem","space-lg":"1.25rem","margin":"2rem","space-xs":"0.5rem","space-2xl":"2rem","space-sm":"0.75rem","margin-mobile":"1rem","gutter-mobile":"0.75rem","gutter":"1.25rem","space-md":"1rem","space-2xs":"0.25rem"},"fontFamily":{"label-sm":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"label-md":["Inter"],"headline-md":["Inter"],"metric-xl":["Inter"],"body-lg":["Inter"],"body-md":["Inter"],"display-lg":["Inter"]},"fontSize":{"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"18px","fontWeight":"500"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"metric-xl":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"600"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-50 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] flex flex-col justify-between py-space-lg px-space-md"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-xs"><img alt="KnoTrail Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V9FTR8ORWAnKhDErKGsUrz5zEkhskDOW2RxKJ3l3cxOmv7bbLf9cSPBdBPYVqB8NaUhC24e3NctCF6DoEQGhMkD6YUa4uwtYfjo6IccfyodoR469WojSqHlFrQ8qrrxDhnsTmH3oIyo4KburI3I9eSnMy6cyJ6DhrYK3glLRAORxydIX_f6a3M7Vr13oxYJQcOFr5Eg4cQQZQbqAS3uLhp1PmPQu0TGAe4sxVZ1e5m"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">KnoTrail</span><span class="font-label-sm text-label-sm text-outline mt-0.5 leading-none">Knowledge Handover</span></div></div><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="projects" href="#"><span class="material-symbols-outlined text-[20px]">folder_open</span><span class="font-label-md text-label-md">Projects</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl transition-all group bg-primary-container text-on-primary-container font-semibold shadow-sm" data-path="sources" href="#"><span class="material-symbols-outlined text-[20px]">dataset</span><span class="font-label-md text-label-md">Sources</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="ai-analysis" href="#"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="font-label-md text-label-md">AI Analysis</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="evidence-explorer" href="#"><span class="material-symbols-outlined text-[20px]">fact_check</span><span class="font-label-md text-label-md">Evidence Explorer</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="review-center" href="#"><span class="material-symbols-outlined text-[20px]">rule</span><span class="font-label-md text-label-md">Review Center</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="handovers" href="#"><span class="material-symbols-outlined text-[20px]">sync_alt</span><span class="font-label-md text-label-md">Handovers</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-md text-label-md">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm px-space-xs"><div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs"><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Active Sprint</span><span class="font-body-sm text-body-sm text-on-surface font-medium truncate">Titan Core Handover</span><div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden"><div class="bg-primary h-full w-[78%] rounded-full"></div></div><div class="flex items-center justify-between font-label-sm text-label-sm text-outline mt-0.5"><span>Progress</span><span>78%</span></div></div><div class="flex items-center justify-between text-outline px-space-xs pt-space-xs"><span class="font-label-sm text-label-sm">v2.4.0-stable</span><span class="material-symbols-outlined text-[18px] hover:text-on-surface cursor-pointer transition-colors">help_outline</span></div></div></aside><div class="pl-[18rem]"><header class="fixed top-4 left-[18rem] right-4 h-16 bg-surface-container-lowest/90 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-full text-on-surface cursor-pointer hover:bg-surface-container transition-colors"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[200px]">Project Titan Handover</span><span class="material-symbols-outlined text-[18px] text-outline">unfold_more</span></div><div class="relative hidden xl:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="bg-surface-container-low text-on-surface pl-9 pr-space-md py-1.5 rounded-full font-body-sm text-body-sm w-72 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/70 transition-all" placeholder="Search decisions, tasks, evidence..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-sm py-1 rounded-full font-label-sm text-label-sm font-medium"><span class="material-symbols-outlined text-[14px]">public</span><span>Demo Mode (100% Public Access)</span></div><button aria-label="Notifications" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span></button><div class="flex items-center gap-space-xs pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8Zg8xWo2aUQBR1ELc4iWB6IablNHLBqsP_9RL1ICWHXnc9sC1pAGSYKNdiPskrqMEj4-Cn8rz5xbNF_FAzc8A1Sl7-r6JZZe58ugUnw6SqFReXJN_39atDtDiJcj5IQnny0oFoiiuqVVqjJadXGkc7eUX8OGXRKGuUUE8-6PJtzGNRsDu8yfhlNPxH1Deku8ATB8C8x5T_fZBenz9EdFaZIU9IEStJIXK9Yvxv4vH"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Elena Rostova</span><span class="font-label-sm text-label-sm text-outline leading-tight">Handover Lead</span></div></div></div></header><main class="relative pt-16 pr-4 pb-space-2xl min-h-screen bg-background mt-4"><div class="flex flex-col w-full">
+<div class="px-space-md lg:px-space-xl flex flex-col gap-space-lg">
+<!-- READ-ONLY PRIVACY BANNER -->
+<section class="bg-surface-container-low rounded-xl p-space-md shadow-sm relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-start sm:items-center gap-space-md">
+<div class="flex-shrink-0 w-9 h-9 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Read-only analysis mode</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Active</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-4xl mt-0.5">
+            KnoTrail only requires read permissions to index commits, tickets, and documentation. No source code, tokens, or private secrets are modified or stored on persistent storage.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0 self-start sm:self-auto">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm shadow-sm hover:bg-surface-container-high transition-colors flex items-center gap-1.5" id="viewAuditBtn">
+<span class="material-symbols-outlined text-[16px] text-outline">policy</span>
+<span>Security Audit Spec</span>
+</button>
+</div>
+</section>
+<!-- TOP HEADER -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Source Management</span>
+<span class="text-outline text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-outline">Project Titan Handover</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Connected Knowledge Sources</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          Connect repositories, wikis, and ticketing boards to automatically feed the KnoTrail knowledge reconstruction engine and generate immutable evidence nodes.
+        </p>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button class="px-space-md py-2.5 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container font-label-md text-label-md shadow-sm transition-all flex items-center gap-space-xs" id="syncAllBtn">
+<span class="material-symbols-outlined text-[18px] text-outline" id="syncAllIcon">sync</span>
+<span>Refresh All</span>
+</button>
+<button class="px-space-md py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-all flex items-center gap-space-xs" id="openNewSourceModal">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Add New Source</span>
+</button>
+</div>
+</header>
+<!-- STAT SUMMARY TILES -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Active Sources</span>
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold mt-1">4 Connected</span>
+<span class="font-body-sm text-body-sm text-secondary mt-0.5">100% Health Status</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">hub</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Indexed Artifacts</span>
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold mt-1">738 Records</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">+42 in last 24h</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[24px]">auto_stories</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Sync Cadence</span>
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold mt-1">Sub-minute</span>
+<span class="font-body-sm text-body-sm text-secondary mt-0.5">Webhook Active</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[24px]">bolt</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Privacy Mode</span>
+<span class="font-metric-xl text-metric-xl text-on-surface font-semibold mt-1">Encrypted</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Zero persistent code</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-secondary-container/50 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[24px]">format_image_left</span>
+</div>
+</div>
+</section>
+<!-- CONNECTED SOURCES GRID (4 Cards) -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-space-xs">
+<span>Active Pipeline Connections</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">4 Active</span>
+</h2>
+<span class="font-label-sm text-label-sm text-outline">Auto-syncing every 15 minutes</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- CARD 1: GitHub -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center flex-shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[26px]">code</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">Code &amp; Commits</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                      Connected • Active Sync
+                    </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate mt-1">github.com/titan-enterprise/titan-core</h3>
+</div>
+</div>
+<button aria-label="More options" class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<!-- Stats Bar -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Indexed Coverage</span>
+<span class="text-on-surface font-semibold">92% of main branch</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full w-[92%]"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">database</span>
+<span><strong class="font-semibold text-on-surface">482 Commits</strong>, 114 PRs, 38 Issue Threads</span>
+</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline pt-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                Last sync: 12 minutes ago
+              </span>
+<span class="text-secondary font-medium">Webhook: 200 OK</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-between gap-space-xs pt-space-md mt-space-md border-t-0 bg-surface-container-lowest">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">settings</span>
+<span>Configure Sync</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">commit</span>
+<span>View Indexed Commits</span>
+</button>
+</div>
+<button class="sync-single-btn px-space-sm py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary font-label-sm text-label-sm transition-colors flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Sync Now</span>
+</button>
+</div>
+</article>
+<!-- CARD 2: Notion ADRs -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center flex-shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[26px]">menu_book</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">Documentation</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                      Connected • Active Sync
+                    </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate mt-1">Engineering Wiki &amp; Architecture ADRs</h3>
+</div>
+</div>
+<button aria-label="More options" class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<!-- Stats Bar -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Knowledge Graph Extraction</span>
+<span class="text-on-surface font-semibold">100% Processed</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full w-full"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">article</span>
+<span><strong class="font-semibold text-on-surface">28 Pages</strong>, 14 Diagrams, 9 Meeting Transcripts</span>
+</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline pt-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                Last sync: 1 hour ago
+              </span>
+<span class="text-secondary font-medium">Notion API v2</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-between gap-space-xs pt-space-md mt-space-md border-t-0 bg-surface-container-lowest">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">settings</span>
+<span>Configure Sync</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">find_in_page</span>
+<span>Browse Pages</span>
+</button>
+</div>
+<button class="sync-single-btn px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">sync</span>
+<span>Sync</span>
+</button>
+</div>
+</article>
+<!-- CARD 3: Meeting Notes -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center flex-shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[26px]">graphic_eq</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">Transcripts</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                      Connected • 6 new recordings ready
+                    </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate mt-1">Sprint Handover &amp; Architecture Sync Recordings</h3>
+</div>
+</div>
+<button aria-label="More options" class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<!-- Stats Bar -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Audio Entity Extraction</span>
+<span class="text-tertiary font-semibold">6 Pending Review</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full w-[75%]"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">mic</span>
+<span><strong class="font-semibold text-on-surface">18 Recorded Syncs</strong>, 86 Action Items identified</span>
+</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline pt-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                Last sync: Yesterday, 16:30
+              </span>
+<span class="text-outline font-medium">Granola &amp; Otter Integrations</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-between gap-space-xs pt-space-md mt-space-md border-t-0 bg-surface-container-lowest">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary font-label-sm text-label-sm transition-colors flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">record_voice_over</span>
+<span>Review Transcripts</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">settings</span>
+<span>Configure</span>
+</button>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pending_actions</span>
+              Action Required
+            </span>
+</div>
+</article>
+<!-- CARD 4: Linear / Jira Tasks -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center flex-shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[26px]">task_alt</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">Task Management</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                      Connected • Real-time Webhook
+                    </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate mt-1">Titan Engineering Board (TITAN-*) &amp; Backlog</h3>
+</div>
+</div>
+<button aria-label="More options" class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<!-- Stats Bar -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Handover Resolution Velocity</span>
+<span class="text-on-surface font-semibold">91% Closed</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full w-[91%]"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">checklist</span>
+<span><strong class="font-semibold text-on-surface">192 Closed Issues</strong>, 19 Active Handover Tasks</span>
+</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline pt-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                Last sync: 4 minutes ago
+              </span>
+<span class="text-secondary font-medium">Linear API Connected</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-between gap-space-xs pt-space-md mt-space-md border-t-0 bg-surface-container-lowest">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">tune</span>
+<span>Filter Tags</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">rotate_right</span>
+<span>Re-index</span>
+</button>
+</div>
+<button class="sync-single-btn px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">sync</span>
+<span>Sync</span>
+</button>
+</div>
+</article>
+</div>
+</section>
+<!-- AVAILABLE NEW INTEGRATIONS -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Available Integrations</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Connect additional project platforms in one click to complete the decision trail.</p>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-medium cursor-pointer hover:underline">Explore enterprise directory →</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Slack -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[22px]">forum</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">Chat &amp; Channels</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-2">Slack Channels</h3>
+<p class="font-body-sm text-body-sm text-outline">Import key architectural debate threads from <code class="bg-surface-container-low px-1 rounded text-on-surface">#proj-titan-architecture</code>.</p>
+</div>
+<button class="connect-action-btn mt-space-md w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary text-on-surface font-label-md text-label-md font-medium transition-all flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add_link</span>
+<span>Connect Slack</span>
+</button>
+</div>
+<!-- Confluence -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[22px]">library_books</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">Enterprise Wiki</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-2">Confluence Space</h3>
+<p class="font-body-sm text-body-sm text-outline">Index legacy team runbooks, runbook tables, and past incident post-mortems.</p>
+</div>
+<button class="connect-action-btn mt-space-md w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary text-on-surface font-label-md text-label-md font-medium transition-all flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add_link</span>
+<span>Connect Space</span>
+</button>
+</div>
+<!-- Figma -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[22px]">draw</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">Design Specs</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-2">Figma Design Specs</h3>
+<p class="font-body-sm text-body-sm text-outline">Extract designer-developer handoff annotations, component contracts, and UX specs.</p>
+</div>
+<button class="connect-action-btn mt-space-md w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary text-on-surface font-label-md text-label-md font-medium transition-all flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add_link</span>
+<span>Connect Figma</span>
+</button>
+</div>
+<!-- GitLab CI/CD -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[22px]">rocket_launch</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">Pipelines</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-2">GitLab Artifacts</h3>
+<p class="font-body-sm text-body-sm text-outline">Sync deployment logs, pipeline release tags, and automated integration test results.</p>
+</div>
+<button class="connect-action-btn mt-space-md w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary text-on-surface font-label-md text-label-md font-medium transition-all flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add_link</span>
+<span>Connect GitLab</span>
+</button>
+</div>
+</div>
+</section>
+<!-- SECURITY & PRIVACY GUARANTEE PANEL -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-lg relative overflow-hidden">
+<div class="flex flex-col gap-space-sm max-w-2xl">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Enterprise Security Compliance</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+          Zero-Data Retention for Raw Credentials
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          KnoTrail operates with minimal-privilege Read-Only OAuth2 scopes. We generate immutable AST knowledge traces without persisting proprietary source repositories or secrets.
+        </p>
+<!-- Compliance Badges Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm pt-space-xs">
+<div class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary flex-shrink-0 mt-0.5">key_off</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Local Token Isolation</span>
+<span class="font-body-sm text-body-sm text-outline">Ephemeral enclave tokens destroyed after sync completion.</span>
+</div>
+</div>
+<div class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary flex-shrink-0 mt-0.5">manage_search</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Source Line Traceability</span>
+<span class="font-body-sm text-body-sm text-outline">Every evidence card references the exact commit SHA or document URI.</span>
+</div>
+</div>
+<div class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary flex-shrink-0 mt-0.5">lock</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Read-Only Scopes</span>
+<span class="font-body-sm text-body-sm text-outline">Write permissions explicitly denied at OAuth exchange level.</span>
+</div>
+</div>
+<div class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary flex-shrink-0 mt-0.5">history_edu</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Audit Log Export</span>
+<span class="font-body-sm text-body-sm text-outline">Export complete access journals anytime via JSON or CSV.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Graphic / Verification Emblem -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col items-center justify-center text-center w-full md:w-72 flex-shrink-0 gap-space-xs">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-1">SOC-2 Type II Ready</span>
+<span class="font-body-sm text-body-sm text-outline">Continuous automated validation enabled for Titan Project.</span>
+<div class="w-full pt-space-xs">
+<button class="w-full py-2 rounded-lg bg-surface-container-highest hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors">
+            Download Security Whitepaper
+          </button>
+</div>
+</div>
+</section>
+</div>
+<!-- ADD NEW SOURCE MODAL (Interactive) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-sm" id="newSourceModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-xl shadow-xl flex flex-col gap-space-md transform transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">add_link</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Add Knowledge Source</h3>
+</div>
+<button class="p-1 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors" id="closeNewSourceModal">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Select a platform or enter a repository URL. KnoTrail will request read-only access to parse commits, threads, and documentation.
+      </p>
+<div class="flex flex-col gap-space-sm">
+<label class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface font-medium">Source Type</span>
+<select class="bg-surface-container-low rounded-lg p-2.5 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" id="modalSourceType">
+<option value="github">GitHub Repository (Public / Org)</option>
+<option value="gitlab">GitLab Project</option>
+<option value="notion">Notion Database / Page</option>
+<option value="confluence">Confluence Cloud Space</option>
+<option value="jira">Jira Project Board</option>
+<option value="linear">Linear Team Workspace</option>
+</select>
+</label>
+<label class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface font-medium">Repository / Resource URI</span>
+<input class="bg-surface-container-low rounded-lg p-2.5 font-body-sm text-body-sm text-on-surface placeholder:text-outline/70 focus:outline-none focus:ring-1 focus:ring-primary" id="modalResourceUri" placeholder="e.g. github.com/titan-enterprise/titan-auth" type="text"/>
+</label>
+<div class="bg-surface-container-low p-space-sm rounded-lg flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">verified_user</span>
+<span>Zero code stored. Read-only permissions enforced.</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-xs pt-space-xs">
+<button class="px-space-md py-2 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" id="cancelModalBtn">
+          Cancel
+        </button>
+<button class="px-space-md py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-1.5 shadow-sm" id="submitNewSourceBtn">
+<span class="material-symbols-outlined text-[18px]">lock_open</span>
+<span>Authorize &amp; Connect</span>
+</button>
+</div>
+</div>
+</div>
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none" id="toastNotification">
+<div class="bg-inverse-surface text-inverse-on-surface px-space-md py-2.5 rounded-lg shadow-xl flex items-center gap-space-xs font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
+<span id="toastMessage">Sync initiated successfully</span>
+</div>
+</div>
+</div>
+<script>
+  // Simple toast trigger
+  function showToast(message) {
+    const toast = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    if (!toast || !toastMessage) return;
+    toastMessage.textContent = message;
+    toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+    }, 2800);
+  }
+
+  // Refresh All Micro-interaction
+  const syncAllBtn = document.getElementById('syncAllBtn');
+  const syncAllIcon = document.getElementById('syncAllIcon');
+  if (syncAllBtn && syncAllIcon) {
+    syncAllBtn.addEventListener('click', () => {
+      syncAllIcon.classList.add('animate-spin');
+      showToast('Synchronizing all 4 active sources...');
+      setTimeout(() => {
+        syncAllIcon.classList.remove('animate-spin');
+        showToast('All sources up to date.');
+      }, 1500);
+    });
+  }
+
+  // Individual Sync Buttons
+  const singleSyncButtons = document.querySelectorAll('.sync-single-btn');
+  singleSyncButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const originalText = this.innerHTML;
+      this.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span><span>Syncing...</span>';
+      setTimeout(() => {
+        this.innerHTML = '<span class="material-symbols-outlined text-[16px] text-primary">check</span><span>Done</span>';
+        showToast('Source re-indexed successfully.');
+        setTimeout(() => {
+          this.innerHTML = originalText;
+        }, 2000);
+      }, 1200);
+    });
+  });
+
+  // Modal Handlers
+  const modal = document.getElementById('newSourceModal');
+  const openModalBtn = document.getElementById('openNewSourceModal');
+  const closeModalBtn = document.getElementById('closeNewSourceModal');
+  const cancelModalBtn = document.getElementById('cancelModalBtn');
+  const submitNewSourceBtn = document.getElementById('submitNewSourceBtn');
+  const connectActionButtons = document.querySelectorAll('.connect-action-btn');
+
+  function openModal() {
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    if (modal) modal.classList.add('hidden');
+  }
+
+  if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+  if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+  if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+  if (submitNewSourceBtn) {
+    submitNewSourceBtn.addEventListener('click', () => {
+      closeModal();
+      showToast('New knowledge source authorized & queued for indexing!');
+    });
+  }
+
+  connectActionButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      openModal();
+    });
+  });
+
+  const auditBtn = document.getElementById('viewAuditBtn');
+  if (auditBtn) {
+    auditBtn.addEventListener('click', () => {
+      showToast('Opening verified security compliance ledger...');
+    });
+  }
+</script></main></div></body></html>
