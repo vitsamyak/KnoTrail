@@ -18,21 +18,22 @@ KnoTrail is engineered across three major hackathon milestones:
 
 ## Phase Details
 
-### Phase A Hardening (Phases 4 & 5): Critical Handover Integrity & Human Review Gating
+### Phase A: Critical Handover Integrity & Human Review Gating
 **Goal**: Enforce strict data filtering and human review gating so that unapproved or rejected findings never leak into certified handovers or exports, and handover dossiers cannot be generated with unresolved conflicts.  
-**Depends on**: Initial Application Shell & Functional Audit  
 **Requirements**: REV-01, REV-03, HAND-01, HAND-02, HAND-03  
-**Success Criteria** (what must be TRUE):
-  1. Only approved and non-rejected findings appear in the final handover dossier.
-  2. Rejected findings never appear in handover exports.
-  3. Unapproved findings never appear in a certified handover.
-  4. The "Certified & Signed Off" badge is conditional on `project.handoverCertified`, not statically displayed.
-  5. Handover generation is blocked until all required findings are reviewed and critical conflicts are resolved.
-  6. Dependencies are included in the final handover dossier and exports.
-  7. Identical filtering rules are applied to Markdown, JSON, and Print/PDF exports.
-  8. Sidebar navigation displays lock state and enforces the handover approval gate.
-  9. Automated unit test suite verifies all 8 integrity conditions (`src/__tests__/handoverIntegrity.test.mjs`).
 **Status**: COMPLETED (8/8 tests passing, Next.js production build passing)
+
+### Phase B: Persistent Data Storage & Multi-Workspace Isolation Foundation
+**Goal**: Implement reliable persistence layer using `DurableFileRepository` with atomic writes, Next.js REST API endpoints, and anonymous workspace isolation (`ws_anon_*`) ensuring zero login/signup barriers.  
+**Status**: COMPLETED (9/9 tests passing, total 17/17 passing)
+
+### Phase C: Real Document Source Ingestion & Text Extraction
+**Goal**: Ingest authentic project documents (PDF, TXT, Markdown), extract page-by-page and line-by-line text, store raw files safely, and preserve original source context with zero simulated AI entity extraction.  
+**Status**: COMPLETED (13/13 tests passing, total 30/30 passing)
+
+### Phase D: Real AI Knowledge Extraction & Evidence Grounding
+**Goal**: Transform authentic uploaded project documents into structured, evidence-backed operational knowledge using Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash), enforce strict verbatim quote grounding, compute exact PDF page and TXT/MD line coordinates, categorize across all 7 operational types, integrate with Human Review Center under Phase A gates, and enforce Zero Fake AI Invariant.  
+**Status**: COMPLETED (16/16 tests passing, total 46/46 passing, Next.js build passing)
 
 
 

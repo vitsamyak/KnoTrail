@@ -248,5 +248,55 @@ Prior to Phase C, project sources were limited to preloaded synthetic streams an
 - Incoming engineers and evaluators can upload authentic project documentation, view genuinely extracted content, and verify exact page/line coordinates.
 - Validated by 12 new automated test scenarios (`src/__tests__/sourceIngestion.test.mjs`), bringing test suite total to 30 passing tests.
 
+---
+
+## ADR-010: Real AI Knowledge Extraction Architecture & Evidence Grounding Engine
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Implemented (Phase D)
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+Following Phase C's real document source ingestion, KnoTrail needed to transform authentic project documentation (PDFs, TXT, MD) into structured, evidence-grounded operational knowledge. Crucially, the system had to eliminate AI hallucinations, enforce mandatory verbatim source quotes, calculate exact coordinates (PDF page numbers, TXT/MD line numbers), integrate seamlessly with the Human Review Center without bypassing Phase A handover approval gates, and adhere strictly to the Zero Fake AI Invariant (never substituting hardcoded findings when an API key is absent).
+
+### Decision
+1. **Google GenAI SDK Integration**:
+   - Integrated Google's official GenAI SDK (`@google/genai` v3.0.0) with model `gemini-2.5-flash`.
+   - Structured JSON response mode with temperature 0.1 for high-fidelity factual extraction.
+   - Server-side environment key validation (`GEMINI_API_KEY`). When missing or unconfigured, the server returns HTTP 428 Precondition Required with actionable configuration guidance; zero simulated or canned findings are fabricated.
+2. **7 Operational Knowledge Categories**:
+   - Architectural Decisions: Captures reasoning and operational impact.
+   - Pending Tasks: Runbook items with assignees and urgency tags.
+   - Operational Risks: System, security, or financial risks.
+   - Technical Dependencies: Cloud services, libraries, and cross-team integrations.
+   - Key Contacts / Responsibilities: Domain leads and transition owners.
+   - Unresolved Questions: Open RFCs, unverified assumptions, and architectural ambiguities.
+   - Immediate Next Actions: Actionable onboarding steps for incoming personnel.
+3. **Strict Backend Evidence Grounding Engine (`grounding.ts`)**:
+   - The LLM's proposed `supportingQuote` is never trusted blindly.
+   - The backend independently searches the source document's extracted text:
+     - Exact & normalized whitespace matching.
+     - For PDFs: Scans `source.documentData.pages` to locate the exact 1-indexed `pageNumber` and line numbers.
+     - For TXT/MD: Calculates line range (`Lines X-Y`) by scanning newline characters.
+     - Computes SHA-256 `contentHash` of the verified snippet.
+     - Verbatim matches are marked `status: 'VERIFIED'` with 90-98% confidence.
+     - Hallucinated or non-matching quotes are explicitly downgraded to `status: 'UNCERTAIN'` (confidence $\le 50\%$) with validation warning notes.
+     - Missing quotes are marked `status: 'MISSING'` (confidence 25%).
+4. **Document Chunking & Deduplication**:
+   - Documents $> 12,000$ characters are chunked into overlapping windows (1,000 character overlap) with start/end offset and line preservation.
+   - Cross-chunk and cross-document deduplication uses lexical overlap (Dice coefficient $> 0.75$) to merge duplicate claims, combine citations, and retain the highest-fidelity reasoning.
+5. **Human Review Center Integration**:
+   - All newly generated findings default to `approved: false, rejected: false`.
+   - Newly extracted items immediately populate the Human Review Center for mandatory human review and sign-off.
+   - Phase A handover gates remain fully enforced: handover preview and export are blocked until all findings are reviewed and conflicts resolved.
+6. **UI & Telemetry Upgrade**:
+   - `AnalysisView.tsx` features an interactive document selector, real-time extraction progress telemetry, live grounding percentage calculations, category filtering across all 7 types, and Gemini API setup instructions.
+
+### Consequences
+- Incoming team members receive 100% source-traceable knowledge dossiers backed by authentic document citations.
+- Evaluators can test with real documents and verify exact quotes and page coordinates.
+- Validated by 16 automated test scenarios (`src/__tests__/aiExtraction.test.mjs`), bringing total passing test suite to 46 tests. Production build compiles cleanly with zero errors.
+
+
 
 

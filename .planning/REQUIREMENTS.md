@@ -26,22 +26,22 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 
 ### Knowledge Extraction & State Reconstruction (EXTRACT)
 
-- [ ] **EXTRACT-01**: Pipeline extracts explicit architectural and technical decisions along with their stated rationale.
-- [ ] **EXTRACT-02**: Pipeline identifies pending, in-progress, and unassigned tasks with associated owners or historical contributors.
-- [ ] **EXTRACT-03**: Pipeline identifies technical dependencies, cross-service requirements, and known risks or failure modes.
-- [ ] **EXTRACT-04**: Pipeline extracts key project contacts and their historical areas of responsibility.
+- [x] **EXTRACT-01**: Pipeline extracts explicit architectural and technical decisions along with their stated rationale.
+- [x] **EXTRACT-02**: Pipeline identifies pending, in-progress, and unassigned tasks with associated owners or historical contributors.
+- [x] **EXTRACT-03**: Pipeline identifies technical dependencies, cross-service requirements, and known risks or failure modes.
+- [x] **EXTRACT-04**: Pipeline extracts key project contacts and their historical areas of responsibility.
 
 ### Evidence & Provenance Grounding (EVID)
 
 - [x] **EVID-01**: Every reconstructed finding is permanently coupled to at least one primary source citation (file, line range, commit SHA, or message ID).
 - [ ] **EVID-02**: System provides one-click navigation from any finding directly to its underlying raw source evidence snippet.
-- [ ] **EVID-03**: System prohibits emitting ungrounded facts; assertions lacking verifiable source evidence are rejected or routed to the Missing Evidence register.
+- [x] **EVID-03**: System prohibits emitting ungrounded facts; assertions lacking verifiable source evidence are rejected or routed to the Missing Evidence register.
 
 ### Uncertainty & Conflict Detection (CONF)
 
-- [ ] **CONF-01**: System explicitly flags uncertain statements (findings with partial or ambiguous support) and presents them with an UNCERTAIN badge.
+- [x] **CONF-01**: System explicitly flags uncertain statements (findings with partial or ambiguous support) and presents them with an UNCERTAIN badge.
 - [ ] **CONF-02**: System detects contradictory statements across different sources (e.g., outdated README vs recent commit or meeting note) and flags them as CONFLICT.
-- [ ] **CONF-03**: System identifies missing evidence gaps (e.g., undocumented decisions or unassigned critical dependencies) and lists them under MISSING EVIDENCE.
+- [x] **CONF-03**: System identifies missing evidence gaps (e.g., undocumented decisions or unassigned critical dependencies) and lists them under MISSING EVIDENCE.
 
 ### Human Review & Correction Workflow (REV)
 

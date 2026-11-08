@@ -161,6 +161,8 @@ export function WorkspaceView() {
               { id: 'task', label: 'Tasks', count: project.findings.filter((f) => f.type === 'task').length },
               { id: 'risk', label: 'Risks', count: project.findings.filter((f) => f.type === 'risk').length },
               { id: 'dependency', label: 'Dependencies', count: project.findings.filter((f) => f.type === 'dependency').length },
+              { id: 'unresolved_question', label: 'Questions', count: project.findings.filter((f) => f.type === 'unresolved_question').length },
+              { id: 'next_action', label: 'Next Actions', count: project.findings.filter((f) => f.type === 'next_action').length },
             ].map((tab) => (
               <button
                 key={tab.id}

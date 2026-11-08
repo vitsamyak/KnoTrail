@@ -33,6 +33,13 @@ interface ProjectContextType {
   syncProgress: number;
   syncStatusMessage: string;
   runAiSync: () => Promise<void>;
+  isAnalysing: boolean;
+  analysisProgress: number;
+  analysisStatusMessage: string;
+  analysisError: string | null;
+  hasAiApiKey: boolean;
+  checkAiConfig: () => Promise<{ configured: boolean; model: string }>;
+  runRealAiAnalysis: (sourceIds?: string[]) => Promise<{ success: boolean; count?: number; error?: string; configured?: boolean; telemetry?: any }>;
   addSource: (source: { name: string; type: ProjectSource['type']; content: string; description: string }) => Promise<void>;
   uploadSources: (files: File[]) => Promise<{ success: boolean; results: any[]; error?: string }>;
   deleteSource: (sourceId: string) => Promise<void>;
@@ -49,6 +56,10 @@ interface ProjectContextType {
     tasksCount: number;
     risksCount: number;
     dependenciesCount: number;
+    questionsCount: number;
+    nextActionsCount: number;
+    contactsCount: number;
+    groundedPercent: number;
     verifiedCount: number;
     uncertainCount: number;
     conflictingCount: number;
@@ -92,6 +103,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [syncStatusMessage, setSyncStatusMessage] = useState('');
+
+  // Real AI extraction states
+  const [isAnalysing, setIsAnalysing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisStatusMessage, setAnalysisStatusMessage] = useState('');
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [hasAiApiKey, setHasAiApiKey] = useState<boolean>(false);
 
   // Helper to persist state to local cache immediately
   const persistToLocalCache = useCallback((wsId: string, updatedProject: ProjectData) => {
@@ -235,6 +253,95 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setIsSyncing(false);
     setSyncProgress(0);
     setSyncStatusMessage('');
+  };
+
+  // Check AI configuration and status
+  const checkAiConfig = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/analysis/extract?workspaceId=${encodeURIComponent(workspaceId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setHasAiApiKey(Boolean(data.configured));
+        return data;
+      }
+    } catch (err) {
+      console.warn('Could not query AI config:', err);
+    }
+    return { configured: false, model: 'gemini-2.5-flash' };
+  }, [workspaceId]);
+
+  useEffect(() => {
+    if (workspaceId) {
+      checkAiConfig();
+    }
+  }, [workspaceId, checkAiConfig]);
+
+  // Execute genuine AI extraction with Gemini 2.5 Flash across documents
+  const runRealAiAnalysis = async (sourceIds?: string[]) => {
+    if (isAnalysing) return { success: false, error: 'Analysis already in progress' };
+    setIsAnalysing(true);
+    setAnalysisError(null);
+    setAnalysisProgress(15);
+    setAnalysisStatusMessage('Validating sources and connecting to Gemini 2.5 Flash...');
+
+    try {
+      setAnalysisProgress(35);
+      setAnalysisStatusMessage('Processing document context and dispatching to Gemini...');
+
+      const res = await fetch('/api/analysis/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId, sourceIds }),
+      });
+
+      setAnalysisProgress(75);
+      setAnalysisStatusMessage('Grounding quotes and computing source coordinates...');
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setAnalysisProgress(0);
+        setIsAnalysing(false);
+        setAnalysisStatusMessage('');
+        const errMessage = data.error || `HTTP ${res.status}: AI Extraction failed`;
+        setAnalysisError(errMessage);
+        return {
+          success: false,
+          error: errMessage,
+          configured: data.configured !== undefined ? data.configured : true,
+        };
+      }
+
+      setAnalysisProgress(90);
+      setAnalysisStatusMessage(`Extracted ${data.count} grounded findings. Saving workspace...`);
+
+      if (data.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
+      }
+
+      setAnalysisProgress(100);
+      setAnalysisStatusMessage('Reconstruction complete. Findings populated in Review Center.');
+
+      setTimeout(() => {
+        setIsAnalysing(false);
+        setAnalysisProgress(0);
+        setAnalysisStatusMessage('');
+      }, 1000);
+
+      return {
+        success: true,
+        count: data.count,
+        telemetry: data.telemetry,
+      };
+    } catch (err: any) {
+      setIsAnalysing(false);
+      setAnalysisProgress(0);
+      setAnalysisStatusMessage('');
+      const errMessage = err.message || 'AI extraction network failure';
+      setAnalysisError(errMessage);
+      return { success: false, error: errMessage };
+    }
   };
 
   // Add a new project source (user notes, repo, doc) with backend persistence
@@ -678,11 +785,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const tasksCount = project.findings.filter((f) => f.type === 'task').length;
   const risksCount = project.findings.filter((f) => f.type === 'risk').length;
   const dependenciesCount = project.findings.filter((f) => f.type === 'dependency').length;
+  const questionsCount = project.findings.filter((f) => f.type === 'unresolved_question').length;
+  const nextActionsCount = project.findings.filter((f) => f.type === 'next_action').length;
+  const contactsCount = project.findings.filter((f) => f.type === 'contact').length;
 
   const verifiedCount = project.findings.filter((f) => f.status === 'VERIFIED').length;
   const uncertainCount = project.findings.filter((f) => f.status === 'UNCERTAIN').length;
   const conflictingCount = project.findings.filter((f) => f.status === 'CONFLICTING').length;
   const missingCount = project.findings.filter((f) => f.status === 'MISSING').length;
+  const groundedPercent = totalFindings > 0 ? Math.round((verifiedCount / totalFindings) * 100) : 0;
 
   const approvedCount = project.findings.filter((f) => f.approved && !f.rejected).length;
   const certificationProgressPercent = Math.round((approvedCount / (totalFindings || 1)) * 100);
@@ -712,6 +823,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         syncProgress,
         syncStatusMessage,
         runAiSync,
+        isAnalysing,
+        analysisProgress,
+        analysisStatusMessage,
+        analysisError,
+        hasAiApiKey,
+        checkAiConfig,
+        runRealAiAnalysis,
         addSource,
         uploadSources,
         deleteSource,
@@ -728,6 +846,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           tasksCount,
           risksCount,
           dependenciesCount,
+          questionsCount,
+          nextActionsCount,
+          contactsCount,
+          groundedPercent,
           verifiedCount,
           uncertainCount,
           conflictingCount,

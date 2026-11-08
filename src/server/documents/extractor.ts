@@ -284,3 +284,4 @@ export async function extractDocument(
     errorMessage: `Unsupported file type: ${ext}`,
   };
 }
+

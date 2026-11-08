@@ -1,21 +1,24 @@
 {
   "mode": "implement",
-  "objective": "Implement Phase C: Real Document Source Ingestion (PDF, TXT, Markdown) with Server-Side Extraction & Persistent Source Metadata",
+  "objective": "Implement Phase D: Real AI Knowledge Extraction with Gemini API Integration & Evidence Grounding",
   "acceptance_criteria": [
-    "Real server-side text extraction for PDF (page-by-page preservation via unpdf, image-only detection), Plain Text (.txt with line numbers), and Markdown (.md with headings/code blocks)",
-    "Drag-and-drop and browse file upload UI in SourceManagerView with file size and progress telemetry (10MB limit, max 5 files per batch)",
-    "Every uploaded file creates a persistent source record with SHA-256 hash, MIME type, file size, page/line metadata, extracted text, and safe isolated storage",
-    "Backend API endpoints: POST /api/sources/upload (multipart/form-data), GET /api/sources/[id], DELETE /api/sources/[id]",
-    "UI integration: Uploaded sources appear in sources list, distinguished from synthetic demo sources, with View Extracted Content modal and Remove Source action",
-    "Zero fake AI extraction: Strictly store genuine extracted document content for Phase D without hallucinating artificial decisions or tasks",
-    "Zero login/signup invariant and multi-visitor anonymous workspace isolation strictly maintained",
-    "Automated test suite covers TXT, Markdown, PDF extraction, multi-file uploads, size limits, unsupported extensions, malformed PDFs, empty files, and deletion",
+    "Google GenAI SDK (@google/genai) integrated through server-side backend API route (/api/analysis/extract)",
+    "Server-side environment key validation (GEMINI_API_KEY) with explicit configuration error feedback when missing; zero fake AI substitution",
+    "Structured extraction pipeline for 7 categories: Decisions (with reasoning/impact), Pending Tasks, Responsibilities, Risks, Dependencies, Unresolved Questions, and Next Actions",
+    "Strict Evidence Grounding: Backend independently verifies every supporting quote against original extracted document text and calculates exact source coordinates (PDF page numbers, TXT/MD line numbers)",
+    "Unverified or missing evidence is explicitly marked as UNCERTAIN or MISSING status with explanation; no fabricated citations or owners",
+    "Long document chunking and cross-chunk deduplication with context preservation",
+    "Human Review Integration: All newly generated findings default to approved: false, rejected: false and feed directly into Human Review Center without bypassing Phase A gates",
+    "AI Analysis UI upgraded with Analyse Project trigger, document selection, real progress telemetry, findings grouping, and API key configuration guidance",
+    "Data persistence: Extracted findings, citations, and analysis state persist in the workspace via DurableFileRepository",
+    "Automated test suite covering API configuration, JSON validation, entity extraction across all 7 categories, quote grounding verification, chunking, deduplication, persistence, and unapproved status defaults",
     "Production build and typecheck pass with zero errors"
   ],
   "non_goals": [
-    "Do not implement real LLM integration or AI entity extraction in this phase (Phase D)",
+    "Do not implement advanced cross-document contradiction resolution engine in this phase (Phase E)",
     "Do not alter Google Stitch design tokens or warm sage visual styling",
-    "Do not break Phase A handover integrity rules or Phase B persistence architecture"
+    "Do not bypass Phase A handover integrity approval gates or Phase B anonymous workspace persistence",
+    "Do not add login or signup"
   ],
   "risk": "medium",
   "budget": "balanced",
@@ -32,7 +35,7 @@
     "type": "executable_evidence",
     "command": "npm test && npm run build",
     "exit_code": 0,
-    "result": "30/30 unit and integration tests passed (Phase A: 8/8, Phase B: 10/10, Phase C: 12/12 covering TXT, Markdown, PDF page extraction, scanned PDF detection, malformed handling, 10MB limits, workspace isolation, deletion). Production build succeeded with exit code 0 (12 dynamic API routes and 6 static pages generated).",
-    "verdict": "VERDICT: PASS"
+    "result": "46 of 46 automated tests pass across Phase A (Handover Integrity), Phase B (Data Persistence & Workspace Isolation), Phase C (Real Document Ingestion & Extraction), and Phase D (Real AI Knowledge Extraction & Evidence Grounding). Production build compiles cleanly with zero type or webpack errors.",
+    "verdict": "PASS"
   }
 }

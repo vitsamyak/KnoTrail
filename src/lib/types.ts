@@ -1,6 +1,6 @@
 export type EvidenceStatus = 'VERIFIED' | 'UNCERTAIN' | 'CONFLICTING' | 'MISSING';
 
-export type FindingType = 'decision' | 'task' | 'risk' | 'dependency' | 'contact' | 'next_action';
+export type FindingType = 'decision' | 'task' | 'risk' | 'dependency' | 'contact' | 'next_action' | 'unresolved_question';
 
 export interface EvidenceCitation {
   id: string;
