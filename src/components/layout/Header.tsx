@@ -4,7 +4,17 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 
 export function Header() {
-  const { project, searchQuery, setSearchQuery, stats, setActiveView, isSyncing, runAiSync } = useProject();
+  const {
+    project,
+    searchQuery,
+    setSearchQuery,
+    stats,
+    setActiveView,
+    isSyncing,
+    runAiSync,
+    isSaving,
+    workspaceId,
+  } = useProject();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -73,6 +83,23 @@ export function Header() {
         <div className="hidden md:flex items-center gap-space-2xs bg-secondary-container/90 text-on-secondary-container px-space-sm py-1 rounded-full font-label-sm text-label-sm font-medium border border-primary/10 shadow-xs">
           <span className="material-symbols-outlined text-[14px]">public</span>
           <span>Demo Mode (Zero-Auth Open Access)</span>
+        </div>
+
+        {/* Persistence & Auto-Save Telemetry Badge */}
+        <div
+          className="hidden lg:flex items-center gap-1.5 bg-surface-container-low text-on-surface px-space-sm py-1 rounded-full font-label-sm text-label-sm border border-outline-variant/20 shadow-xs"
+          title={`Isolated Anonymous Workspace: ${workspaceId}`}
+        >
+          <span
+            className={`material-symbols-outlined text-[15px] ${
+              isSaving ? 'animate-spin text-tertiary' : 'text-primary'
+            }`}
+          >
+            {isSaving ? 'autorenew' : 'cloud_done'}
+          </span>
+          <span className="text-[11px] font-medium text-outline">
+            {isSaving ? 'Saving...' : 'Auto-saved'}
+          </span>
         </div>
 
         {/* Notifications Popover */}

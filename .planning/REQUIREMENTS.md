@@ -9,12 +9,12 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 
 ### Public Access & Incognito Evaluation (PUB)
 
-- [ ] **PUB-01**: Landing page opens and operates without user registration, login, or signup.
-- [ ] **PUB-02**: Core project workspace opens immediately without account creation or sign-in requirements.
-- [ ] **PUB-03**: Ready-made demonstration project ("Project Titan Handover") is pre-loaded and accessible to first-time visitors in one click.
-- [ ] **PUB-04**: Complete product demonstration workflow operates seamlessly in a fresh Incognito / Private browser session.
-- [ ] **PUB-05**: System prohibits mandatory authentication redirects or login walls anywhere in the core demonstration workflow.
-- [ ] **PUB-06**: Demo data uses synthetic, anonymized, or public project artifacts; zero confidential personal information or secrets are exposed in client code.
+- [x] **PUB-01**: Landing page opens and operates without user registration, login, or signup.
+- [x] **PUB-02**: Core project workspace opens immediately without account creation or sign-in requirements.
+- [x] **PUB-03**: Ready-made demonstration project ("Project Titan Handover") is pre-loaded and accessible to first-time visitors in one click.
+- [x] **PUB-04**: Complete product demonstration workflow operates seamlessly in a fresh Incognito / Private browser session.
+- [x] **PUB-05**: System prohibits mandatory authentication redirects or login walls anywhere in the core demonstration workflow.
+- [x] **PUB-06**: Demo data uses synthetic, anonymized, or public project artifacts; zero confidential personal information or secrets are exposed in client code.
 - [ ] **PUB-07**: Public deployment is directly accessible and evaluatable by hackathon judges without developer assistance or credentials.
 
 ### Ingestion & Source Integration (INGEST)
@@ -22,7 +22,7 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 - [ ] **INGEST-01**: System can ingest project documentation, Markdown files, and plain text notes from authorized local or uploaded paths.
 - [ ] **INGEST-02**: System can ingest Git repository commit history, changed files, and commit messages to reconstruct historical activity.
 - [ ] **INGEST-03**: System provides a modular source connector interface supporting extension to external APIs (e.g. GitHub issues, pull requests).
-- [ ] **INGEST-04**: System preserves source origin metadata (file path, commit hash, author, timestamp, access restriction tier) for every ingested item.
+- [x] **INGEST-04**: System preserves source origin metadata (file path, commit hash, author, timestamp, access restriction tier) for every ingested item.
 
 ### Knowledge Extraction & State Reconstruction (EXTRACT)
 
@@ -33,7 +33,7 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 
 ### Evidence & Provenance Grounding (EVID)
 
-- [ ] **EVID-01**: Every reconstructed finding is permanently coupled to at least one primary source citation (file, line range, commit SHA, or message ID).
+- [x] **EVID-01**: Every reconstructed finding is permanently coupled to at least one primary source citation (file, line range, commit SHA, or message ID).
 - [ ] **EVID-02**: System provides one-click navigation from any finding directly to its underlying raw source evidence snippet.
 - [ ] **EVID-03**: System prohibits emitting ungrounded facts; assertions lacking verifiable source evidence are rejected or routed to the Missing Evidence register.
 
@@ -45,19 +45,19 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 
 ### Human Review & Correction Workflow (REV)
 
-- [ ] **REV-01**: Human reviewer dashboard displays reconstructed state categorized into decisions, tasks, risks, contacts, and next actions.
-- [ ] **REV-02**: Human reviewer can edit, verify, reject, or annotate any generated finding, conflict, or uncertainty.
-- [ ] **REV-03**: System enforces an explicit "Approve Handover" gate; an unapproved handover cannot be published or finalized.
+- [x] **REV-01**: Human reviewer dashboard displays reconstructed state categorized into decisions, tasks, risks, contacts, and next actions.
+- [x] **REV-02**: Human reviewer can edit, verify, reject, or annotate any generated finding, conflict, or uncertainty.
+- [x] **REV-03**: System enforces an explicit "Approve Handover" gate; an unapproved handover cannot be published or finalized.
 
 ### Approved Handover & Incoming Member Explorer (HAND)
 
-- [ ] **HAND-01**: System generates a standardized, structured Handover Package containing all approved findings, evidence trails, and recommended next actions.
-- [ ] **HAND-02**: Interactive explorer interface allows an incoming team member to search, filter by topic/tag, and view evidence-backed project context.
-- [ ] **HAND-03**: System allows exporting the approved handover package into portable formats (structured JSON and readable Markdown/PDF).
+- [x] **HAND-01**: System generates a standardized, structured Handover Package containing all approved findings, evidence trails, and recommended next actions.
+- [x] **HAND-02**: Interactive explorer interface allows an incoming team member to search, filter by topic/tag, and view evidence-backed project context.
+- [x] **HAND-03**: System allows exporting the approved handover package into portable formats (structured JSON and readable Markdown/PDF).
 
 ### Security & Role-Based Access Control (SEC)
 
-- [ ] **SEC-01**: System provides role-based perspective simulation (Departing Member Reviewer, Incoming Member, Auditor) without requiring user accounts.
+- [x] **SEC-01**: System provides role-based perspective simulation (Departing Member Reviewer, Incoming Member, Auditor) without requiring user accounts.
 - [ ] **SEC-02**: System enforces source-level access filters so confidential or restricted source snippets are never leaked to unauthorized roles.
 - [ ] **SEC-03**: Handover export and viewer automatically sanitize or omit restricted sections based on the simulated viewer clearance tier.
 

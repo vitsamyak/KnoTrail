@@ -1,4 +1,4 @@
-import type { KnowledgeFinding, ProjectData } from './types';
+import type { KnowledgeFinding, ProjectData } from './types.ts';
 
 /**
  * Filter findings for the final handover dossier.

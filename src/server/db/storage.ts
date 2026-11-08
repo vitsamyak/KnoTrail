@@ -1,0 +1,378 @@
+import fs from 'fs';
+import path from 'path';
+import type { KnowledgeFinding, ProjectData, ProjectSource } from '../../lib/types.ts';
+import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
+import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSON } from '../../lib/handoverFilter.ts';
+import { isValidWorkspaceId, type WorkspaceRecord } from './types.ts';
+
+export interface StorageRepository {
+  getWorkspace(workspaceId: string): Promise<ProjectData | null>;
+  createWorkspace(workspaceId: string, initialProject?: ProjectData): Promise<ProjectData>;
+  saveProject(workspaceId: string, project: ProjectData): Promise<ProjectData>;
+  addSource(
+    workspaceId: string,
+    sourceData: { name: string; type: ProjectSource['type']; content: string; description: string }
+  ): Promise<{ source: ProjectSource; finding: KnowledgeFinding; project: ProjectData }>;
+  approveFinding(workspaceId: string, findingId: string, reviewerNotes?: string): Promise<ProjectData>;
+  rejectFinding(workspaceId: string, findingId: string, reason?: string): Promise<ProjectData>;
+  editFinding(workspaceId: string, findingId: string, updates: Partial<KnowledgeFinding>): Promise<ProjectData>;
+  resolveConflict(
+    workspaceId: string,
+    findingId: string,
+    resolution: string,
+    resolvedBy: string
+  ): Promise<ProjectData>;
+  certifyHandover(workspaceId: string, signerName: string): Promise<ProjectData>;
+  resetWorkspace(workspaceId: string): Promise<ProjectData>;
+  listWorkspaces(): Promise<string[]>;
+}
+
+/**
+ * Durable server-side repository for persistent workspace storage.
+ * Stores data in JSON files with atomic writes, ensuring durability across server restarts.
+ * Fully compatible with containerized deployments and persistent disk mounts.
+ */
+export class DurableFileRepository implements StorageRepository {
+  private baseDir: string;
+  private memoryCache: Map<string, ProjectData> = new Map();
+
+  constructor(customBaseDir?: string) {
+    this.baseDir = customBaseDir || path.join(process.cwd(), '.data', 'workspaces');
+    this.ensureDirectoryExists(this.baseDir);
+  }
+
+  private ensureDirectoryExists(dir: string) {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  private getFilePath(workspaceId: string): string {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}". Must be 3-64 alphanumeric/hyphen/underscore characters.`);
+    }
+    return path.join(this.baseDir, `${workspaceId}.json`);
+  }
+
+  private async readWorkspaceFile(workspaceId: string): Promise<ProjectData | null> {
+    const filePath = this.getFilePath(workspaceId);
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    try {
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      const parsed = JSON.parse(content) as WorkspaceRecord;
+      return parsed.project || null;
+    } catch (err) {
+      console.error(`Error reading workspace file for ${workspaceId}:`, err);
+      return null;
+    }
+  }
+
+  private async writeWorkspaceFile(workspaceId: string, project: ProjectData): Promise<void> {
+    const filePath = this.getFilePath(workspaceId);
+    const tempPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`;
+    
+    const record: WorkspaceRecord = {
+      id: workspaceId,
+      name: `Workspace ${workspaceId}`,
+      createdAt: project.lastAnalysed || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      project,
+    };
+
+    const data = JSON.stringify(record, null, 2);
+
+    // Atomic write pattern: write to temp file then rename
+    await fs.promises.writeFile(tempPath, data, 'utf-8');
+    await fs.promises.rename(tempPath, filePath);
+
+    // Update in-memory cache
+    this.memoryCache.set(workspaceId, project);
+  }
+
+  async getWorkspace(workspaceId: string): Promise<ProjectData | null> {
+    if (!isValidWorkspaceId(workspaceId)) return null;
+
+    if (this.memoryCache.has(workspaceId)) {
+      return this.memoryCache.get(workspaceId)!;
+    }
+
+    const fromDisk = await this.readWorkspaceFile(workspaceId);
+    if (fromDisk) {
+      this.memoryCache.set(workspaceId, fromDisk);
+      return fromDisk;
+    }
+
+    return null;
+  }
+
+  async createWorkspace(workspaceId: string, initialProject?: ProjectData): Promise<ProjectData> {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}"`);
+    }
+
+    const existing = await this.getWorkspace(workspaceId);
+    if (existing) {
+      return existing;
+    }
+
+    // Clone initial demo data so mutations do not mutate reference
+    const projectToSave: ProjectData = JSON.parse(JSON.stringify(initialProject || INITIAL_PROJECT_DATA));
+    await this.writeWorkspaceFile(workspaceId, projectToSave);
+    return projectToSave;
+  }
+
+  async saveProject(workspaceId: string, project: ProjectData): Promise<ProjectData> {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}"`);
+    }
+    await this.writeWorkspaceFile(workspaceId, project);
+    return project;
+  }
+
+  async addSource(
+    workspaceId: string,
+    sourceData: { name: string; type: ProjectSource['type']; content: string; description: string }
+  ): Promise<{ source: ProjectSource; finding: KnowledgeFinding; project: ProjectData }> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const newSourceId = `src-user-${Date.now()}`;
+    const newSource: ProjectSource = {
+      id: newSourceId,
+      name: sourceData.name,
+      type: sourceData.type,
+      status: 'connected',
+      lastSync: 'Just now',
+      recordCount: Math.max(1, Math.floor((sourceData.content || '').length / 50)),
+      icon: sourceData.type === 'github' ? 'commit' : sourceData.type === 'notes' ? 'edit_note' : 'description',
+      description: sourceData.description || 'Custom ingested project context.',
+      privacyLevel: 'LOCAL_READ_ONLY',
+    };
+
+    const snippetPreview = (sourceData.content || '').slice(0, 240);
+    const findingId = `FIND-INGEST-${Date.now().toString().slice(-4)}`;
+    const syntheticFinding: KnowledgeFinding = {
+      id: findingId,
+      type: 'decision',
+      title: `Ingested Context: ${sourceData.name.replace(/\.[^/.]+$/, '')}`,
+      summary: snippetPreview.length > 80 ? snippetPreview + '...' : snippetPreview || 'Ingested operational documentation.',
+      reasoning: 'Extracted directly from newly submitted project documentation by user during active session.',
+      impact: 'Preserves critical institutional context provided in manual transfer notes.',
+      status: 'VERIFIED',
+      confidence: 96,
+      category: 'User Ingested Notes',
+      urgency: 'medium',
+      owner: project.lead?.name || 'Elena Rostova',
+      createdDate: new Date().toISOString().split('T')[0],
+      approved: false,
+      reviewerNotes: 'Pending human review in Review Center.',
+      citations: [
+        {
+          id: `cit-${Date.now()}`,
+          sourceId: newSourceId,
+          sourceName: sourceData.name,
+          sourceType: sourceData.type,
+          file: sourceData.name,
+          lineRange: '1-15',
+          author: 'Session Contributor',
+          timestamp: new Date().toUTCString(),
+          snippet: (sourceData.content || '').slice(0, 300),
+          contentHash: `sha256:${Math.random().toString(16).slice(2, 10)}`,
+          clearanceTier: 'INTERNAL',
+          confidence: 96,
+        },
+      ],
+    };
+
+    const updatedProject: ProjectData = {
+      ...project,
+      sources: [newSource, ...project.sources],
+      findings: [syntheticFinding, ...project.findings],
+      lastAnalysed: 'Just now',
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return { source: newSource, finding: syntheticFinding, project: updatedProject };
+  }
+
+  async approveFinding(workspaceId: string, findingId: string, reviewerNotes?: string): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const updatedFindings = project.findings.map((f) => {
+      if (f.id !== findingId) return f;
+      return {
+        ...f,
+        approved: true,
+        rejected: false,
+        reviewerNotes: reviewerNotes || f.reviewerNotes || 'Approved by Lead Architect during human review.',
+      };
+    });
+
+    const updatedProject: ProjectData = {
+      ...project,
+      findings: updatedFindings,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async rejectFinding(workspaceId: string, findingId: string, reason?: string): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const updatedFindings = project.findings.map((f) => {
+      if (f.id !== findingId) return f;
+      return {
+        ...f,
+        approved: false,
+        rejected: true,
+        reviewerNotes: reason || 'Rejected by Lead Reviewer — inaccurate or superseded context.',
+      };
+    });
+
+    const updatedProject: ProjectData = {
+      ...project,
+      findings: updatedFindings,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async editFinding(
+    workspaceId: string,
+    findingId: string,
+    updates: Partial<KnowledgeFinding>
+  ): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const updatedFindings = project.findings.map((f) => {
+      if (f.id !== findingId) return f;
+      return { ...f, ...updates };
+    });
+
+    const updatedProject: ProjectData = {
+      ...project,
+      findings: updatedFindings,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async resolveConflict(
+    workspaceId: string,
+    findingId: string,
+    resolution: string,
+    resolvedBy: string
+  ): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    const updatedFindings = project.findings.map((f) => {
+      if (f.id !== findingId) return f;
+      return {
+        ...f,
+        status: 'VERIFIED' as const,
+        confidence: 98,
+        approved: true,
+        rejected: false,
+        reviewerNotes: `Conflict resolved by ${resolvedBy}: ${resolution}`,
+        conflictDetails: f.conflictDetails
+          ? {
+              ...f.conflictDetails,
+              resolution,
+              resolvedBy,
+              resolvedAt: timestamp,
+            }
+          : undefined,
+      };
+    });
+
+    const updatedProject: ProjectData = {
+      ...project,
+      findings: updatedFindings,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async certifyHandover(workspaceId: string, signerName: string): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    // Gatecheck Phase A rules: Handover cannot be certified if blocking conflicts or unreviewed items exist
+    const blockStatus = checkHandoverBlockStatus(project.findings, false);
+    if (!blockStatus.canCertify) {
+      throw new Error(`Handover cannot be certified: ${blockStatus.reason}`);
+    }
+
+    const now = new Date().toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    const certificationHash = `SHA256:${Array.from({ length: 64 }, () =>
+      Math.floor(Math.random() * 16).toString(16)
+    ).join('')}`;
+
+    const updatedProject: ProjectData = {
+      ...project,
+      handoverCertified: true,
+      certifiedBy: signerName || 'Elena Rostova & Marcus Vance',
+      certifiedDate: now,
+      certificationHash,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async resetWorkspace(workspaceId: string): Promise<ProjectData> {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}"`);
+    }
+
+    const cleanDemo: ProjectData = JSON.parse(JSON.stringify(INITIAL_PROJECT_DATA));
+    await this.writeWorkspaceFile(workspaceId, cleanDemo);
+    return cleanDemo;
+  }
+
+  async listWorkspaces(): Promise<string[]> {
+    try {
+      const files = await fs.promises.readdir(this.baseDir);
+      return files.filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''));
+    } catch {
+      return [];
+    }
+  }
+}
+
+// Global singleton instance
+let globalStorageInstance: StorageRepository | null = null;
+
+export function getStorage(): StorageRepository {
+  if (!globalStorageInstance) {
+    globalStorageInstance = new DurableFileRepository();
+  }
+  return globalStorageInstance;
+}

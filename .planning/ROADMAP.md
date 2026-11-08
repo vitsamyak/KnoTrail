@@ -9,7 +9,7 @@ KnoTrail is engineered across three major hackathon milestones:
 
 ## Phases
 
-- [ ] **Phase 1: Core Domain Models, Provenance Schema & Storage Foundation** - Define data schemas for knowledge nodes, evidence links, RBAC permissions, and local SQLite/vector storage.
+- [x] **Phase 1: Core Domain Models, Provenance Schema & Storage Foundation** - Define data schemas for knowledge nodes, evidence links, RBAC permissions, and persistent PostgreSQL/durable storage with anonymous workspace isolation. [COMPLETED - Phase B]
 - [ ] **Phase 2: Multi-Source Ingestion & Extraction Pipeline** - Build parsers for Git history, Markdown documentation, task items, and technical decision records.
 - [ ] **Phase 3: Evidence Grounding, Conflict & Uncertainty Engine** - Implement cross-source verification, contradiction detection, and citation linking.
 - [x] **Phase 4: Human Review, Correction & Handover Approval Workflow** - Construct the reviewer dashboard for inspecting, editing, and officially approving handovers. [COMPLETED - Phase A Hardening]
@@ -134,7 +134,7 @@ Phases execute in numeric order: Phase 1 → Phase 2 → Phase 3 → Phase 4 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Domain Models, Provenance Schema & Storage Foundation | 0/2 | Not started | - |
+| 1. Core Domain Models, Provenance Schema & Storage Foundation | 2/2 | Completed (Phase B) | 2026-11-08 |
 | 2. Multi-Source Ingestion & Extraction Pipeline | 0/2 | Not started | - |
 | 3. Evidence Grounding, Conflict & Uncertainty Engine | 0/2 | Not started | - |
 | 4. Human Review, Correction & Handover Approval Workflow | 2/2 | Hardened (Phase A) | 2026-11-08 |

@@ -1,4 +1,4 @@
-import { ProjectData } from './types';
+import type { ProjectData } from './types.ts';
 
 export const INITIAL_PROJECT_DATA: ProjectData = {
   id: 'proj-titan-001',
