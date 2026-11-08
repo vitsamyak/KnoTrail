@@ -1,4 +1,4 @@
-import type { KnowledgeFinding, ProjectData } from './types.ts';
+import type { KnowledgeFinding, ProjectData, ConflictRecord } from './types.ts';
 
 /**
  * Filter findings for the final handover dossier.
@@ -57,10 +57,13 @@ export interface HandoverBlockStatus {
  */
 export function checkHandoverBlockStatus(
   findings: KnowledgeFinding[],
-  handoverCertified: boolean
+  handoverCertified: boolean,
+  conflicts?: ConflictRecord[]
 ): HandoverBlockStatus {
   const totalFindingsCount = findings.length;
-  const unresolvedConflictsCount = findings.filter((f) => f.status === 'CONFLICTING').length;
+  const openConflictsCount = (conflicts || []).filter((c) => c.status === 'OPEN').length;
+  const conflictingFindingsCount = findings.filter((f) => f.status === 'CONFLICTING').length;
+  const unresolvedConflictsCount = Math.max(openConflictsCount, conflictingFindingsCount);
   const unreviewedCount = findings.filter((f) => !f.approved && !f.rejected).length;
   const approvedCount = findings.filter((f) => f.approved && !f.rejected).length;
   const rejectedCount = findings.filter((f) => f.rejected).length;
@@ -73,7 +76,7 @@ export function checkHandoverBlockStatus(
 
   if (unresolvedConflictsCount > 0) {
     isBlocked = true;
-    reason = `${unresolvedConflictsCount} unresolved architectural conflict(s) must be resolved in Review Center.`;
+    reason = `${unresolvedConflictsCount} unresolved conflict(s) must be resolved in Review Center.`;
   } else if (unreviewedCount > 0) {
     isBlocked = true;
     reason = `${unreviewedCount} finding(s) require human review before handover can be generated.`;

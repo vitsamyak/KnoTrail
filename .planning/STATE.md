@@ -1,17 +1,17 @@
 ---
 gsd_state_version: "1.0"
-current_phase: Cleanup & UX Simplification
-current_phase_name: Complete Dummy Data Removal and UX Content Simplification
+current_phase: Phase E - Advanced Evidence Verification & Conflict Detection
+current_phase_name: Advanced Evidence Verification & Cross-Document Contradiction Detection
 status: complete
-stopped_at: Completed full application cleanup under GSD and Gravitas. Removed all synthetic/fictional records (fictional members, fake commits, fake integrations, fake metrics) and preloaded Project Titan data. Fresh workspaces initialize with 0 findings and 0 sources. Rewrote Landing Page and Dashboard in simple, professional English. All 46 automated tests pass with isolated test fixtures. Next.js production build succeeds with 0 errors.
-last_updated: "2026-11-08T18:58:00.000Z"
+stopped_at: Completed Phase E under GSD and Gravitas. Implemented dual-status taxonomy (Evidence Validity vs Claim Verification), cross-document contradiction detection with structured two-sided ConflictRecords, chronological supersession tagging, human conflict resolution in Review Center, and Phase A handover gating enforcement. All 65 automated tests pass. Next.js production build succeeds with 0 errors across 15 API routes and 6 static pages.
+last_updated: "2026-11-08T22:15:00.000Z"
 last_activity: 2026-11-08
-state_head: 7d165c8
+state_head: 8cc141a
 progress:
   total_phases: 7
-  completed_phases: 6
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 7
+  total_plans: 9
+  completed_plans: 9
   percent: 100
 ---
 
@@ -22,12 +22,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-08)
 
 **Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval and zero ungrounded claims.  
-**Current focus:** Application Cleanup & UX Simplification Complete. 46/46 tests passing. Production build PASS.
+**Current focus:** Phase E (Advanced Evidence Verification & Conflict Detection) Complete. 65/65 tests passing. Production build PASS.
 
 ## Current Position
 
-Phase: Complete Dummy Data Removal and UX Content Simplification  
-Status: Tests PASS (46/46) | Production Build PASS (13 API routes + 6 static pages)  
+Phase: Phase E - Advanced Evidence Verification & Conflict Detection  
+Status: Tests PASS (65/65) | Production Build PASS (15 API routes + 6 static pages)  
 Last activity: 2026-11-08
 
 Progress: [██████████] 100%
@@ -36,14 +36,16 @@ Progress: [██████████] 100%
 
 **Velocity:**
 - Total screens completed: 8 of 8 (with honest empty states on all screens)
-- Total API endpoints implemented: 13 active REST endpoints (`/api/...` including `/api/analysis/extract`, `/api/sources/upload`, `/api/sources/[id]`)
-- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash / Gemini 3.5 Flash / Gemini 3.1 Flash Lite), live authenticated API verification PASS, structured JSON response mode
+- Total API endpoints implemented: 15 active REST endpoints (`/api/...` including `/api/analysis/verify`, `/api/conflicts/[id]/resolve`, `/api/analysis/extract`, `/api/sources/upload`, `/api/sources/[id]`)
+- Verification Engine: Dual-status taxonomy (Evidence Validity: `MATCHED`, `MISSING`, `MISMATCHED`, `SOURCE_UNAVAILABLE`; Claim Verification: `SUPPORTED`, `UNCERTAIN`, `CONFLICTING`, `POSSIBLY_OUTDATED`)
+- Contradiction Detection: Cross-document contradiction detection with two-sided provenance (`ConflictRecord`: Claim A vs Claim B, Source A vs Source B with page/line coordinates and verbatim quotes)
+- Temporal Supersession: Detects chronological supersession across documents, tags older claims as `POSSIBLY_OUTDATED`, and routes to human reviewer
+- Review Center Gate: Unresolved conflicts strictly block handover certification until human resolution is submitted
+- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash / Gemini 3.5 Flash / Gemini 3.1 Flash Lite), live authenticated API verification PASS, structured JSON response mode with deterministic fallback
 - Zero-Fake-Data Invariant: 100% enforced. New workspaces start with 0 findings and 0 sources.
-- UX Simplification: Landing page and Dashboard rewritten in clear, professional English without jargon.
-- Supported Integrations: PDF (.pdf), Markdown (.md), Plain Text (.txt) active; Cloud connectors (GitHub, Slack, Linear, Notion, Jira) honestly badged as Coming Soon.
 - Anonymous Workspace Isolation: 100% verified across concurrent visitor IDs
 - Zero-auth public access: 100% compliant (no login, no signup, 100% Incognito-compatible)
-- Automated test suite: 46 of 46 tests passing (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 16 tests)
+- Automated test suite: 65 of 65 tests passing (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 19 tests)
 - Handover integrity gate: Verified (blocks access when unreviewed findings or conflicts exist; renders approved-only findings when certified)
 - Evidence Grounding Engine: Exact & normalized whitespace matching, PDF page & line detection, TXT/MD line ranges, SHA-256 snippet hashing
 - Grounding Statuses: `VERIFIED` (exact quote match), `UNCERTAIN` (unlocated quote with warning), `MISSING` (no quote provided), `CONFLICTING` (contradictory claims)

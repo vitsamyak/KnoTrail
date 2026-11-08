@@ -1,39 +1,39 @@
 {
   "mode": "implement",
-  "objective": "Complete KnoTrail Application Cleanup: Complete Dummy Data Purge across all views, server storage, and client cache; Implementation of genuine empty workspace architecture with interactive Create Project modal and exact specified screen copy.",
+  "objective": "Phase E: Advanced Evidence Verification & Cross-Document Conflict Detection for KnoTrail. Dual-status taxonomy (Evidence Validity vs Claim Verification), cross-source contradiction detection with two-sided conflict records, temporal supersession tagging, human conflict resolution, and Phase A handover gate enforcement.",
   "acceptance_criteria": [
-    "Complete dummy data removal: No fictional stakeholders (Elena Rostova, Marcus Vance, Sophia Chen, David Miller), fake commits/hashes, fake repository records, fake Slack/Jira/Linear/Notion/PagerDuty connected statuses, hardcoded decisions/tasks/risks/dependencies, or fake timelines in production runtime",
-    "Application-wide invariant: Only information originating from actual user-provided sources or genuinely generated and validated AI results may appear as project findings",
-    "New workspaces start clean with 0 findings and 0 sources; honest empty states shown across all views (Dashboard, Workspace, Sources, Analysis, Evidence, Review, Handover)",
-    "Exact screen copy implemented across all 8 screens: Dashboard ('Your Project Overview', 'Upload your project documents to discover important decisions, pending tasks, risks and dependencies.', 0 metrics, 'Create Project' & 'Upload Documents'), Projects ('No projects yet.', 'Create your first project to start organising and preserving project knowledge.'), Sources ('No project documents uploaded yet.', Buttons: Upload PDF, Upload TXT, Upload Markdown, Add Project Notes), AI Analysis ('No analysis available.', 'Upload project documents and run AI analysis to discover important project information.'), Evidence Explorer ('No evidence available yet.'), Review Center ('No findings awaiting review.'), Handover ('No approved handover available.')",
-    "Interactive Create Project functionality: Clean modal with Project Name, Description, Category/Domain, Target Handover Date, and Lead Name/Role; persists to server storage and updates active workspace",
-    "Header & Sidebar cleanup: 'Demo Mode' badge removed, Elena Rostova profile removed and replaced with neutral 'Your Workspace' session indicator; Active Sprint card displays 'Workspace Ready' or user project name",
-    "Client cache migration: Bumped cache version to knotrail_cache_v4_ and automatically purged legacy Project Titan records from browser localStorage",
-    "Server-side storage sanitization: Automated on-read and on-save sanitization ensures no synthetic records can ever enter active workspace JSON files",
-    "Zero-Auth & Incognito Invariant preserved: 100% accessible in private/incognito windows without login/signup",
-    "Tests use isolated synthetic fixtures inside test files only and do not depend on dummy records in the actual app",
-    "All automated tests pass (npm test) and production build succeeds (npm run build) with zero errors"
+    "Dual status taxonomy: Evidence Validity (MATCHED, MISSING, MISMATCHED, SOURCE_UNAVAILABLE) and Claim Verification (SUPPORTED, UNCERTAIN, CONFLICTING, POSSIBLY_OUTDATED)",
+    "Distinguish quote existence from claim correctness ('No source, no claim')",
+    "Coordinate validation: Verifies line numbers and page numbers exist within the actual source document boundaries",
+    "Source ownership validation: Validates citations belong to sources present in the current workspace",
+    "Cross-document contradiction detection: Identifies opposing claims across sources (e.g. task completed vs pending, DB PostgreSQL vs MySQL, owner Alice vs Bob)",
+    "Structured ConflictRecord: Two-sided provenance with Finding A/B, Source A/B, exact quotes, page/line coordinates, category, severity, and resolution details",
+    "Temporal analysis: Detects newer documents superseding older ones and tags superseded findings as POSSIBLY_OUTDATED",
+    "Interactive Human Conflict Resolution: Reviewers can select the prevailing claim or enter consensus notes; resolves conflict and unblocks findings",
+    "Phase A Handover Gate Enforcement: Unresolved conflicts strictly block handover certification",
+    "Evidence Explorer & Review Center UI: Renders dual statuses, conflict badges, and two-sided comparison cards",
+    "Zero Fabrication Invariant: Verification and conflict detection run genuinely against uploaded source text; no preloaded/fabricated conflicts",
+    "18 automated test scenarios in src/__tests__/evidenceVerification.test.mjs pass cleanly",
+    "Full test suite passes (npm test) and production build succeeds (npm run build) with zero errors"
   ],
   "non_goals": [
-    "Do not alter Google Stitch design tokens or warm sage visual styling",
-    "Do not break Phase A handover approval gates, Phase B persistence, Phase C document ingestion, or Phase D Gemini extraction",
-    "Do not add login or signup"
+    "Do not break Phase A handover approval gates, Phase B persistence, Phase C ingestion, or Phase D Gemini extraction",
+    "Do not add login, signup, or authentication walls",
+    "Do not alter Google Stitch design tokens or warm sage aesthetic"
   ],
   "risk": "medium",
   "budget": "balanced",
   "allowed_write_scope": [
     "src/**",
-    ".data/**",
-    ".planning/**",
     ".gravitas/**",
-    "docs/**",
-    "public/**"
+    ".planning/**",
+    "docs/**"
   ],
   "verification": {
     "type": "executable_evidence",
     "command": "npm test && npm run build",
     "exit_code": 0,
-    "result": "46 of 46 automated tests pass across Phase A (Handover Integrity & Gating), Phase B (Persistence & Workspace Isolation with isolated fixtures), Phase C (Real Document Ingestion & Extraction), and Phase D (Real AI Knowledge Extraction & Evidence Grounding with Google Gemini). Production build compiles cleanly with zero errors across all 13 API endpoints and 6 static pages. Active visitor workspace ws_anon_mw7gr569_lmoh1q successfully reset to clean EMPTY_PROJECT_DATA (0 sources, 0 findings, 0 stakeholders).",
+    "result": "65 of 65 automated tests passed across all suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 19 tests). Production build compiles cleanly with zero errors across all 15 API routes and 6 static pages. Verification engine thoroughly tests quotation matching, out-of-bounds coordinates, cross-source contradictions, temporal supersession, human resolution, and gate blocking.",
     "verdict": "PASS"
   }
 }

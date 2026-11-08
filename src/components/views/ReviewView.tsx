@@ -2,21 +2,28 @@
 
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
-import { KnowledgeFinding } from '../../lib/types';
+import { ConflictRecord, KnowledgeFinding } from '../../lib/types';
 
 export function ReviewView() {
   const {
     project,
+    conflicts,
     stats,
     approveFinding,
     rejectFinding,
     editFinding,
     resolveConflict,
+    resolveConflictRecord,
     certifyHandover,
     setActiveView,
     selectedFinding,
     setSelectedFinding,
   } = useProject();
+
+  const [activeConflictRecord, setActiveConflictRecord] = useState<ConflictRecord | null>(null);
+  const [chosenFindingId, setChosenFindingId] = useState<string>('');
+  const [conflictNotes, setConflictNotes] = useState('');
+  const [isResolvingConflict, setIsResolvingConflict] = useState(false);
 
   const [conflictModalFinding, setConflictModalFinding] = useState<KnowledgeFinding | null>(null);
   const [conflictResolutionText, setConflictResolutionText] = useState('');
@@ -25,6 +32,32 @@ export function ReviewView() {
   const [editSummary, setEditSummary] = useState('');
   const [signerName, setSignerName] = useState(project.lead?.name || 'Project Reviewer');
   const [showCertifyConfirm, setShowCertifyConfirm] = useState(false);
+
+  const openConflicts = (conflicts || []).filter((c) => c.status === 'OPEN');
+
+  const handleOpenConflictRecordModal = (conflict: ConflictRecord) => {
+    setActiveConflictRecord(conflict);
+    setChosenFindingId(conflict.findingIdA);
+    setConflictNotes(
+      conflict.isTemporalSuperseded
+        ? `Adopting newer decision from ${conflict.sourceNameB}. Older finding is superseded.`
+        : `Approved prevailing architecture decision: ${conflict.claimA}`
+    );
+  };
+
+  const handleResolveConflictRecordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeConflictRecord) return;
+    setIsResolvingConflict(true);
+    await resolveConflictRecord(
+      activeConflictRecord.id,
+      chosenFindingId || undefined,
+      conflictNotes.trim(),
+      signerName || project.lead?.name || 'Review Lead'
+    );
+    setIsResolvingConflict(false);
+    setActiveConflictRecord(null);
+  };
 
   // Open conflict resolution modal
   const handleOpenConflictModal = (finding: KnowledgeFinding) => {
@@ -153,6 +186,91 @@ export function ReviewView() {
           </button>
         </div>
       </div>
+
+      {/* PHASE E: OPEN CONFLICTS RESOLUTION CENTER */}
+      {openConflicts.length > 0 && (
+        <div className="bg-error-container/10 border-2 border-error/40 rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-error/20 pb-space-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-lg bg-error text-on-error flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[24px]">gavel</span>
+              </div>
+              <div>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  {openConflicts.length} Cross-Document Contradiction(s) Block Certification
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  Conflicting assertions exist between uploaded project sources. You must review and resolve each conflict before handover certification can be granted.
+                </p>
+              </div>
+            </div>
+            <span className="bg-error text-on-error text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shrink-0">
+              Mandatory Gate
+            </span>
+          </div>
+
+          <div className="space-y-space-md">
+            {openConflicts.map((conflict) => (
+              <div
+                key={conflict.id}
+                className="bg-surface-container-lowest rounded-xl p-space-md border border-error/30 shadow-xs flex flex-col gap-space-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-error text-on-error">
+                      {conflict.conflictCategory}
+                    </span>
+                    <span className="text-xs font-semibold text-on-surface font-mono">{conflict.id}</span>
+                    {conflict.isTemporalSuperseded && (
+                      <span className="text-[10px] bg-tertiary-fixed text-on-tertiary-fixed font-semibold px-2 py-0.5 rounded-full">
+                        Chronological Supersession Detected
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleOpenConflictRecordModal(conflict)}
+                    className="px-3 py-1 bg-primary text-on-primary hover:bg-primary-container rounded text-xs font-semibold transition-colors flex items-center gap-1 shadow-xs"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">balance</span>
+                    <span>Resolve Conflict</span>
+                  </button>
+                </div>
+
+                <p className="text-xs text-on-surface leading-relaxed">{conflict.explanation}</p>
+
+                {/* Two-Sided Diff View */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm text-xs">
+                  <div className="p-space-sm bg-surface-container-low/60 rounded-lg border border-outline-variant/30 flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-[11px] text-outline">
+                      <strong className="text-on-surface">{conflict.sourceNameA}</strong>
+                      <span>{conflict.locationA}</span>
+                    </div>
+                    <p className="font-semibold text-on-surface text-xs">{conflict.claimA}</p>
+                    {conflict.quoteA && (
+                      <blockquote className="pl-2 border-l-2 border-primary/40 text-[11px] italic text-on-surface-variant">
+                        &ldquo;{conflict.quoteA}&rdquo;
+                      </blockquote>
+                    )}
+                  </div>
+
+                  <div className="p-space-sm bg-surface-container-low/60 rounded-lg border border-outline-variant/30 flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-[11px] text-outline">
+                      <strong className="text-on-surface">{conflict.sourceNameB}</strong>
+                      <span>{conflict.locationB}</span>
+                    </div>
+                    <p className="font-semibold text-on-surface text-xs">{conflict.claimB}</p>
+                    {conflict.quoteB && (
+                      <blockquote className="pl-2 border-l-2 border-error/40 text-[11px] italic text-on-surface-variant">
+                        &ldquo;{conflict.quoteB}&rdquo;
+                      </blockquote>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* REVIEW FINDINGS STREAM */}
       <div className="space-y-space-md">
@@ -513,6 +631,151 @@ export function ReviewView() {
                   className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm"
                 >
                   Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PHASE E: CONFLICT RECORD RESOLUTION MODAL */}
+      {activeConflictRecord && (
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-2xl w-full rounded-2xl p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+            <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-error text-[22px]">balance</span>
+                <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  Resolve Cross-Document Conflict ({activeConflictRecord.id})
+                </span>
+              </div>
+              <button
+                onClick={() => setActiveConflictRecord(null)}
+                className="p-1 rounded-full text-outline hover:text-on-surface hover:bg-surface-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              {activeConflictRecord.explanation}
+            </p>
+
+            <form onSubmit={handleResolveConflictRecordSubmit} className="flex flex-col gap-space-md text-xs">
+              <div>
+                <label className="font-semibold text-on-surface block mb-2">
+                  Select Prevailing Statement or Consensus:
+                </label>
+                <div className="space-y-2">
+                  {/* Option A */}
+                  <label
+                    className={`p-3 rounded-lg border flex items-start gap-2.5 cursor-pointer transition-all ${
+                      chosenFindingId === activeConflictRecord.findingIdA
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="prevailingClaim"
+                      checked={chosenFindingId === activeConflictRecord.findingIdA}
+                      onChange={() => setChosenFindingId(activeConflictRecord.findingIdA)}
+                      className="mt-0.5 text-primary focus:ring-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between text-[11px] text-outline">
+                        <strong>Claim A ({activeConflictRecord.sourceNameA})</strong>
+                        <span>{activeConflictRecord.locationA}</span>
+                      </div>
+                      <p className="font-semibold text-on-surface text-xs mt-0.5">{activeConflictRecord.claimA}</p>
+                      {activeConflictRecord.quoteA && (
+                        <blockquote className="mt-1 pl-2 border-l-2 border-primary/40 text-[11px] italic text-on-surface-variant">
+                          &ldquo;{activeConflictRecord.quoteA}&rdquo;
+                        </blockquote>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Option B */}
+                  <label
+                    className={`p-3 rounded-lg border flex items-start gap-2.5 cursor-pointer transition-all ${
+                      chosenFindingId === activeConflictRecord.findingIdB
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="prevailingClaim"
+                      checked={chosenFindingId === activeConflictRecord.findingIdB}
+                      onChange={() => setChosenFindingId(activeConflictRecord.findingIdB)}
+                      className="mt-0.5 text-primary focus:ring-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between text-[11px] text-outline">
+                        <strong>Claim B ({activeConflictRecord.sourceNameB})</strong>
+                        <span>{activeConflictRecord.locationB}</span>
+                      </div>
+                      <p className="font-semibold text-on-surface text-xs mt-0.5">{activeConflictRecord.claimB}</p>
+                      {activeConflictRecord.quoteB && (
+                        <blockquote className="mt-1 pl-2 border-l-2 border-error/40 text-[11px] italic text-on-surface-variant">
+                          &ldquo;{activeConflictRecord.quoteB}&rdquo;
+                        </blockquote>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Option C: Mutual Consensus */}
+                  <label
+                    className={`p-2.5 rounded-lg border flex items-center gap-2 cursor-pointer transition-all ${
+                      chosenFindingId === ''
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="prevailingClaim"
+                      checked={chosenFindingId === ''}
+                      onChange={() => setChosenFindingId('')}
+                      className="text-primary focus:ring-primary"
+                    />
+                    <span className="font-medium text-on-surface text-xs">
+                      Mutual consensus / Keep both as verified with notes below
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-on-surface block mb-1">
+                  Resolution Justification &amp; Notes (Mandatory for Handover Dossier)
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={conflictNotes}
+                  onChange={(e) => setConflictNotes(e.target.value)}
+                  placeholder="Explain why this choice prevails (e.g. newer RFC superseded older architecture specification)..."
+                  className="w-full px-3 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs resize-none"
+                ></textarea>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-space-xs border-t border-outline-variant/30">
+                <button
+                  type="button"
+                  onClick={() => setActiveConflictRecord(null)}
+                  className="px-4 py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-medium text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResolvingConflict || !conflictNotes.trim()}
+                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm text-xs flex items-center gap-1.5 disabled:opacity-60"
+                >
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span>{isResolvingConflict ? 'Resolving...' : 'Confirm Conflict Resolution'}</span>
                 </button>
               </div>
             </form>

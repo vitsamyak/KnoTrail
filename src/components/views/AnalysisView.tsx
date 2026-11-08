@@ -18,6 +18,8 @@ export function AnalysisView() {
     analysisError,
     hasAiApiKey,
     checkAiConfig,
+    runVerification,
+    isVerifying,
     stats,
   } = useProject();
 
@@ -25,6 +27,17 @@ export function AnalysisView() {
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [showConfigHelp, setShowConfigHelp] = useState(false);
   const [analysisSuccessMsg, setAnalysisSuccessMsg] = useState<string | null>(null);
+  const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
+
+  const handleRunVerification = async () => {
+    setVerifyNotice(null);
+    const res = await runVerification(true);
+    if (res.success) {
+      setVerifyNotice(
+        `Verification complete! Verified ${res.count} claim(s). Found ${res.conflictsCount || 0} cross-document conflict(s).`
+      );
+    }
+  };
 
   // Filter sources that have extractable text
   const eligibleSources = project.sources.filter((s) => {
@@ -101,7 +114,7 @@ export function AnalysisView() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => handleRunAiExtraction()}
-            disabled={isAnalysing || isSyncing}
+            disabled={isAnalysing || isSyncing || isVerifying}
             className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all disabled:opacity-60"
           >
             <span className={`material-symbols-outlined text-[18px] ${isAnalysing ? 'animate-spin' : ''}`}>
@@ -111,8 +124,20 @@ export function AnalysisView() {
           </button>
 
           <button
+            onClick={() => handleRunVerification()}
+            disabled={isAnalysing || isSyncing || isVerifying || project.findings.length === 0}
+            className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md shadow-xs transition-all border border-outline-variant/30 disabled:opacity-50"
+            title="Verify quotations and scan for cross-document conflicts"
+          >
+            <span className={`material-symbols-outlined text-[18px] text-primary ${isVerifying ? 'animate-spin' : ''}`}>
+              fact_check
+            </span>
+            <span>{isVerifying ? 'Verifying...' : 'Verify Claims & Detect Conflicts'}</span>
+          </button>
+
+          <button
             onClick={() => runAiSync()}
-            disabled={isSyncing || isAnalysing}
+            disabled={isSyncing || isAnalysing || isVerifying}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors disabled:opacity-60"
             title="Synchronize workspace with server"
           >
@@ -200,6 +225,25 @@ GEMINI_API_KEY=your_gemini_api_key_here
               style={{ width: `${analysisProgress}%` }}
             ></div>
           </div>
+        </div>
+      )}
+
+      {/* VERIFY NOTICE */}
+      {verifyNotice && (
+        <div className="bg-primary/10 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex items-start justify-between gap-2.5 animate-in fade-in">
+          <div className="flex items-start gap-2.5">
+            <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">verified</span>
+            <div className="flex-1">
+              <strong className="block font-semibold text-primary">Evidence Verification Update:</strong>
+              <p className="mt-0.5 text-on-surface-variant leading-relaxed">{verifyNotice}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveView('evidence')}
+            className="px-3 py-1 bg-primary text-on-primary hover:bg-primary-container rounded text-xs font-semibold whitespace-nowrap transition-colors"
+          >
+            Inspect in Evidence Explorer
+          </button>
         </div>
       )}
 

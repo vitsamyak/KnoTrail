@@ -29,6 +29,7 @@ export const EMPTY_PROJECT_DATA: ProjectData = {
   stakeholders: [],
   sources: [],
   findings: [],
+  conflicts: [],
 };
 
 /**

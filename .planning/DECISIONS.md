@@ -387,6 +387,37 @@ Following ADR-011, runtime user workspaces created prior to the cleanup still co
 - Zero-auth incognito invariant strictly preserved.
 - All 46 automated tests pass and production build succeeds with 0 errors.
 
+---
+
+## ADR-013: Advanced Evidence Verification & Cross-Document Contradiction Engine (Phase E)
+
+### Context
+KnoTrail's core mandate is *"NO SOURCE, NO CLAIM"*, while acknowledging that an authentic citation alone does not guarantee a claim is uncontested or non-superseded. When documents are uploaded across different phases (e.g. an early RFC vs a late architecture specification), contradictory statements can exist (e.g. PostgreSQL vs MySQL, completed vs pending, port 5432 vs 5433). Handover integrity mandates that contradictions are made visible to human reviewers with two-sided source proof, and strictly block certification until resolved.
+
+### Decision
+1. **Dual-Status Taxonomy**:
+   - Separated verification into two orthogonal dimensions:
+     - `EvidenceValidityStatus`: `MATCHED`, `MISSING`, `MISMATCHED`, `SOURCE_UNAVAILABLE`.
+     - `ClaimVerificationStatus`: `SUPPORTED`, `UNCERTAIN`, `CONFLICTING`, `POSSIBLY_OUTDATED`.
+   - Deterministically mapped to composite `EvidenceStatus` (`VERIFIED`, `UNCERTAIN`, `CONFLICTING`, `MISSING`) for seamless Phase A-D backward compatibility.
+2. **Two-Sided Cross-Document Contradiction Detection**:
+   - Created structured `ConflictRecord` schema capturing both sides: Claim A vs Claim B, Source A vs Source B with exact page/line coordinates and verbatim quotes.
+   - Deterministic rule engine for high-precision architectural contradictions (databases, task completion states, port configurations, and role ownership).
+   - Gemini semantic contradiction evaluator for ambiguous natural language claims, with graceful fallback.
+3. **Temporal Supersession**:
+   - Detects chronological dates within source documents. When a newer ratified document contradicts an older proposal, the older claim is tagged `POSSIBLY_OUTDATED` and `isTemporalSuperseded: true`, with supersession context presented to the human reviewer rather than silently dropped.
+4. **Interactive Conflict Resolution & Gate Enforcement**:
+   - Review Center features a dedicated Cross-Document Conflict Resolution interface where reviewers can inspect the two-sided diff, choose the prevailing claim or consensus notes, and unblock certification.
+   - Handover certification gate strictly enforces that `unresolvedConflictsCount === 0`.
+5. **Testing & Verification**:
+   - 18 automated test scenarios in `src/__tests__/evidenceVerification.test.mjs` verifying quotation matching, coordinate bounds, contradiction detection, supersession, persistence, and gate blocking.
+
+### Consequences
+- Total automated tests increased from 46 to 65 (100% pass rate).
+- Production Next.js build succeeds with 0 errors across 15 API routes and 6 static pages.
+- Zero fabrication invariant preserved: conflicts and verification run strictly against authentic uploaded source text.
+
+
 
 
 

@@ -7,11 +7,14 @@ import { EvidenceCitation, EvidenceStatus, KnowledgeFinding } from '../../lib/ty
 export function EvidenceView() {
   const {
     project,
+    conflicts,
     evidenceFilter,
     setEvidenceFilter,
     selectedFinding,
     setSelectedFinding,
     setActiveView,
+    runVerification,
+    isVerifying,
   } = useProject();
 
   const [searchFilter, setSearchFilter] = useState('');
@@ -205,7 +208,7 @@ export function EvidenceView() {
                     finding.status === 'VERIFIED'
                       ? 'bg-secondary-container text-on-secondary-container'
                       : finding.status === 'CONFLICTING'
-                      ? 'bg-error-container text-on-error-container'
+                      ? 'bg-error-container text-on-error-container animate-pulse'
                       : finding.status === 'UNCERTAIN'
                       ? 'bg-tertiary-fixed text-on-tertiary-fixed'
                       : 'bg-surface-container text-outline'
@@ -213,17 +216,135 @@ export function EvidenceView() {
                 >
                   {finding.status}
                 </span>
+
+                {/* Phase E: Dual-Status Dimension Badges */}
+                {finding.evidenceValidity && (
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                      finding.evidenceValidity === 'MATCHED'
+                        ? 'bg-primary/10 text-primary border-primary/30'
+                        : finding.evidenceValidity === 'MISMATCHED'
+                        ? 'bg-tertiary/10 text-tertiary border-tertiary/30'
+                        : finding.evidenceValidity === 'SOURCE_UNAVAILABLE'
+                        ? 'bg-error/10 text-error border-error/30'
+                        : 'bg-surface-container text-outline border-outline-variant/30'
+                    }`}
+                    title="Evidence Validity: Verifies quotation presence and coordinate boundaries in authentic source files"
+                  >
+                    Quote: {finding.evidenceValidity}
+                  </span>
+                )}
+
+                {finding.claimStatus && (
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                      finding.claimStatus === 'SUPPORTED'
+                        ? 'bg-secondary-container text-on-secondary-container border-secondary/30'
+                        : finding.claimStatus === 'CONFLICTING'
+                        ? 'bg-error text-on-error border-error'
+                        : finding.claimStatus === 'POSSIBLY_OUTDATED'
+                        ? 'bg-tertiary text-on-tertiary border-tertiary'
+                        : 'bg-surface-container text-outline border-outline-variant/30'
+                    }`}
+                    title="Claim Verification: Evaluates semantic support, cross-document contradiction, and chronological supersession"
+                  >
+                    Claim: {finding.claimStatus}
+                  </span>
+                )}
+
                 <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
                   {finding.title}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 text-xs">
-                <span className="font-semibold text-primary">{finding.confidence}% confidence</span>
-                <span className="text-outline">•</span>
-                <span className="text-outline">{finding.citations.length} citation(s)</span>
+                <span className="font-semibold text-primary">{finding.citations.length} citation(s)</span>
               </div>
             </div>
+
+            {/* Temporal Supersession Banner */}
+            {finding.isTemporalSuperseded && (
+              <div className="mb-space-sm p-space-sm rounded-lg bg-tertiary-fixed/30 border border-tertiary/30 flex items-center gap-2 text-xs text-on-tertiary-fixed">
+                <span className="material-symbols-outlined text-[16px] text-tertiary">history</span>
+                <span>
+                  <strong>Possibly Outdated:</strong> This finding may be superseded by newer documentation
+                  {finding.supersededByDate ? ` dated ${finding.supersededByDate}` : ''}. Review in Review Center.
+                </span>
+              </div>
+            )}
+
+            {/* Two-Sided Cross-Document Contradiction Card */}
+            {(() => {
+              const matchedConflict = (conflicts || []).find(
+                (c) =>
+                  (c.findingIdA === finding.id || c.findingIdB === finding.id) &&
+                  c.status === 'OPEN'
+              );
+              if (!matchedConflict) return null;
+              return (
+                <div className="mb-space-md p-space-md rounded-xl bg-error-container/10 border border-error/40 flex flex-col gap-space-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-error text-[18px]">warning</span>
+                      <strong className="text-xs uppercase tracking-wide text-error font-semibold">
+                        Cross-Document Contradiction Detected ({matchedConflict.conflictCategory})
+                      </strong>
+                    </div>
+                    <span className="text-[10px] bg-error text-on-error px-2 py-0.5 rounded-full font-bold uppercase">
+                      Severity: {matchedConflict.severity}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {matchedConflict.explanation}
+                  </p>
+
+                  {/* Two-Sided Comparison Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm mt-1 text-xs">
+                    {/* Side A */}
+                    <div className="p-space-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[11px] text-outline font-sans">
+                        <strong className="text-on-surface">{matchedConflict.sourceNameA}</strong>
+                        <span>{matchedConflict.locationA}</span>
+                      </div>
+                      <p className="font-medium text-on-surface text-xs">{matchedConflict.claimA}</p>
+                      {matchedConflict.quoteA && (
+                        <blockquote className="mt-1 pl-2 border-l-2 border-primary/40 text-[11px] italic text-on-surface-variant">
+                          &ldquo;{matchedConflict.quoteA}&rdquo;
+                        </blockquote>
+                      )}
+                    </div>
+
+                    {/* Side B */}
+                    <div className="p-space-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[11px] text-outline font-sans">
+                        <strong className="text-on-surface">{matchedConflict.sourceNameB}</strong>
+                        <span>{matchedConflict.locationB}</span>
+                      </div>
+                      <p className="font-medium text-on-surface text-xs">{matchedConflict.claimB}</p>
+                      {matchedConflict.quoteB && (
+                        <blockquote className="mt-1 pl-2 border-l-2 border-error/40 text-[11px] italic text-on-surface-variant">
+                          &ldquo;{matchedConflict.quoteB}&rdquo;
+                        </blockquote>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-error/20 text-xs">
+                    <span className="text-error text-[11px] font-medium">
+                      Mandatory human resolution required before handover certification.
+                    </span>
+                    <button
+                      onClick={() => setActiveView('review')}
+                      className="px-3 py-1 bg-error text-on-error hover:bg-error/90 rounded text-xs font-semibold transition-colors flex items-center gap-1"
+                    >
+                      <span>Resolve in Review Center</span>
+                      <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
             <p className="font-body-md text-body-md text-on-surface-variant mb-space-md leading-relaxed">
               {finding.summary}

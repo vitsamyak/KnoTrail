@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type { KnowledgeFinding, ProjectData, ProjectSource } from '../../lib/types.ts';
+import type { KnowledgeFinding, ProjectData, ProjectSource, ConflictRecord } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSON } from '../../lib/handoverFilter.ts';
 import { isValidWorkspaceId, type WorkspaceRecord } from './types.ts';
@@ -28,6 +28,14 @@ export interface StorageRepository {
     findingId: string,
     resolution: string,
     resolvedBy: string
+  ): Promise<ProjectData>;
+  saveConflicts(workspaceId: string, conflicts: ConflictRecord[]): Promise<ProjectData>;
+  resolveConflictRecord(
+    workspaceId: string,
+    conflictId: string,
+    chosenFindingId?: string,
+    resolutionNotes?: string,
+    resolvedBy?: string
   ): Promise<ProjectData>;
   certifyHandover(workspaceId: string, signerName: string): Promise<ProjectData>;
   resetWorkspace(workspaceId: string): Promise<ProjectData>;
@@ -81,6 +89,7 @@ export function sanitizeProjectData(project: ProjectData): ProjectData {
     return true;
   });
 
+  p.conflicts = p.conflicts || [];
   return p;
 }
 
@@ -441,14 +450,109 @@ export class DurableFileRepository implements StorageRepository {
     return updatedProject;
   }
 
+  async saveConflicts(workspaceId: string, conflicts: ConflictRecord[]): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const updatedProject: ProjectData = {
+      ...project,
+      conflicts,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async resolveConflictRecord(
+    workspaceId: string,
+    conflictId: string,
+    chosenFindingId?: string,
+    resolutionNotes?: string,
+    resolvedBy?: string
+  ): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const timestamp = new Date().toISOString();
+    const reviewer = resolvedBy || 'Review Lead';
+    const notes = resolutionNotes || 'Conflict resolved during human review.';
+
+    // Update conflict record
+    const updatedConflicts = (project.conflicts || []).map((c) => {
+      if (c.id !== conflictId) return c;
+      return {
+        ...c,
+        status: 'RESOLVED' as const,
+        resolution: {
+          resolvedAt: timestamp,
+          resolvedBy: reviewer,
+          chosenFindingId,
+          resolutionNotes: notes,
+        },
+      };
+    });
+
+    // Update findings
+    const targetConflict = (project.conflicts || []).find((c) => c.id === conflictId);
+    let updatedFindings = project.findings;
+
+    if (targetConflict) {
+      updatedFindings = project.findings.map((f) => {
+        if (f.id === targetConflict.findingIdA || f.id === targetConflict.findingIdB) {
+          if (chosenFindingId) {
+            if (f.id === chosenFindingId) {
+              return {
+                ...f,
+                status: 'VERIFIED' as const,
+                claimStatus: 'SUPPORTED' as const,
+                approved: true,
+                rejected: false,
+                reviewerNotes: `Accepted as prevailing claim in conflict resolution: ${notes}`,
+              };
+            } else {
+              return {
+                ...f,
+                approved: false,
+                rejected: true,
+                reviewerNotes: `Superseded or rejected in conflict resolution: ${notes}`,
+              };
+            }
+          } else {
+            // Consensus resolution
+            return {
+              ...f,
+              status: 'VERIFIED' as const,
+              claimStatus: 'SUPPORTED' as const,
+              reviewerNotes: `Resolved via consensus: ${notes}`,
+            };
+          }
+        }
+        return f;
+      });
+    }
+
+    const updatedProject: ProjectData = {
+      ...project,
+      conflicts: updatedConflicts,
+      findings: updatedFindings,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
   async certifyHandover(workspaceId: string, signerName: string): Promise<ProjectData> {
     let project = await this.getWorkspace(workspaceId);
     if (!project) {
       project = await this.createWorkspace(workspaceId);
     }
 
-    // Gatecheck Phase A rules: Handover cannot be certified if blocking conflicts or unreviewed items exist
-    const blockStatus = checkHandoverBlockStatus(project.findings, false);
+    // Gatecheck Phase A & E rules: Handover cannot be certified if blocking conflicts or unreviewed items exist
+    const blockStatus = checkHandoverBlockStatus(project.findings, false, project.conflicts);
     if (!blockStatus.canCertify) {
       throw new Error(`Handover cannot be certified: ${blockStatus.reason}`);
     }
@@ -503,3 +607,5 @@ export function getStorage(): StorageRepository {
   }
   return globalStorageInstance;
 }
+
+export const repository = getStorage();

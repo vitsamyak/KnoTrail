@@ -1,5 +1,12 @@
 export type EvidenceStatus = 'VERIFIED' | 'UNCERTAIN' | 'CONFLICTING' | 'MISSING';
 
+// Phase E: Dual-Status Taxonomy
+// Evidence Validity separates quote existence and coordinate bounds from claim correctness.
+export type EvidenceValidityStatus = 'MATCHED' | 'MISSING' | 'MISMATCHED' | 'SOURCE_UNAVAILABLE';
+
+// Claim Verification evaluates semantic support, cross-source contradictions, and temporal supersession.
+export type ClaimVerificationStatus = 'SUPPORTED' | 'UNCERTAIN' | 'CONFLICTING' | 'POSSIBLY_OUTDATED';
+
 export type FindingType = 'decision' | 'task' | 'risk' | 'dependency' | 'contact' | 'next_action' | 'unresolved_question';
 
 export interface EvidenceCitation {
@@ -26,6 +33,37 @@ export interface ConflictDetails {
   resolvedAt?: string;
 }
 
+export interface ConflictRecord {
+  id: string;
+  workspaceId: string;
+  findingIdA: string;
+  findingIdB: string;
+  claimA: string;
+  claimB: string;
+  sourceIdA: string;
+  sourceNameA: string;
+  sourceIdB: string;
+  sourceNameB: string;
+  quoteA: string;
+  locationA: string;
+  timestampA?: string;
+  quoteB: string;
+  locationB: string;
+  timestampB?: string;
+  conflictCategory: 'architecture' | 'task_status' | 'ownership' | 'dependency' | 'security' | 'general';
+  explanation: string;
+  severity: 'critical' | 'high' | 'medium';
+  isTemporalSuperseded?: boolean;
+  supersededFindingId?: string;
+  status: 'OPEN' | 'RESOLVED' | 'IGNORED';
+  resolution?: {
+    resolvedAt: string;
+    resolvedBy: string;
+    chosenFindingId?: string;
+    resolutionNotes: string;
+  };
+}
+
 export interface KnowledgeFinding {
   id: string;
   type: FindingType;
@@ -34,6 +72,12 @@ export interface KnowledgeFinding {
   reasoning?: string;
   impact?: string;
   status: EvidenceStatus;
+  // Phase E: Dual-Status fields
+  evidenceValidity?: EvidenceValidityStatus;
+  claimStatus?: ClaimVerificationStatus;
+  conflictRecordId?: string;
+  isTemporalSuperseded?: boolean;
+  supersededByDate?: string;
   confidence: number; // 0 to 100
   citations: EvidenceCitation[];
   approved: boolean;
@@ -101,6 +145,7 @@ export interface ProjectData {
   stakeholders: Stakeholder[];
   sources: ProjectSource[];
   findings: KnowledgeFinding[];
+  conflicts?: ConflictRecord[];
   handoverCertified: boolean;
   certificationHash: string;
   certifiedDate?: string;

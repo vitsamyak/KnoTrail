@@ -8,6 +8,7 @@ import {
   KnowledgeFinding,
   ProjectData,
   ProjectSource,
+  ConflictRecord,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
@@ -40,6 +41,16 @@ interface ProjectContextType {
   hasAiApiKey: boolean;
   checkAiConfig: () => Promise<{ configured: boolean; model: string }>;
   runRealAiAnalysis: (sourceIds?: string[]) => Promise<{ success: boolean; count?: number; error?: string; configured?: boolean; telemetry?: any }>;
+  // Phase E: Verification & Conflict Management
+  conflicts: ConflictRecord[];
+  isVerifying: boolean;
+  runVerification: (useAi?: boolean) => Promise<{ success: boolean; count?: number; conflictsCount?: number; error?: string }>;
+  resolveConflictRecord: (
+    conflictId: string,
+    chosenFindingId?: string,
+    resolutionNotes?: string,
+    resolvedBy?: string
+  ) => Promise<{ success: boolean; error?: string }>;
   addSource: (source: { name: string; type: ProjectSource['type']; content: string; description: string }) => Promise<void>;
   uploadSources: (files: File[]) => Promise<{ success: boolean; results: any[]; error?: string }>;
   deleteSource: (sourceId: string) => Promise<void>;
@@ -80,6 +91,8 @@ interface ProjectContextType {
     isHandoverBlocked: boolean;
     canCertifyHandover: boolean;
     unresolvedConflictsCount: number;
+    openConflictsCount: number;
+    temporalSupersededCount: number;
     unreviewedCount: number;
     handoverBlockReason: string;
   };
@@ -122,6 +135,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [analysisStatusMessage, setAnalysisStatusMessage] = useState('');
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [hasAiApiKey, setHasAiApiKey] = useState<boolean>(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Helper to persist state to local cache immediately
   const persistToLocalCache = useCallback((wsId: string, updatedProject: ProjectData) => {
@@ -723,6 +737,70 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Phase E: Run full evidence verification and cross-document conflict detection
+  const runVerification = async (useAi: boolean = true) => {
+    setIsVerifying(true);
+    try {
+      const res = await fetch('/api/analysis/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId, useAi }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
+      }
+      return {
+        success: true,
+        count: data?.summary?.totalChecked || 0,
+        conflictsCount: data?.summary?.openConflictsCount || 0,
+      };
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      return { success: false, error: err.message };
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // Phase E: Resolve structured cross-document conflict record
+  const resolveConflictRecord = async (
+    conflictId: string,
+    chosenFindingId?: string,
+    resolutionNotes?: string,
+    resolvedBy?: string
+  ) => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/conflicts/${encodeURIComponent(conflictId)}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId,
+          chosenFindingId,
+          resolutionNotes,
+          resolvedBy: resolvedBy || project.lead?.name || 'Review Lead',
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error resolving conflict record:', err);
+      setSaveError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Certify and seal the final handover dossier with backend persistence
   const certifyHandover = async (signerName: string) => {
     setIsSaving(true);
@@ -895,7 +973,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const approvedCount = project.findings.filter((f) => f.approved && !f.rejected).length;
   const certificationProgressPercent = Math.round((approvedCount / (totalFindings || 1)) * 100);
 
-  const blockStatus = checkHandoverBlockStatus(project.findings, project.handoverCertified);
+  const openConflictsCount = (project.conflicts || []).filter((c) => c.status === 'OPEN').length;
+  const temporalSupersededCount = project.findings.filter((f) => f.isTemporalSuperseded).length;
+
+  const blockStatus = checkHandoverBlockStatus(project.findings, project.handoverCertified, project.conflicts);
 
   return (
     <ProjectContext.Provider
@@ -927,6 +1008,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         hasAiApiKey,
         checkAiConfig,
         runRealAiAnalysis,
+        conflicts: project.conflicts || [],
+        isVerifying,
+        runVerification,
+        resolveConflictRecord,
         addSource,
         uploadSources,
         deleteSource,
@@ -960,6 +1045,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           isHandoverBlocked: blockStatus.isBlocked,
           canCertifyHandover: blockStatus.canCertify,
           unresolvedConflictsCount: blockStatus.unresolvedConflictsCount,
+          openConflictsCount,
+          temporalSupersededCount,
           unreviewedCount: blockStatus.unreviewedCount,
           handoverBlockReason: blockStatus.reason,
         },
