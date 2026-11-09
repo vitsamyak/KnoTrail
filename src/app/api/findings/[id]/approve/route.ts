@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { workspaceId, reviewerNotes } = body;
+    const { workspaceId, reviewerNotes, reviewerName } = body;
 
     if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
       return NextResponse.json({ error: 'Invalid or missing workspaceId' }, { status: 400 });
@@ -20,7 +20,7 @@ export async function POST(
     }
 
     const storage = getStorage();
-    const updatedProject = await storage.approveFinding(workspaceId, findingId, reviewerNotes);
+    const updatedProject = await storage.approveFinding(workspaceId, findingId, reviewerNotes, reviewerName);
     const approvedFinding = updatedProject.findings.find((f) => f.id === findingId);
 
     return NextResponse.json({
@@ -30,7 +30,14 @@ export async function POST(
     });
   } catch (error: any) {
     console.error('API Error in POST /api/findings/[id]/approve:', error);
-    return NextResponse.json({ error: error?.message || 'Internal server error' }, { status: 500 });
+    const isGateBlock = 
+      error?.message?.includes('Cannot directly approve finding') ||
+      error?.message?.includes('Cannot approve finding') ||
+      error?.message?.includes('Cannot approve uncertain finding');
+    return NextResponse.json(
+      { error: error?.message || 'Internal server error' },
+      { status: isGateBlock ? 400 : 500 }
+    );
   }
 }
 

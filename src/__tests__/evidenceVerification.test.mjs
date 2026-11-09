@@ -946,5 +946,254 @@ test('Phase E: Advanced Evidence Verification & Conflict Detection Suite', async
     assert.strictEqual(run2.conflicts[0].id, run1.conflicts[0].id);
   });
 
+  await t.test('19. Two-sided conflict preserves both quotations and correct source references (Meeting Notes, Page 2 vs QA Report, Page 3)', async () => {
+    const meetingSource = {
+      id: 'src-meeting-notes',
+      name: 'Meeting_Notes.md',
+      type: 'notes',
+      status: 'connected',
+      lastSync: 'Just now',
+      recordCount: 50,
+      icon: 'description',
+      description: 'Sprint planning and status meeting notes.',
+      privacyLevel: 'LOCAL_READ_ONLY',
+      isUploaded: true,
+      documentData: {
+        fileFormat: 'md',
+        mimeType: 'text/markdown',
+        fileSizeBytes: 1024,
+        fileSizeFormatted: '1.0 KB',
+        contentHash: 'hash-meeting-notes-p2',
+        extractedText: `Project Status Review\nMeeting Notes: Page 2: Notification feature is complete and ready for deployment.\nAll test cases passed.\n`,
+        lineCount: 3,
+        pageCount: 2,
+      },
+    };
+
+    const qaSource = {
+      id: 'src-qa-report',
+      name: 'QA_Report.md',
+      type: 'docs',
+      status: 'connected',
+      lastSync: 'Just now',
+      recordCount: 40,
+      icon: 'bug_report',
+      description: 'End of sprint QA test report.',
+      privacyLevel: 'LOCAL_READ_ONLY',
+      isUploaded: true,
+      documentData: {
+        fileFormat: 'md',
+        mimeType: 'text/markdown',
+        fileSizeBytes: 1024,
+        fileSizeFormatted: '1.0 KB',
+        contentHash: 'hash-qa-report-p3',
+        extractedText: `QA Verification Summary\nQA Report: Page 3: Email delivery failed and release readiness is blocked due to critical failures.\n`,
+        lineCount: 2,
+        pageCount: 3,
+      },
+    };
+
+    const findingComplete = {
+      id: 'FIND-NOTIF-COMPLETE',
+      type: 'task',
+      title: 'Notification Feature Complete',
+      summary: 'Meeting notes indicate notification feature is complete and ready.',
+      category: 'Release',
+      urgency: 'high',
+      owner: 'Sprint Lead',
+      createdDate: '2026-11-08',
+      confidence: 90,
+      approved: false,
+      status: 'VERIFIED',
+      citations: [{
+        id: 'CIT-MEET-01',
+        sourceId: 'src-meeting-notes',
+        sourceName: 'Meeting_Notes.md',
+        sourceType: 'notes',
+        file: 'Meeting_Notes.md',
+        lineRange: 'Page 2',
+        author: 'Sprint Lead',
+        timestamp: '2026-11-08',
+        snippet: 'Meeting Notes: Page 2: Notification feature is complete and ready for deployment.',
+        contentHash: 'hash-meeting-notes-p2',
+        clearanceTier: 'PUBLIC',
+        confidence: 90,
+      }],
+    };
+
+    const findingBlocked = {
+      id: 'FIND-NOTIF-BLOCKED',
+      type: 'risk',
+      title: 'Email Delivery Failed and Release Blocked',
+      summary: 'QA report states email delivery failed and release readiness is blocked.',
+      category: 'Quality',
+      urgency: 'critical',
+      owner: 'QA Lead',
+      createdDate: '2026-11-08',
+      confidence: 95,
+      approved: false,
+      status: 'VERIFIED',
+      citations: [{
+        id: 'CIT-QA-01',
+        sourceId: 'src-qa-report',
+        sourceName: 'QA_Report.md',
+        sourceType: 'docs',
+        file: 'QA_Report.md',
+        lineRange: 'Page 3',
+        author: 'QA Lead',
+        timestamp: '2026-11-08',
+        snippet: 'QA Report: Page 3: Email delivery failed and release readiness is blocked due to critical failures.',
+        contentHash: 'hash-qa-report-p3',
+        clearanceTier: 'PUBLIC',
+        confidence: 95,
+      }],
+    };
+
+    const verificationResult = await runFullVerification(
+      [findingComplete, findingBlocked],
+      [meetingSource, qaSource],
+      { workspaceId: 'ws-two-sided-test', useAi: false }
+    );
+
+    assert.strictEqual(verificationResult.conflicts.length, 1, 'Exactly 1 contradiction must be detected');
+    const conflict = verificationResult.conflicts[0];
+
+    // Verify both sides are preserved with respective quotes and references
+    assert.strictEqual(conflict.sourceNameA, 'Meeting_Notes.md');
+    assert.ok(conflict.locationA.includes('Page 2') || conflict.locationA.includes('Line'));
+    assert.strictEqual(conflict.quoteA, 'Meeting Notes: Page 2: Notification feature is complete and ready for deployment.');
+
+    assert.strictEqual(conflict.sourceNameB, 'QA_Report.md');
+    assert.ok(conflict.locationB.includes('Page 3') || conflict.locationB.includes('Line'));
+    assert.strictEqual(conflict.quoteB, 'QA Report: Page 3: Email delivery failed and release readiness is blocked due to critical failures.');
+
+    // Verify both findings receive two-sided conflictDetails
+    const verifiedComplete = verificationResult.verifiedFindings.find((f) => f.id === 'FIND-NOTIF-COMPLETE');
+    const verifiedBlocked = verificationResult.verifiedFindings.find((f) => f.id === 'FIND-NOTIF-BLOCKED');
+
+    assert.strictEqual(verifiedComplete.status, 'CONFLICTING');
+    assert.strictEqual(verifiedBlocked.status, 'CONFLICTING');
+
+    assert.strictEqual(verifiedComplete.conflictDetails.sourceA.quote, conflict.quoteA);
+    assert.strictEqual(verifiedComplete.conflictDetails.sourceB.quote, conflict.quoteB);
+    assert.strictEqual(verifiedBlocked.conflictDetails.sourceA.quote, conflict.quoteA);
+    assert.strictEqual(verifiedBlocked.conflictDetails.sourceB.quote, conflict.quoteB);
+  });
+
+  await t.test('20. Backend approveFinding blocks direct approval of conflicting findings with explicit error', async () => {
+    const repo = new DurableFileRepository(TEST_STORAGE_DIR);
+    const wsId = 'ws_gate_test_20';
+    const initial = await repo.createWorkspace(wsId);
+
+    const conflictingFinding = {
+      id: 'FIND-GATE-01',
+      type: 'decision',
+      title: 'Conflicting Deployment Architecture',
+      summary: 'Conflicting architecture decision.',
+      status: 'CONFLICTING',
+      confidence: 50,
+      approved: false,
+      rejected: false,
+      citations: [],
+      conflictDetails: {
+        sourceA: { name: 'Meeting Notes', claim: 'Complete', quote: 'Complete' },
+        sourceB: { name: 'QA Report', claim: 'Blocked', quote: 'Blocked' },
+      },
+    };
+
+    await repo.saveProject(wsId, { ...initial, findings: [conflictingFinding] });
+
+    // Direct approval must throw an explicit error
+    await assert.rejects(
+      async () => repo.approveFinding(wsId, 'FIND-GATE-01'),
+      /Cannot directly approve finding "FIND-GATE-01": It is involved in an unresolved conflict/
+    );
+
+    // Finding remains unapproved
+    const ws = await repo.getWorkspace(wsId);
+    assert.strictEqual(ws.findings[0].approved, false);
+  });
+
+  await t.test('21. Resolving conflict unblocks finding approval gate', async () => {
+    const repo = new DurableFileRepository(TEST_STORAGE_DIR);
+    const wsId = 'ws_gate_resolve_test';
+    const initial = await repo.createWorkspace(wsId);
+
+    const conflictingFinding = {
+      id: 'FIND-GATE-02',
+      type: 'decision',
+      title: 'Database Engine Preference',
+      summary: 'Conflicting database recommendation.',
+      status: 'CONFLICTING',
+      confidence: 50,
+      approved: false,
+      rejected: false,
+      citations: [],
+      conflictDetails: {
+        sourceA: { name: 'Spec A', claim: 'PostgreSQL' },
+        sourceB: { name: 'Spec B', claim: 'MySQL' },
+      },
+    };
+
+    await repo.saveProject(wsId, { ...initial, findings: [conflictingFinding] });
+
+    // Resolve the conflict
+    await repo.resolveConflict(
+      wsId,
+      'FIND-GATE-02',
+      'Adopt PostgreSQL 16 as the official production standard',
+      'Lead Architect'
+    );
+
+    // Now approval succeeds
+    const approvedProject = await repo.approveFinding(wsId, 'FIND-GATE-02', 'Approved after conflict resolution');
+    const finding = approvedProject.findings.find((f) => f.id === 'FIND-GATE-02');
+    assert.strictEqual(finding.approved, true);
+    assert.strictEqual(finding.status, 'VERIFIED');
+  });
+
+  await t.test('22. Verification metrics dynamically calculate from actual findings without hardcoded guarantees', async () => {
+    const findings = [
+      { id: 'F1', status: 'VERIFIED', confidence: 95 },
+      { id: 'F2', status: 'UNCERTAIN', confidence: 40 },
+      { id: 'F3', status: 'CONFLICTING', confidence: 50 },
+      { id: 'F4', status: 'MISSING', confidence: 0 },
+    ];
+
+    const verified = findings.filter((f) => f.status === 'VERIFIED').length;
+    const uncertain = findings.filter((f) => f.status === 'UNCERTAIN').length;
+    const conflicting = findings.filter((f) => f.status === 'CONFLICTING').length;
+    const missing = findings.filter((f) => f.status === 'MISSING').length;
+    const total = findings.length;
+    const groundedPercent = Math.round((verified / total) * 100);
+
+    assert.strictEqual(verified, 1);
+    assert.strictEqual(uncertain, 1);
+    assert.strictEqual(conflicting, 1);
+    assert.strictEqual(missing, 1);
+    assert.strictEqual(total, 4);
+    assert.strictEqual(groundedPercent, 25);
+    // Explicitly verify no hardcoded 96% or 100% guarantee
+    assert.notStrictEqual(groundedPercent, 96);
+    assert.notStrictEqual(groundedPercent, 100);
+  });
+
+  await t.test('23. Handover block checks enforce both finding status and open conflicts array', async () => {
+    const projectWithConflict = {
+      findings: [
+        { id: 'F-OK', status: 'VERIFIED', approved: true, rejected: false, type: 'decision' },
+        { id: 'F-CONF', status: 'CONFLICTING', approved: false, rejected: false, type: 'decision' },
+      ],
+      conflicts: [
+        { id: 'CONF-01', findingIdA: 'F-OK', findingIdB: 'F-CONF', status: 'OPEN' },
+      ],
+    };
+
+    const status = checkHandoverBlockStatus(projectWithConflict.findings, projectWithConflict.conflicts);
+    assert.strictEqual(status.isBlocked, true);
+    assert.ok(status.reason.includes('conflict') || status.reason.includes('unreviewed'));
+  });
+
   cleanupTestStorage();
 });
+

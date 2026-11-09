@@ -5,6 +5,8 @@ import {
   checkHandoverBlockStatus,
   generateHandoverMarkdown,
   generateHandoverJSON,
+  exportHandoverMarkdown,
+  exportHandoverJson,
 } from '../../../lib/handoverFilter';
 
 export const dynamic = 'force-dynamic';
@@ -24,15 +26,23 @@ export async function GET(request: NextRequest) {
       project = await storage.createWorkspace(workspaceId);
     }
 
-    const blockStatus = checkHandoverBlockStatus(project.findings, project.handoverCertified);
+    const blockStatus = checkHandoverBlockStatus(project.findings, project.handoverCertified, project.conflicts);
+    const currentHandover = await storage.getHandover(workspaceId);
+    const handovers = await storage.getHandoverHistory(workspaceId);
 
-    const markdown = generateHandoverMarkdown(project);
-    const json = generateHandoverJSON(project);
+    const markdown = currentHandover
+      ? exportHandoverMarkdown(currentHandover)
+      : generateHandoverMarkdown(project);
+    const json = currentHandover
+      ? currentHandover
+      : generateHandoverJSON(project);
 
     return NextResponse.json({
       workspaceId,
       project,
       blockStatus,
+      currentHandover,
+      handovers,
       markdown,
       json,
       status: 'success',

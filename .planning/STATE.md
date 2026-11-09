@@ -1,17 +1,17 @@
 ---
 gsd_state_version: "1.0"
-current_phase: Phase E - Advanced Evidence Verification & Conflict Detection
-current_phase_name: Advanced Evidence Verification & Cross-Document Contradiction Detection
+current_phase: Phase G - Final Handover Generation & Delivery
+current_phase_name: Final Handover Generation, Multi-Format Delivery & Outdated Invalidation
 status: complete
-stopped_at: Completed Phase E under GSD and Gravitas. Implemented dual-status taxonomy (Evidence Validity vs Claim Verification), cross-document contradiction detection with structured two-sided ConflictRecords, chronological supersession tagging, human conflict resolution in Review Center, and Phase A handover gating enforcement. All 65 automated tests pass. Next.js production build succeeds with 0 errors across 15 API routes and 6 static pages.
-last_updated: "2026-11-08T22:15:00.000Z"
-last_activity: 2026-11-08
-state_head: 8cc141a
+stopped_at: Completed Phase G (Final Handover Generation & Delivery) under GSD and Gravitas. Implemented complete 12-section HandoverDocument schema (Sections A through L), deterministic rule-based executive summary generator, strict approval and non-rejection gating, accepted-with-uncertainty preservation with reviewer justifications, HandoverView 12-section viewer with sticky navigation and outdated invalidation banner, multi-format export (Markdown with TOC, typed JSON with 100% parity, printable A4 PDF via print styles), high-entropy read-only public share links (/share/[token]) with revocation, and 21 automated tests in handoverGeneration.test.mjs. All 109 automated tests pass (100% pass rate across 7 test suites). Next.js production build succeeds with 0 errors across 23 routes.
+last_updated: "2026-11-09T04:36:00.000Z"
+last_activity: 2026-11-09
+state_head: 9fe231b
 progress:
   total_phases: 7
   completed_phases: 7
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -19,46 +19,37 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-11-08)
+See: .planning/PROJECT.md (updated 2026-11-09)
 
-**Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval and zero ungrounded claims.  
-**Current focus:** Phase E (Advanced Evidence Verification & Conflict Detection) Complete. 65/65 tests passing. Production build PASS.
+**Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, and comprehensive 12-section delivery packages.  
+**Current focus:** Phase G Complete. 109/109 tests passing. Production build PASS.
 
 ## Current Position
 
-Phase: Phase E - Advanced Evidence Verification & Conflict Detection  
-Status: Tests PASS (65/65) | Production Build PASS (15 API routes + 6 static pages)  
-Last activity: 2026-11-08
+Phase: Phase G - Final Handover Generation & Delivery  
+Status: Tests PASS (109/109) | Production Build PASS (23 routes)  
+Last activity: 2026-11-09
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total screens completed: 8 of 8 (with honest empty states on all screens)
-- Total API endpoints implemented: 15 active REST endpoints (`/api/...` including `/api/analysis/verify`, `/api/conflicts/[id]/resolve`, `/api/analysis/extract`, `/api/sources/upload`, `/api/sources/[id]`)
-- Verification Engine: Dual-status taxonomy (Evidence Validity: `MATCHED`, `MISSING`, `MISMATCHED`, `SOURCE_UNAVAILABLE`; Claim Verification: `SUPPORTED`, `UNCERTAIN`, `CONFLICTING`, `POSSIBLY_OUTDATED`)
-- Contradiction Detection: Cross-document contradiction detection with two-sided provenance (`ConflictRecord`: Claim A vs Claim B, Source A vs Source B with page/line coordinates and verbatim quotes)
-- Temporal Supersession: Detects chronological supersession across documents, tags older claims as `POSSIBLY_OUTDATED`, and routes to human reviewer
-- Review Center Gate: Unresolved conflicts strictly block handover certification until human resolution is submitted
-- AI Engine: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash / Gemini 3.5 Flash / Gemini 3.1 Flash Lite), live authenticated API verification PASS, structured JSON response mode with deterministic fallback
-- Zero-Fake-Data Invariant: 100% enforced. New workspaces start with 0 findings and 0 sources.
-- Anonymous Workspace Isolation: 100% verified across concurrent visitor IDs
-- Zero-auth public access: 100% compliant (no login, no signup, 100% Incognito-compatible)
-- Automated test suite: 65 of 65 tests passing (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 19 tests)
-- Handover integrity gate: Verified (blocks access when unreviewed findings or conflicts exist; renders approved-only findings when certified)
-- Evidence Grounding Engine: Exact & normalized whitespace matching, PDF page & line detection, TXT/MD line ranges, SHA-256 snippet hashing
-- Grounding Statuses: `VERIFIED` (exact quote match), `UNCERTAIN` (unlocated quote with warning), `MISSING` (no quote provided), `CONFLICTING` (contradictory claims)
-- Operational Categories: 7 types (Decisions with reasoning/impact, Tasks, Risks, Dependencies, Contacts, Unresolved Questions, Next Actions)
-- Human Review Integration: All newly generated findings default to `approved: false, rejected: false` and feed directly into Human Review Center
-- Document chunking: Overlapping chunks (12k chars, 1k overlap) with offset and line preservation
-- Deduplication: Lexical similarity merge (Dice coefficient $> 0.75$) with citation preservation
-- Document ingestion formats: PDF (.pdf), Plain Text (.txt), Markdown (.md, .markdown)
-- Persistence layer: Relational PostgreSQL schema (`schema.sql`) + Durable atomic file repository (`DurableFileRepository`)
-- Anonymous Workspace Isolation: 100% verified across concurrent visitor IDs
-- Zero-auth public access: 100% compliant (no login, no signup, 100% Incognito-compatible)
-- Automated test suite: 46 of 46 tests passing (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 16 tests)
-- Handover integrity gate: Verified (blocks access when unreviewed findings or conflicts exist; renders approved-only findings when certified)
+- Total screens completed: 8 of 8 (with honest empty states on all screens + /share/[token] public viewer)
+- Total API endpoints implemented: 23 active REST routes (`/api/...` including `/api/handovers/generate`, `/api/handovers/share`, `/api/handovers/share/[token]`, `/api/handovers/certify`, `/api/handovers/export`, `/api/findings/...`, `/api/sources/...`, `/api/workspaces/...`)
+- Handover Document Schema: 12 formal sections (Cover/Meta, Exec Summary, Overview, Decisions, Tasks, Responsibilities, Risks, Dependencies, Questions, Next Actions, Evidence Inventory, Review History)
+- Handover Invalidation Protocol: Automatic drift detection via SHA-256 finding/source fingerprint hash; flags `isOutdated: true` upon post-certification data mutations
+- Multi-Format Export Parity: 100% parity across Markdown (with TOC & citations), typed JSON schema, and A4 printable PDF view
+- Public Share Links: High-entropy cryptographic tokens (`kt_share_<uuid>`), read-only public access without login, on-demand revocation
+- Automated test suite: 109 of 109 tests passing across 7 test suites:
+  - Phase A (Handover Integrity): 8 tests
+  - Phase B (Persistence): 9 tests
+  - Phase C (Source Ingestion): 13 tests
+  - Phase D (AI Extraction): 15 tests
+  - Phase E (Evidence Verification): 23 tests
+  - Phase F (Human Approval): 16 tests
+  - Phase G (Handover Generation & Delivery): 22 tests (all 21 requested scenarios)
+- Next.js production build: PASS (0 TypeScript errors, 23 routes compiled)
 
 **By Screen / Workflow Stage:**
 

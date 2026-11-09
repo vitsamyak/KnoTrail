@@ -9,6 +9,8 @@ import {
   ProjectData,
   ProjectSource,
   ConflictRecord,
+  HandoverDocument,
+  HandoverShareRecord,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
@@ -54,11 +56,21 @@ interface ProjectContextType {
   addSource: (source: { name: string; type: ProjectSource['type']; content: string; description: string }) => Promise<void>;
   uploadSources: (files: File[]) => Promise<{ success: boolean; results: any[]; error?: string }>;
   deleteSource: (sourceId: string) => Promise<void>;
-  approveFinding: (id: string, reviewerNotes?: string) => Promise<void>;
-  rejectFinding: (id: string, reason?: string) => Promise<void>;
-  editFinding: (id: string, updates: Partial<KnowledgeFinding>) => Promise<void>;
+  approveFinding: (id: string, reviewerNotes?: string, reviewerName?: string) => Promise<void>;
+  rejectFinding: (id: string, reason: string, reviewerName?: string) => Promise<void>;
+  editFinding: (id: string, updates: Partial<KnowledgeFinding>, reviewerNotes?: string, reviewerName?: string) => Promise<void>;
   resolveConflict: (id: string, resolution: string, resolvedBy: string) => Promise<void>;
   certifyHandover: (signerName: string) => Promise<void>;
+  generateHandover: (
+    signerName?: string,
+    options?: { version?: string; regenerate?: boolean }
+  ) => Promise<{ success: boolean; handover?: HandoverDocument; error?: string }>;
+  createShareLink: (
+    handoverId?: string
+  ) => Promise<{ success: boolean; shareUrl?: string; token?: string; error?: string }>;
+  revokeShareLink: (token: string) => Promise<{ success: boolean; error?: string }>;
+  currentHandover: HandoverDocument | null;
+  handovers: HandoverDocument[];
   resetDemoData: () => Promise<void>;
   createProject: (data: {
     name: string;
@@ -87,6 +99,9 @@ interface ProjectContextType {
     conflictingCount: number;
     missingCount: number;
     approvedCount: number;
+    rejectedCount: number;
+    pendingReviewCount: number;
+    needsCorrectionCount: number;
     certificationProgressPercent: number;
     isHandoverBlocked: boolean;
     canCertifyHandover: boolean;
@@ -95,6 +110,9 @@ interface ProjectContextType {
     temporalSupersededCount: number;
     unreviewedCount: number;
     handoverBlockReason: string;
+    isHandoverOutdated: boolean;
+    handoverOutdatedReason: string;
+    handoverVersion: string;
   };
 }
 
@@ -560,9 +578,46 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Approve a finding with backend persistence
-  const approveFinding = async (id: string, reviewerNotes?: string) => {
+  const approveFinding = async (id: string, reviewerNotes?: string, reviewerName?: string) => {
+    // Gate check: Finding involved in unresolved conflict cannot be approved directly
+    const targetFinding = project.findings.find((f) => f.id === id);
+    const hasConflict =
+      targetFinding?.status === 'CONFLICTING' ||
+      (project.conflicts || []).some(
+        (c) => (c.findingIdA === id || c.findingIdB === id) && c.status === 'OPEN'
+      );
+
+    if (hasConflict) {
+      const err = 'Cannot directly approve a finding involved in an unresolved conflict. Resolve the conflict first in Review Center.';
+      console.warn(err);
+      setSaveError(err);
+      return;
+    }
+
+    // Phase F: Evidence & Grounding validation
+    if (targetFinding?.status === 'MISSING' || targetFinding?.evidenceValidity === 'MISSING') {
+      const err = `Cannot approve finding "${id}": It lacks verifiable primary source evidence (MISSING). Correct the finding or attach valid documentation before approval.`;
+      console.warn(err);
+      setSaveError(err);
+      return;
+    }
+
+    // Phase F: Uncertain findings require explicit review and documented justification
+    if (targetFinding?.status === 'UNCERTAIN' || targetFinding?.claimStatus === 'UNCERTAIN') {
+      if (!reviewerNotes || reviewerNotes.trim().length < 5) {
+        const err = `Cannot approve uncertain finding "${id}" without documented review justification. Provide reviewer notes explaining how this claim was verified.`;
+        console.warn(err);
+        setSaveError(err);
+        return;
+      }
+    }
+
     setIsSaving(true);
     setSaveError(null);
+
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+    const finalNotes = reviewerNotes?.trim() || targetFinding?.reviewerNotes || 'Approved during human review.';
 
     const updatedFindings = project.findings.map((f) =>
       f.id === id
@@ -570,7 +625,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             ...f,
             approved: true,
             rejected: false,
-            reviewerNotes: reviewerNotes || f.reviewerNotes || 'Approved by Lead Architect during human review.',
+            reviewStatus: 'APPROVED' as const,
+            reviewedBy: reviewer,
+            reviewedAt: timestamp,
+            reviewerNotes: finalNotes,
           }
         : f
     );
@@ -589,9 +647,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`/api/findings/${encodeURIComponent(id)}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, reviewerNotes }),
+        body: JSON.stringify({ workspaceId, reviewerNotes: finalNotes, reviewerName: reviewer }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (data?.project) {
         setProject(data.project);
@@ -606,9 +667,20 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Reject a finding with backend persistence
-  const rejectFinding = async (id: string, reason?: string) => {
+  const rejectFinding = async (id: string, reason: string, reviewerName?: string) => {
+    if (!reason || reason.trim().length === 0) {
+      const err = 'Rejection reason is mandatory. Please provide a clear explanation for rejecting this finding.';
+      console.warn(err);
+      setSaveError(err);
+      return;
+    }
+
     setIsSaving(true);
     setSaveError(null);
+
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+    const cleanReason = reason.trim();
 
     const updatedFindings = project.findings.map((f) =>
       f.id === id
@@ -616,7 +688,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             ...f,
             approved: false,
             rejected: true,
-            reviewerNotes: reason || 'Rejected by Lead Reviewer — inaccurate or superseded context.',
+            reviewStatus: 'REJECTED' as const,
+            reviewedBy: reviewer,
+            reviewedAt: timestamp,
+            rejectionReason: cleanReason,
+            reviewerNotes: cleanReason,
           }
         : f
     );
@@ -633,9 +709,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`/api/findings/${encodeURIComponent(id)}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, reason }),
+        body: JSON.stringify({ workspaceId, reason: cleanReason, reviewerName: reviewer }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (data?.project) {
         setProject(data.project);
@@ -650,11 +729,30 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Edit finding details with backend persistence
-  const editFinding = async (id: string, updates: Partial<KnowledgeFinding>) => {
+  const editFinding = async (
+    id: string,
+    updates: Partial<KnowledgeFinding>,
+    reviewerNotes?: string,
+    reviewerName?: string
+  ) => {
     setIsSaving(true);
     setSaveError(null);
 
-    const updatedFindings = project.findings.map((f) => (f.id === id ? { ...f, ...updates } : f));
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+
+    const updatedFindings = project.findings.map((f) =>
+      f.id === id
+        ? {
+            ...f,
+            ...updates,
+            approved: false, // Phase F Invariant: Material edit resets approval
+            reviewedBy: reviewer,
+            reviewedAt: timestamp,
+            reviewerNotes: reviewerNotes?.trim() || f.reviewerNotes,
+          }
+        : f
+    );
     const updatedProject: ProjectData = {
       ...project,
       findings: updatedFindings,
@@ -667,9 +765,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`/api/findings/${encodeURIComponent(id)}/edit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, updates }),
+        body: JSON.stringify({ workspaceId, updates, reviewerNotes, reviewerName: reviewer }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (data?.project) {
         setProject(data.project);
@@ -850,6 +951,94 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Phase G: Generate and certify complete 12-section HandoverDocument
+  const generateHandover = async (
+    signerName?: string,
+    options?: { version?: string; regenerate?: boolean }
+  ) => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch('/api/handovers/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId,
+          signerName: signerName || project.lead?.name || 'Workspace Reviewer',
+          version: options?.version,
+          regenerate: options?.regenerate,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
+      }
+      return { success: true, handover: data?.handover };
+    } catch (err: any) {
+      console.error('Handover generation error:', err);
+      setSaveError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Phase G: Generate high-entropy read-only share link
+  const createShareLink = async (handoverId?: string) => {
+    try {
+      const targetId = handoverId || project.currentHandover?.id;
+      const res = await fetch('/api/handovers/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId, handoverId: targetId }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      return {
+        success: true,
+        shareUrl: data.shareUrl,
+        token: data.shareRecord?.token,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Phase G: Revoke public share link
+  const revokeShareLink = async (token: string) => {
+    try {
+      const res = await fetch('/api/handovers/share', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId, token }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `HTTP ${res.status}`);
+      }
+      // Refresh workspace data to update local share status
+      const getRes = await fetch(`/api/handovers?workspaceId=${encodeURIComponent(workspaceId)}`);
+      if (getRes.ok) {
+        const data = await getRes.json();
+        if (data?.project) {
+          setProject(data.project);
+          persistToLocalCache(workspaceId, data.project);
+        }
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
   // Reset to original demo and purge workspace data
   const resetDemoData = async () => {
     setIsSaving(true);
@@ -971,6 +1160,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const groundedPercent = totalFindings > 0 ? Math.round((verifiedCount / totalFindings) * 100) : 0;
 
   const approvedCount = project.findings.filter((f) => f.approved && !f.rejected).length;
+  const rejectedCount = project.findings.filter((f) => f.rejected || f.reviewStatus === 'REJECTED').length;
+  const pendingReviewCount = project.findings.filter(
+    (f) => !f.approved && !f.rejected && f.reviewStatus !== 'REJECTED' && f.reviewStatus !== 'APPROVED'
+  ).length;
   const certificationProgressPercent = Math.round((approvedCount / (totalFindings || 1)) * 100);
 
   const openConflictsCount = (project.conflicts || []).filter((c) => c.status === 'OPEN').length;
@@ -1020,6 +1213,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         editFinding,
         resolveConflict,
         certifyHandover,
+        generateHandover,
+        createShareLink,
+        revokeShareLink,
+        currentHandover: project.currentHandover || null,
+        handovers: project.handovers || [],
         resetDemoData,
         createProject,
         isProjectCreated,
@@ -1041,6 +1239,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           conflictingCount,
           missingCount,
           approvedCount,
+          rejectedCount,
+          pendingReviewCount,
+          needsCorrectionCount: blockStatus.needsCorrectionCount,
           certificationProgressPercent,
           isHandoverBlocked: blockStatus.isBlocked,
           canCertifyHandover: blockStatus.canCertify,
@@ -1049,6 +1250,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           temporalSupersededCount,
           unreviewedCount: blockStatus.unreviewedCount,
           handoverBlockReason: blockStatus.reason,
+          isHandoverOutdated: Boolean(project.currentHandover?.isOutdated),
+          handoverOutdatedReason: project.currentHandover?.outdatedReason || '',
+          handoverVersion: project.currentHandover?.version || project.version || 'v1.0',
         },
       }}
     >

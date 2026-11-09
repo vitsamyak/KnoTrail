@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { workspaceId, reason } = body;
+    const { workspaceId, reason, reviewerName } = body;
 
     if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
       return NextResponse.json({ error: 'Invalid or missing workspaceId' }, { status: 400 });
@@ -19,8 +19,12 @@ export async function POST(
       return NextResponse.json({ error: 'Finding ID is required' }, { status: 400 });
     }
 
+    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+      return NextResponse.json({ error: 'Rejection reason is required' }, { status: 400 });
+    }
+
     const storage = getStorage();
-    const updatedProject = await storage.rejectFinding(workspaceId, findingId, reason);
+    const updatedProject = await storage.rejectFinding(workspaceId, findingId, reason.trim(), reviewerName);
     const rejectedFinding = updatedProject.findings.find((f) => f.id === findingId);
 
     return NextResponse.json({

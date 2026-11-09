@@ -352,7 +352,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
           <div className="flex flex-col">
             <span className="text-xs text-outline uppercase font-semibold">Evidence Grounding</span>
             <span className="text-xl font-bold text-on-surface">{stats.groundedPercent}%</span>
-            <span className="text-[11px] text-primary">{stats.verifiedCount} Verified • 0 Fabrications</span>
+            <span className="text-[11px] text-primary">{stats.verifiedCount} of {stats.totalFindings} Claims Verified</span>
           </div>
         </div>
 

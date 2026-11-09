@@ -231,23 +231,29 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
     await repo.createWorkspace(workspaceA, TEST_SEED_PROJECT);
     await repo.createWorkspace(workspaceB, TEST_SEED_PROJECT);
 
-    // Mutate Workspace A: approve finding FIND-DEC-04, edit project title
-    await repo.approveFinding(workspaceA, 'FIND-DEC-04', 'Reviewed only in Alpha');
-    await repo.editFinding(workspaceA, 'FIND-DEC-01', { title: 'Alpha Custom Title' });
+    // Mutate Workspace A: verify conflicting finding cannot be directly approved (Phase E gate)
+    await assert.rejects(
+      async () => repo.approveFinding(workspaceA, 'FIND-DEC-04', 'Should fail'),
+      /Cannot directly approve finding/
+    );
+
+    // Mutate Workspace A: approve verified finding FIND-DEC-01, edit project title
+    await repo.approveFinding(workspaceA, 'FIND-DEC-01', 'Reviewed only in Alpha');
+    await repo.editFinding(workspaceA, 'FIND-DEC-04', { title: 'Alpha Custom Title' });
 
     // Read Workspace B: must NOT have Alpha mutations
     const freshRepo = new DurableFileRepository(TEST_STORAGE_DIR);
     const projectB = await freshRepo.getWorkspace(workspaceB);
     const projectA = await freshRepo.getWorkspace(workspaceA);
 
-    const finding004InB = projectB.findings.find((f) => f.id === 'FIND-DEC-04');
-    const finding004InA = projectA.findings.find((f) => f.id === 'FIND-DEC-04');
-
-    assert.strictEqual(finding004InA.approved, true, 'Finding in Workspace A must be approved');
-    assert.strictEqual(finding004InB.approved, false, 'Finding in Workspace B must remain unapproved');
-
     const finding001InB = projectB.findings.find((f) => f.id === 'FIND-DEC-01');
-    assert.notStrictEqual(finding001InB.title, 'Alpha Custom Title', 'Workspace B must not be polluted by A');
+    const finding001InA = projectA.findings.find((f) => f.id === 'FIND-DEC-01');
+
+    assert.strictEqual(finding001InA.approved, true, 'Finding in Workspace A must be approved');
+    assert.strictEqual(finding001InB.approved, false, 'Finding in Workspace B must remain unapproved');
+
+    const finding004InB = projectB.findings.find((f) => f.id === 'FIND-DEC-04');
+    assert.notStrictEqual(finding004InB.title, 'Alpha Custom Title', 'Workspace B must not be polluted by A');
   });
 
   await t.test('Scenario G: Reset workspace restores clean initial empty data', async () => {
@@ -256,9 +262,9 @@ test('Persistence & Multi-Workspace Isolation Test Suite', async (t) => {
     await repo.createWorkspace(workspaceId, TEST_SEED_PROJECT);
 
     // Mutate finding
-    await repo.approveFinding(workspaceId, 'FIND-DEC-04', 'Mutated');
+    await repo.approveFinding(workspaceId, 'FIND-DEC-01', 'Mutated');
     const mutated = await repo.getWorkspace(workspaceId);
-    assert.strictEqual(mutated.findings.find((f) => f.id === 'FIND-DEC-04').approved, true);
+    assert.strictEqual(mutated.findings.find((f) => f.id === 'FIND-DEC-01').approved, true);
 
     // Reset workspace
     const reset = await repo.resetWorkspace(workspaceId);

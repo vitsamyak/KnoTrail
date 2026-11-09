@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { workspaceId, updates } = body;
+    const { workspaceId, updates, reviewerNotes, reviewerName } = body;
 
     if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
       return NextResponse.json({ error: 'Invalid or missing workspaceId' }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(
     }
 
     const storage = getStorage();
-    const updatedProject = await storage.editFinding(workspaceId, findingId, updates);
+    const updatedProject = await storage.editFinding(workspaceId, findingId, updates, reviewerNotes, reviewerName);
     const editedFinding = updatedProject.findings.find((f) => f.id === findingId);
 
     return NextResponse.json({

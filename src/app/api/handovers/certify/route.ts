@@ -18,11 +18,13 @@ export async function POST(request: NextRequest) {
       signerName || 'Project Reviewer'
     );
 
+    const handover = certifiedProject.currentHandover;
     const markdown = generateHandoverMarkdown(certifiedProject);
     const json = generateHandoverJSON(certifiedProject);
 
     return NextResponse.json({
       project: certifiedProject,
+      handover,
       markdown,
       json,
       status: 'certified',

@@ -30,6 +30,9 @@ export const EMPTY_PROJECT_DATA: ProjectData = {
   sources: [],
   findings: [],
   conflicts: [],
+  reviewAuditHistory: [],
+  handovers: [],
+  shareRecords: [],
 };
 
 /**
@@ -175,4 +178,5 @@ export const TEST_FIXTURE_PROJECT_DATA: ProjectData = {
       ],
     },
   ],
+  reviewAuditHistory: [],
 };

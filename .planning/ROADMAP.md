@@ -35,6 +35,18 @@ KnoTrail is engineered across three major hackathon milestones:
 **Goal**: Transform authentic uploaded project documents into structured, evidence-backed operational knowledge using Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash), enforce strict verbatim quote grounding, compute exact PDF page and TXT/MD line coordinates, categorize across all 7 operational types, integrate with Human Review Center under Phase A gates, and enforce Zero Fake AI Invariant.  
 **Status**: COMPLETED (16/16 tests passing, total 46/46 passing, Next.js build passing)
 
+### Phase E: Advanced Evidence Verification & Conflict Detection
+**Goal**: Implement dual-status taxonomy (Evidence Validity & Claim Verification), cross-document contradiction detection, two-sided citation provenance, temporal supersession, and strict conflict approval gating.  
+**Status**: COMPLETED (23/23 tests passing, total 70/70 passing)
+
+### Phase F: Persistent Human Approval & Review Workflow
+**Goal**: Enforce mandatory human governance before certified handover generation: immutable audit trail (`ReviewAuditAction`), mandatory rejection reasons, edit revalidation with approval reset, justification gate for UNCERTAIN findings, and conflict approval gates.  
+**Status**: COMPLETED (16/16 tests passing, total 87/87 passing)
+
+### Phase G: Final Handover Generation & Delivery
+**Goal**: Compile verified and human-approved project findings into a formal 12-section HandoverDocument schema (Sections A through L), deterministic rule-based executive summary, multi-format export (Markdown with TOC, typed JSON with 100% parity, printable A4 PDF), versioning (`v1.0` -> `v1.1`), outdated invalidation upon post-certification drift, and zero-auth high-entropy public share links (`/share/[token]`) with on-demand revocation.  
+**Status**: COMPLETED (22/22 tests passing, total 109/109 passing across 7 test suites, Next.js build passing)
+
 
 
 ### Phase 1: Core Domain Models, Provenance Schema & Storage Foundation

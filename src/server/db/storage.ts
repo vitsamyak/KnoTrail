@@ -1,8 +1,20 @@
 import fs from 'fs';
 import path from 'path';
-import type { KnowledgeFinding, ProjectData, ProjectSource, ConflictRecord } from '../../lib/types.ts';
+import crypto from 'crypto';
+import type {
+  KnowledgeFinding,
+  ProjectData,
+  ProjectSource,
+  ConflictRecord,
+  ReviewAuditAction,
+  ReviewStatus,
+  HandoverDocument,
+  HandoverShareRecord,
+} from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSON } from '../../lib/handoverFilter.ts';
+import { revalidateEditedFinding } from '../verification/verifier.ts';
+import { buildHandoverDocument, computeProjectDataSnapshotHash } from '../handover/generator.ts';
 import { isValidWorkspaceId, type WorkspaceRecord } from './types.ts';
 
 export interface StorageRepository {
@@ -20,9 +32,35 @@ export interface StorageRepository {
   ): Promise<ProjectSource>;
   deleteSource(workspaceId: string, sourceId: string): Promise<ProjectData>;
   getSource(workspaceId: string, sourceId: string): Promise<ProjectSource | null>;
-  approveFinding(workspaceId: string, findingId: string, reviewerNotes?: string): Promise<ProjectData>;
-  rejectFinding(workspaceId: string, findingId: string, reason?: string): Promise<ProjectData>;
-  editFinding(workspaceId: string, findingId: string, updates: Partial<KnowledgeFinding>): Promise<ProjectData>;
+  approveFinding(
+    workspaceId: string,
+    findingId: string,
+    reviewerNotes?: string,
+    reviewerName?: string
+  ): Promise<ProjectData>;
+  rejectFinding(
+    workspaceId: string,
+    findingId: string,
+    reason: string,
+    reviewerName?: string
+  ): Promise<ProjectData>;
+  editFinding(
+    workspaceId: string,
+    findingId: string,
+    updates: Partial<KnowledgeFinding>,
+    reviewerNotes?: string,
+    reviewerName?: string
+  ): Promise<ProjectData>;
+  addReviewerNote(
+    workspaceId: string,
+    findingId: string,
+    note: string,
+    reviewerName?: string
+  ): Promise<ProjectData>;
+  getReviewAuditHistory(
+    workspaceId: string,
+    findingId?: string
+  ): Promise<ReviewAuditAction[]>;
   resolveConflict(
     workspaceId: string,
     findingId: string,
@@ -38,6 +76,16 @@ export interface StorageRepository {
     resolvedBy?: string
   ): Promise<ProjectData>;
   certifyHandover(workspaceId: string, signerName: string): Promise<ProjectData>;
+  generateAndSaveHandover(
+    workspaceId: string,
+    signerName?: string,
+    options?: { version?: string; regenerate?: boolean }
+  ): Promise<{ project: ProjectData; handover: HandoverDocument }>;
+  getHandover(workspaceId: string, handoverId?: string): Promise<HandoverDocument | null>;
+  getHandoverHistory(workspaceId: string): Promise<HandoverDocument[]>;
+  createShareToken(workspaceId: string, handoverId: string): Promise<HandoverShareRecord>;
+  getSharedHandover(token: string): Promise<{ handover: HandoverDocument; projectName: string }>;
+  revokeShareToken(workspaceId: string, token: string): Promise<boolean>;
   resetWorkspace(workspaceId: string): Promise<ProjectData>;
   listWorkspaces(): Promise<string[]>;
 }
@@ -197,6 +245,17 @@ export class DurableFileRepository implements StorageRepository {
     if (!isValidWorkspaceId(workspaceId)) {
       throw new Error(`Invalid workspace ID: "${workspaceId}"`);
     }
+
+    // Invalidation check: If currentHandover exists, check if data has drifted
+    if (project.currentHandover && project.currentHandover.sourceSnapshotHash) {
+      const currentHash = computeProjectDataSnapshotHash(project);
+      if (currentHash !== project.currentHandover.sourceSnapshotHash) {
+        project.currentHandover.isOutdated = true;
+        project.currentHandover.outdatedReason =
+          'Project findings or source documents were modified after handover generation.';
+      }
+    }
+
     await this.writeWorkspaceFile(workspaceId, project);
     return project;
   }
@@ -335,11 +394,54 @@ export class DurableFileRepository implements StorageRepository {
     return project.sources.find((s) => s.id === sourceId) || null;
   }
 
-  async approveFinding(workspaceId: string, findingId: string, reviewerNotes?: string): Promise<ProjectData> {
+  async approveFinding(
+    workspaceId: string,
+    findingId: string,
+    reviewerNotes?: string,
+    reviewerName?: string
+  ): Promise<ProjectData> {
     let project = await this.getWorkspace(workspaceId);
     if (!project) {
       project = await this.createWorkspace(workspaceId);
     }
+
+    const targetFinding = project.findings.find((f) => f.id === findingId);
+    if (!targetFinding) {
+      throw new Error(`Finding "${findingId}" not found in workspace.`);
+    }
+
+    const openConflict = (project.conflicts || []).find(
+      (c) =>
+        (c.findingIdA === findingId || c.findingIdB === findingId) &&
+        c.status === 'OPEN'
+    );
+
+    if (targetFinding.status === 'CONFLICTING' || openConflict) {
+      throw new Error(
+        `Cannot directly approve finding "${findingId}": It is involved in an unresolved conflict (${openConflict?.id || 'Active Contradiction'}). You must resolve the conflict in the Review Center before approving this claim.`
+      );
+    }
+
+    // Phase F: Evidence & Grounding validation
+    if (targetFinding.status === 'MISSING' || targetFinding.evidenceValidity === 'MISSING') {
+      throw new Error(
+        `Cannot approve finding "${findingId}": It lacks verifiable primary source evidence (MISSING). Correct the finding or attach valid documentation before approval.`
+      );
+    }
+
+    // Phase F: Uncertain findings require explicit review and documented justification
+    if (targetFinding.status === 'UNCERTAIN' || targetFinding.claimStatus === 'UNCERTAIN') {
+      if (!reviewerNotes || reviewerNotes.trim().length < 5) {
+        throw new Error(
+          `Cannot approve uncertain finding "${findingId}" without documented review justification. Provide reviewer notes explaining how this claim was verified.`
+        );
+      }
+    }
+
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+    const finalNotes = reviewerNotes?.trim() || targetFinding.reviewerNotes || 'Approved during human review.';
+    const prevStatus = targetFinding.reviewStatus || (targetFinding.rejected ? 'REJECTED' : 'PENDING_REVIEW');
 
     const updatedFindings = project.findings.map((f) => {
       if (f.id !== findingId) return f;
@@ -347,24 +449,67 @@ export class DurableFileRepository implements StorageRepository {
         ...f,
         approved: true,
         rejected: false,
-        reviewerNotes: reviewerNotes || f.reviewerNotes || 'Approved by Lead Architect during human review.',
+        reviewStatus: 'APPROVED' as const,
+        reviewedBy: reviewer,
+        reviewedAt: timestamp,
+        reviewerNotes: finalNotes,
       };
     });
+
+    const auditAction: ReviewAuditAction = {
+      id: `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      findingId,
+      workspaceId,
+      actionType: 'APPROVE',
+      previousStatus: prevStatus,
+      newStatus: 'APPROVED',
+      reviewerName: reviewer,
+      reviewerNotes: finalNotes,
+      timestamp,
+      evidenceReferences: (targetFinding.citations || []).map((c) => ({
+        sourceName: c.sourceName,
+        location: `${c.file}:${c.lineRange}`,
+        quote: c.snippet,
+      })),
+    };
+
+    const updatedAuditHistory = [...(project.reviewAuditHistory || []), auditAction];
 
     const updatedProject: ProjectData = {
       ...project,
       findings: updatedFindings,
+      reviewAuditHistory: updatedAuditHistory,
     };
 
     await this.saveProject(workspaceId, updatedProject);
     return updatedProject;
   }
 
-  async rejectFinding(workspaceId: string, findingId: string, reason?: string): Promise<ProjectData> {
+  async rejectFinding(
+    workspaceId: string,
+    findingId: string,
+    reason: string,
+    reviewerName?: string
+  ): Promise<ProjectData> {
     let project = await this.getWorkspace(workspaceId);
     if (!project) {
       project = await this.createWorkspace(workspaceId);
     }
+
+    const targetFinding = project.findings.find((f) => f.id === findingId);
+    if (!targetFinding) {
+      throw new Error(`Finding "${findingId}" not found in workspace.`);
+    }
+
+    // Phase F: Mandatory rejection reason
+    if (!reason || reason.trim().length === 0) {
+      throw new Error('A rejection reason is strictly required to reject a finding.');
+    }
+
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+    const cleanReason = reason.trim();
+    const prevStatus = targetFinding.reviewStatus || (targetFinding.approved ? 'APPROVED' : 'PENDING_REVIEW');
 
     const updatedFindings = project.findings.map((f) => {
       if (f.id !== findingId) return f;
@@ -372,13 +517,37 @@ export class DurableFileRepository implements StorageRepository {
         ...f,
         approved: false,
         rejected: true,
-        reviewerNotes: reason || 'Rejected by Lead Reviewer — inaccurate or superseded context.',
+        reviewStatus: 'REJECTED' as const,
+        reviewedBy: reviewer,
+        reviewedAt: timestamp,
+        rejectionReason: cleanReason,
+        reviewerNotes: cleanReason,
       };
     });
+
+    const auditAction: ReviewAuditAction = {
+      id: `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      findingId,
+      workspaceId,
+      actionType: 'REJECT',
+      previousStatus: prevStatus,
+      newStatus: 'REJECTED',
+      reviewerName: reviewer,
+      reviewerNotes: cleanReason,
+      timestamp,
+      evidenceReferences: (targetFinding.citations || []).map((c) => ({
+        sourceName: c.sourceName,
+        location: `${c.file}:${c.lineRange}`,
+        quote: c.snippet,
+      })),
+    };
+
+    const updatedAuditHistory = [...(project.reviewAuditHistory || []), auditAction];
 
     const updatedProject: ProjectData = {
       ...project,
       findings: updatedFindings,
+      reviewAuditHistory: updatedAuditHistory,
     };
 
     await this.saveProject(workspaceId, updatedProject);
@@ -388,25 +557,159 @@ export class DurableFileRepository implements StorageRepository {
   async editFinding(
     workspaceId: string,
     findingId: string,
-    updates: Partial<KnowledgeFinding>
+    updates: Partial<KnowledgeFinding>,
+    reviewerNotes?: string,
+    reviewerName?: string
   ): Promise<ProjectData> {
     let project = await this.getWorkspace(workspaceId);
     if (!project) {
       project = await this.createWorkspace(workspaceId);
     }
 
-    const updatedFindings = project.findings.map((f) => {
-      if (f.id !== findingId) return f;
-      return { ...f, ...updates };
-    });
+    const targetFinding = project.findings.find((f) => f.id === findingId);
+    if (!targetFinding) {
+      throw new Error(`Finding "${findingId}" not found in workspace.`);
+    }
+
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+    const prevStatus = targetFinding.reviewStatus || (targetFinding.approved ? 'APPROVED' : 'PENDING_REVIEW');
+
+    // Build candidate updated finding
+    const candidateFinding: KnowledgeFinding = {
+      ...targetFinding,
+      title: updates.title !== undefined ? updates.title.trim() : targetFinding.title,
+      summary: updates.summary !== undefined ? updates.summary.trim() : targetFinding.summary,
+      reasoning: updates.reasoning !== undefined ? updates.reasoning.trim() : targetFinding.reasoning,
+      impact: updates.impact !== undefined ? updates.impact.trim() : targetFinding.impact,
+      category: updates.category || targetFinding.category,
+      urgency: updates.urgency || targetFinding.urgency,
+      owner: updates.owner || targetFinding.owner,
+    };
+
+    // Phase F: Evidence Revalidation
+    const revalidation = revalidateEditedFinding(candidateFinding, project.sources || []);
+
+    const updatedFinding: KnowledgeFinding = {
+      ...candidateFinding,
+      status: revalidation.status,
+      claimStatus: revalidation.claimStatus,
+      evidenceValidity: revalidation.evidenceValidity,
+      reviewStatus: revalidation.reviewStatus,
+      confidence: revalidation.confidence,
+      // Phase F Invariant: Material edit resets approval; never automatically preserve verified approval
+      approved: false,
+      rejected: false,
+      reviewedBy: reviewer,
+      reviewedAt: timestamp,
+      reviewerNotes: reviewerNotes?.trim() || revalidation.explanation,
+    };
+
+    const updatedFindings = project.findings.map((f) => (f.id === findingId ? updatedFinding : f));
+
+    const auditAction: ReviewAuditAction = {
+      id: `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      findingId,
+      workspaceId,
+      actionType: 'EDIT',
+      previousStatus: prevStatus,
+      newStatus: updatedFinding.reviewStatus || 'PENDING_REVIEW',
+      reviewerName: reviewer,
+      reviewerNotes: reviewerNotes?.trim() || revalidation.explanation,
+      timestamp,
+      evidenceReferences: (updatedFinding.citations || []).map((c) => ({
+        sourceName: c.sourceName,
+        location: `${c.file}:${c.lineRange}`,
+        quote: c.snippet,
+      })),
+    };
+
+    const updatedAuditHistory = [...(project.reviewAuditHistory || []), auditAction];
 
     const updatedProject: ProjectData = {
       ...project,
       findings: updatedFindings,
+      reviewAuditHistory: updatedAuditHistory,
     };
 
     await this.saveProject(workspaceId, updatedProject);
     return updatedProject;
+  }
+
+  async addReviewerNote(
+    workspaceId: string,
+    findingId: string,
+    note: string,
+    reviewerName?: string
+  ): Promise<ProjectData> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+
+    const targetFinding = project.findings.find((f) => f.id === findingId);
+    if (!targetFinding) {
+      throw new Error(`Finding "${findingId}" not found in workspace.`);
+    }
+
+    if (!note || note.trim().length === 0) {
+      throw new Error('Reviewer note cannot be empty.');
+    }
+
+    const reviewer = reviewerName || project.lead?.name || 'Workspace Reviewer';
+    const timestamp = new Date().toISOString();
+    const cleanNote = note.trim();
+    const prevStatus = targetFinding.reviewStatus || 'PENDING_REVIEW';
+
+    const updatedFindings = project.findings.map((f) => {
+      if (f.id !== findingId) return f;
+      return {
+        ...f,
+        reviewerNotes: cleanNote,
+        reviewedBy: reviewer,
+        reviewedAt: timestamp,
+      };
+    });
+
+    const auditAction: ReviewAuditAction = {
+      id: `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      findingId,
+      workspaceId,
+      actionType: 'ADD_NOTE',
+      previousStatus: prevStatus,
+      newStatus: prevStatus,
+      reviewerName: reviewer,
+      reviewerNotes: cleanNote,
+      timestamp,
+      evidenceReferences: (targetFinding.citations || []).map((c) => ({
+        sourceName: c.sourceName,
+        location: `${c.file}:${c.lineRange}`,
+        quote: c.snippet,
+      })),
+    };
+
+    const updatedAuditHistory = [...(project.reviewAuditHistory || []), auditAction];
+
+    const updatedProject: ProjectData = {
+      ...project,
+      findings: updatedFindings,
+      reviewAuditHistory: updatedAuditHistory,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return updatedProject;
+  }
+
+  async getReviewAuditHistory(
+    workspaceId: string,
+    findingId?: string
+  ): Promise<ReviewAuditAction[]> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project || !project.reviewAuditHistory) return [];
+    if (findingId) {
+      return project.reviewAuditHistory.filter((a) => a.findingId === findingId);
+    }
+    return project.reviewAuditHistory;
   }
 
   async resolveConflict(
@@ -420,15 +723,22 @@ export class DurableFileRepository implements StorageRepository {
       project = await this.createWorkspace(workspaceId);
     }
 
+    const targetFinding = project.findings.find((f) => f.id === findingId);
     const timestamp = new Date().toISOString().split('T')[0];
+    const prevStatus = targetFinding?.reviewStatus || 'CONFLICT_REQUIRES_RESOLUTION';
+
     const updatedFindings = project.findings.map((f) => {
       if (f.id !== findingId) return f;
       return {
         ...f,
         status: 'VERIFIED' as const,
+        claimStatus: 'SUPPORTED' as const,
+        reviewStatus: 'APPROVED' as const,
         confidence: 98,
         approved: true,
         rejected: false,
+        reviewedBy: resolvedBy,
+        reviewedAt: new Date().toISOString(),
         reviewerNotes: `Conflict resolved by ${resolvedBy}: ${resolution}`,
         conflictDetails: f.conflictDetails
           ? {
@@ -441,9 +751,29 @@ export class DurableFileRepository implements StorageRepository {
       };
     });
 
+    const auditAction: ReviewAuditAction = {
+      id: `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      findingId,
+      workspaceId,
+      actionType: 'RESOLVE_CONFLICT',
+      previousStatus: prevStatus,
+      newStatus: 'APPROVED',
+      reviewerName: resolvedBy,
+      reviewerNotes: `Conflict resolved: ${resolution}`,
+      timestamp: new Date().toISOString(),
+      evidenceReferences: (targetFinding?.citations || []).map((c) => ({
+        sourceName: c.sourceName,
+        location: `${c.file}:${c.lineRange}`,
+        quote: c.snippet,
+      })),
+    };
+
+    const updatedAuditHistory = [...(project.reviewAuditHistory || []), auditAction];
+
     const updatedProject: ProjectData = {
       ...project,
       findings: updatedFindings,
+      reviewAuditHistory: updatedAuditHistory,
     };
 
     await this.saveProject(workspaceId, updatedProject);
@@ -546,36 +876,175 @@ export class DurableFileRepository implements StorageRepository {
   }
 
   async certifyHandover(workspaceId: string, signerName: string): Promise<ProjectData> {
+    const result = await this.generateAndSaveHandover(workspaceId, signerName);
+    return result.project;
+  }
+
+  async generateAndSaveHandover(
+    workspaceId: string,
+    signerName?: string,
+    options?: { version?: string; regenerate?: boolean }
+  ): Promise<{ project: ProjectData; handover: HandoverDocument }> {
     let project = await this.getWorkspace(workspaceId);
     if (!project) {
       project = await this.createWorkspace(workspaceId);
     }
 
-    // Gatecheck Phase A & E rules: Handover cannot be certified if blocking conflicts or unreviewed items exist
-    const blockStatus = checkHandoverBlockStatus(project.findings, false, project.conflicts);
-    if (!blockStatus.canCertify) {
-      throw new Error(`Handover cannot be certified: ${blockStatus.reason}`);
-    }
-
-    const now = new Date().toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
+    // Build complete 12-section HandoverDocument
+    const handoverDoc = await buildHandoverDocument(project, {
+      signerName,
+      version: options?.version,
+      regenerate: options?.regenerate,
     });
-    const certificationHash = `SHA256:${Array.from({ length: 64 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join('')}`;
+
+    // Archive previous handovers and record current handover
+    const previousHandovers = project.handovers || [];
+    const updatedHandovers = [...previousHandovers, handoverDoc];
 
     const updatedProject: ProjectData = {
       ...project,
       handoverCertified: true,
-      certifiedBy: signerName || project.lead?.name || 'Project Reviewer',
-      certifiedDate: now,
-      certificationHash,
+      certifiedBy: handoverDoc.certifiedBy,
+      certifiedDate: handoverDoc.certifiedDate,
+      certificationHash: handoverDoc.certificationHash,
+      handovers: updatedHandovers,
+      currentHandover: handoverDoc,
     };
 
     await this.saveProject(workspaceId, updatedProject);
-    return updatedProject;
+    return { project: updatedProject, handover: handoverDoc };
+  }
+
+  async getHandover(workspaceId: string, handoverId?: string): Promise<HandoverDocument | null> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project) return null;
+
+    let targetHandover: HandoverDocument | null = null;
+    if (handoverId) {
+      targetHandover = (project.handovers || []).find((h) => h.id === handoverId) || null;
+    } else {
+      targetHandover = project.currentHandover || null;
+    }
+
+    if (!targetHandover) return null;
+
+    // Check if project data has changed since generation (Outdated Invalidation)
+    const currentHash = computeProjectDataSnapshotHash(project);
+    if (targetHandover.sourceSnapshotHash && targetHandover.sourceSnapshotHash !== currentHash) {
+      targetHandover.isOutdated = true;
+      targetHandover.outdatedReason =
+        'Project findings or source documents were modified after handover generation.';
+    }
+
+    return targetHandover;
+  }
+
+  async getHandoverHistory(workspaceId: string): Promise<HandoverDocument[]> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project || !project.handovers) return [];
+    return project.handovers;
+  }
+
+  async createShareToken(workspaceId: string, handoverId: string): Promise<HandoverShareRecord> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      throw new Error(`Workspace "${workspaceId}" not found.`);
+    }
+
+    if (!project.handoverCertified) {
+      throw new Error('Cannot share uncertified handover. Complete review and certification first.');
+    }
+
+    const handover =
+      (project.handovers || []).find((h) => h.id === handoverId) || project.currentHandover;
+    if (!handover) {
+      throw new Error('Handover record not found.');
+    }
+
+    // High-entropy read-only share token (crypto-secure random)
+    const token = `kt_share_${crypto.randomBytes(24).toString('hex')}`;
+    const shareRecord: HandoverShareRecord = {
+      token,
+      handoverId: handover.id,
+      workspaceId,
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    };
+
+    const updatedShareRecords = [...(project.shareRecords || []), shareRecord];
+    handover.shareRecord = shareRecord;
+
+    const updatedProject: ProjectData = {
+      ...project,
+      shareRecords: updatedShareRecords,
+      currentHandover: project.currentHandover?.id === handover.id ? handover : project.currentHandover,
+    };
+
+    await this.saveProject(workspaceId, updatedProject);
+    return shareRecord;
+  }
+
+  async getSharedHandover(token: string): Promise<{ handover: HandoverDocument; projectName: string }> {
+    if (!token || typeof token !== 'string') {
+      throw new Error('Invalid share token.');
+    }
+
+    // Search workspace records for active share token
+    const workspaceFiles = await this.listWorkspaces();
+    for (const wsId of workspaceFiles) {
+      const project = await this.readWorkspaceFile(wsId);
+      if (!project || !project.shareRecords) continue;
+
+      const matchedRecord = project.shareRecords.find((r) => r.token === token);
+      if (matchedRecord) {
+        if (!matchedRecord.isActive) {
+          throw new Error('This share link has been revoked by the project reviewer.');
+        }
+
+        const handover =
+          (project.handovers || []).find((h) => h.id === matchedRecord.handoverId) ||
+          project.currentHandover;
+
+        if (!handover) {
+          throw new Error('Certified handover package not found.');
+        }
+
+        // Return strictly the read-only handover document without leaking workspace data
+        return {
+          handover,
+          projectName: project.name,
+        };
+      }
+    }
+
+    throw new Error('Share link not found or expired.');
+  }
+
+  async revokeShareToken(workspaceId: string, token: string): Promise<boolean> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project || !project.shareRecords) return false;
+
+    let found = false;
+    const updatedShareRecords = project.shareRecords.map((r) => {
+      if (r.token === token) {
+        found = true;
+        return { ...r, isActive: false, revokedAt: new Date().toISOString() };
+      }
+      return r;
+    });
+
+    const updatedProject: ProjectData = {
+      ...project,
+      shareRecords: updatedShareRecords,
+    };
+
+    if (project.currentHandover?.shareRecord?.token === token) {
+      project.currentHandover.shareRecord.isActive = false;
+      project.currentHandover.shareRecord.revokedAt = new Date().toISOString();
+    }
+
+    await this.saveProject(workspaceId, updatedProject);
+    return found;
   }
 
   async resetWorkspace(workspaceId: string): Promise<ProjectData> {

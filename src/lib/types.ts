@@ -7,6 +7,33 @@ export type EvidenceValidityStatus = 'MATCHED' | 'MISSING' | 'MISMATCHED' | 'SOU
 // Claim Verification evaluates semantic support, cross-source contradictions, and temporal supersession.
 export type ClaimVerificationStatus = 'SUPPORTED' | 'UNCERTAIN' | 'CONFLICTING' | 'POSSIBLY_OUTDATED';
 
+// Phase F: Human Approval & Review Workflow Statuses
+export type ReviewStatus =
+  | 'PENDING_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'NEEDS_CORRECTION'
+  | 'CONFLICT_REQUIRES_RESOLUTION';
+
+export interface ReviewAuditAction {
+  id: string;
+  findingId: string;
+  workspaceId: string;
+  actionType: 'APPROVE' | 'REJECT' | 'EDIT' | 'RESOLVE_CONFLICT' | 'ADD_NOTE' | 'REVALIDATE';
+  action?: string;
+  notes?: string;
+  previousStatus: string;
+  newStatus: string;
+  reviewerName: string;
+  reviewerNotes?: string;
+  timestamp: string;
+  evidenceReferences?: Array<{
+    sourceName: string;
+    location: string;
+    quote?: string;
+  }>;
+}
+
 export type FindingType = 'decision' | 'task' | 'risk' | 'dependency' | 'contact' | 'next_action' | 'unresolved_question';
 
 export interface EvidenceCitation {
@@ -20,14 +47,19 @@ export interface EvidenceCitation {
   author: string;
   timestamp: string;
   snippet: string;
+  quote?: string;
+  pageNumber?: number;
+  lineNumber?: number;
   contentHash: string;
   clearanceTier: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL';
   confidence: number;
 }
 
 export interface ConflictDetails {
-  sourceA: { name: string; claim: string; reference: string };
-  sourceB: { name: string; claim: string; reference: string };
+  sourceA: { name: string; claim: string; reference: string; quote?: string; location?: string };
+  sourceB: { name: string; claim: string; reference: string; quote?: string; location?: string };
+  category?: 'architecture' | 'database' | 'security' | 'timeline' | 'operational' | 'other' | string;
+  explanation?: string;
   resolution?: string;
   resolvedBy?: string;
   resolvedAt?: string;
@@ -71,6 +103,8 @@ export interface KnowledgeFinding {
   summary: string;
   reasoning?: string;
   impact?: string;
+  mitigation?: string;
+  implication?: string;
   status: EvidenceStatus;
   // Phase E: Dual-Status fields
   evidenceValidity?: EvidenceValidityStatus;
@@ -82,7 +116,12 @@ export interface KnowledgeFinding {
   citations: EvidenceCitation[];
   approved: boolean;
   rejected?: boolean;
+  // Phase F: Human Review Workflow fields
+  reviewStatus?: ReviewStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
   reviewerNotes?: string;
+  rejectionReason?: string;
   conflictDetails?: ConflictDetails;
   category: string;
   urgency: 'critical' | 'high' | 'medium' | 'low';
@@ -146,6 +185,7 @@ export interface ProjectData {
   sources: ProjectSource[];
   findings: KnowledgeFinding[];
   conflicts?: ConflictRecord[];
+  reviewAuditHistory?: ReviewAuditAction[];
   handoverCertified: boolean;
   certificationHash: string;
   certifiedDate?: string;
@@ -153,6 +193,159 @@ export interface ProjectData {
   executiveSummary: string;
   isCreated?: boolean;
   category?: string;
+  handovers?: HandoverDocument[];
+  currentHandover?: HandoverDocument;
+  shareRecords?: HandoverShareRecord[];
+}
+
+// Phase G: Comprehensive Handover Document Models
+
+export interface HandoverShareRecord {
+  token: string;
+  handoverId: string;
+  workspaceId: string;
+  createdAt: string;
+  isActive: boolean;
+  revokedAt?: string;
+}
+
+export interface HandoverSectionCounts {
+  decisions: number;
+  tasks: number;
+  risks: number;
+  dependencies: number;
+  questions: number;
+  nextActions: number;
+  contacts: number;
+  totalApprovedFindings: number;
+}
+
+export interface HandoverEvidenceItem {
+  findingId: string;
+  findingTitle: string;
+  findingType: string;
+  status: EvidenceStatus;
+  evidenceValidity?: EvidenceValidityStatus;
+  claimStatus?: ClaimVerificationStatus;
+  isAcceptedUncertain?: boolean;
+  reviewerJustification?: string;
+  citations: EvidenceCitation[];
+}
+
+export interface HandoverDocument {
+  id: string;
+  workspaceId: string;
+  projectId: string;
+  version: string; // e.g. "v1.0", "v1.1"
+  generatedAt: string;
+  certifiedDate: string;
+  certifiedBy: string;
+  certificationHash: string;
+  isOutdated: boolean;
+  outdatedReason?: string;
+  sourceSnapshotHash: string;
+  shareRecord?: HandoverShareRecord;
+
+  // Section A: Cover & Project Metadata
+  metadata: {
+    projectName: string;
+    projectCode: string;
+    description: string;
+    category?: string;
+    version: string;
+    targetExitDate: string;
+    auditStamp: string;
+    outgoingLead?: { name: string; role: string; email?: string };
+    incomingLead?: { name: string; role: string; email?: string };
+  };
+
+  // Section B: Executive Summary
+  executiveSummary: string;
+
+  // Section C: Project Overview
+  projectOverview: {
+    purpose: string;
+    scope: string;
+    operationalStatus: string;
+    connectedSourcesCount: number;
+  };
+
+  // Section D: Important Decisions
+  decisions: KnowledgeFinding[];
+
+  // Section E: Pending Tasks
+  tasks: KnowledgeFinding[];
+
+  // Section F: Responsibilities
+  responsibilities: {
+    assigned: Array<{ owner: string; tasksCount: number; taskTitles: string[] }>;
+    unassignedTasks: KnowledgeFinding[];
+    unassignedCount: number;
+  };
+
+  // Section G: Risks and Blockers
+  risks: KnowledgeFinding[];
+
+  // Section H: Dependencies
+  dependencies: KnowledgeFinding[];
+
+  // Section I: Unresolved Questions
+  unresolvedQuestions: KnowledgeFinding[];
+
+  // Section J: Recommended Next Actions
+  recommendedNextActions: {
+    immediate: KnowledgeFinding[]; // critical / high urgency
+    shortTerm: KnowledgeFinding[]; // medium urgency
+    followUp: KnowledgeFinding[];  // low urgency
+  };
+
+  // Section K: Evidence and Source References
+  evidenceInventory: HandoverEvidenceItem[];
+
+  // Section L: Human Review History
+  reviewHistory: {
+    approvedCount: number;
+    acceptedUncertainCount: number;
+    rejectedCount: number;
+    resolvedConflictsCount: number;
+    auditActions: ReviewAuditAction[];
+  };
+
+  sectionCounts: HandoverSectionCounts;
+}
+
+/**
+ * Derives the authoritative human review status for a finding.
+ * Invariant: Any open conflict or conflicting claim forces CONFLICT_REQUIRES_RESOLUTION.
+ * Invariant: Rejected findings cannot be approved without being un-rejected.
+ * Invariant: Material edits without verified source support are marked NEEDS_CORRECTION.
+ */
+export function getFindingReviewStatus(
+  finding: KnowledgeFinding,
+  conflicts?: ConflictRecord[]
+): ReviewStatus {
+  const hasOpenConflict =
+    finding.status === 'CONFLICTING' ||
+    (conflicts || []).some(
+      (c) => (c.findingIdA === finding.id || c.findingIdB === finding.id) && c.status === 'OPEN'
+    );
+
+  if (hasOpenConflict) {
+    return 'CONFLICT_REQUIRES_RESOLUTION';
+  }
+  if (finding.rejected) {
+    return 'REJECTED';
+  }
+  if (finding.approved) {
+    return 'APPROVED';
+  }
+  if (
+    finding.reviewStatus === 'NEEDS_CORRECTION' ||
+    (finding.status === 'UNCERTAIN' && finding.claimStatus === 'UNCERTAIN')
+  ) {
+    return 'NEEDS_CORRECTION';
+  }
+  return finding.reviewStatus || 'PENDING_REVIEW';
 }
 
 export type ActiveView = 

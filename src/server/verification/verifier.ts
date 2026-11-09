@@ -7,6 +7,7 @@ import type {
   EvidenceStatus,
   ConflictRecord,
   EvidenceCitation,
+  ReviewStatus,
 } from '../../lib/types.ts';
 
 /**
@@ -234,6 +235,79 @@ export function verifyClaimSupport(
 }
 
 /**
+ * Phase F: Revalidates supporting evidence when a human reviewer edits a finding.
+ * If the edited claim is no longer supported by the original source, marks it UNCERTAIN and NEEDS_CORRECTION.
+ * Never preserves an approved or verified status automatically after materially changing a claim.
+ */
+export function revalidateEditedFinding(
+  finding: KnowledgeFinding,
+  sources: ProjectSource[]
+): {
+  status: EvidenceStatus;
+  claimStatus: ClaimVerificationStatus;
+  evidenceValidity: EvidenceValidityStatus;
+  reviewStatus: ReviewStatus;
+  confidence: number;
+  explanation: string;
+} {
+  if (!finding.citations || finding.citations.length === 0) {
+    return {
+      status: 'MISSING',
+      claimStatus: 'UNCERTAIN',
+      evidenceValidity: 'MISSING',
+      reviewStatus: 'NEEDS_CORRECTION',
+      confidence: 0,
+      explanation: 'No supporting citations or sources attached to this edited finding.',
+    };
+  }
+
+  // Check the primary citation and matching source
+  const primaryCitation = finding.citations[0];
+  const matchingSource = sources.find(
+    (s) => s.id === primaryCitation.sourceId || s.name === primaryCitation.sourceName
+  );
+  const sourceText = matchingSource?.documentData?.extractedText || primaryCitation.snippet || '';
+
+  // Extract key terms from edited title & summary
+  const claimText = `${finding.title} ${finding.summary}`.toLowerCase();
+  const words = claimText
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(
+      (w) =>
+        w.length >= 4 &&
+        !['this', 'that', 'with', 'from', 'have', 'were', 'been', 'must', 'should', 'will', 'then'].includes(w)
+    );
+
+  const normalizedSource = normalizeText(sourceText);
+  const overlappingWords = words.filter((w) => normalizedSource.includes(w));
+
+  const overlapRatio = words.length > 0 ? overlappingWords.length / words.length : 1;
+  const isSupported = words.length <= 2 || overlapRatio >= 0.35;
+
+  if (!isSupported) {
+    return {
+      status: 'UNCERTAIN',
+      claimStatus: 'UNCERTAIN',
+      evidenceValidity: 'MISMATCHED',
+      reviewStatus: 'NEEDS_CORRECTION',
+      confidence: 40,
+      explanation:
+        'Edited claim is no longer supported by the original source quote. Marked UNCERTAIN and requires re-review.',
+    };
+  }
+
+  return {
+    status: 'VERIFIED',
+    claimStatus: 'SUPPORTED',
+    evidenceValidity: 'MATCHED',
+    reviewStatus: 'PENDING_REVIEW', // Material edit resets approval, requiring human re-review
+    confidence: 90,
+    explanation: 'Edited claim assertions remain substantiated by original source context.',
+  };
+}
+
+/**
  * Extracts a date from a text string or citation timestamp.
  */
 export function parseDateFromText(text: string, timestamp?: string): Date | null {
@@ -298,24 +372,48 @@ export function evaluateDeterministicContradiction(
     };
   }
 
-  // Rule 2: Task Completion vs Pending Status Conflict
-  const isCompletedA = textA.includes('completed') || textA.includes('finished') || textA.includes('already deployed') || textA.includes('done');
-  const isPendingA = textA.includes('pending') || textA.includes('unfinished') || textA.includes('in progress') || textA.includes('blocked');
-  const isCompletedB = textB.includes('completed') || textB.includes('finished') || textB.includes('already deployed') || textB.includes('done');
-  const isPendingB = textB.includes('pending') || textB.includes('unfinished') || textB.includes('in progress') || textB.includes('blocked');
+  // Rule 2: Task Completion vs Pending/Blocked Status Conflict
+  const positiveWords = ['complete', 'completed', 'finished', 'already deployed', 'done', 'ready', 'shipped', 'passing', 'operational', 'working', 'success', 'verified'];
+  const negativeWords = ['pending', 'unfinished', 'in progress', 'blocked', 'blocking', 'failed', 'failing', 'failure', 'broken', 'stalled', 'not ready', 'unready'];
 
-  // Check if they are referring to the same task subject
-  const tokensA = findingA.title.toLowerCase().split(/\s+/).filter((w) => w.length > 4);
+  const hasPosA = positiveWords.some((w) => textA.includes(w));
+  const hasNegA = negativeWords.some((w) => textA.includes(w));
+  const hasPosB = positiveWords.some((w) => textB.includes(w));
+  const hasNegB = negativeWords.some((w) => textB.includes(w));
+
+  // Check shared tokens
+  const tokensA = findingA.title.toLowerCase().split(/\s+/).filter((w) => w.length > 3 && !['this', 'that', 'with', 'from', 'have', 'were', 'been', 'must', 'should'].includes(w));
   const sharedTokens = tokensA.filter((w) => textB.includes(w));
 
-  if (sharedTokens.length >= 2) {
-    if ((isCompletedA && isPendingB) || (isPendingA && isCompletedB)) {
-      return {
-        isConflict: true,
-        category: 'task_status',
-        explanation: `Contradictory task state for "${sharedTokens.join(' ')}": One source asserts task is completed while another states it is pending or unfinished.`,
-        severity: 'high',
-      };
+  if (sharedTokens.length >= 1 && ((hasPosA && hasNegB) || (hasNegA && hasPosB))) {
+    return {
+      isConflict: true,
+      category: 'task_status',
+      explanation: `Contradictory task state for "${sharedTokens.join(' ')}": One source asserts task or feature is complete or ready, while another states it is pending, failed, or blocked.`,
+      severity: 'high',
+    };
+  }
+
+  // Functional domain conflict: e.g. Notifications & Email delivery readiness
+  const domains = [
+    { name: 'notification & email delivery', keywordsA: ['notification', 'notifications', 'email', 'messaging', 'alerts'], keywordsB: ['email', 'delivery', 'notification', 'readiness', 'release'] },
+    { name: 'deployment & release readiness', keywordsA: ['release', 'deployment', 'deploy', 'launch'], keywordsB: ['release', 'readiness', 'deployment', 'blocked', 'failed'] },
+    { name: 'authentication & authorization', keywordsA: ['auth', 'authentication', 'sso', 'oauth'], keywordsB: ['auth', 'login', 'permission', 'tokens'] },
+    { name: 'billing & payment processing', keywordsA: ['billing', 'payment', 'ledger', 'stripe'], keywordsB: ['billing', 'payment', 'invoice', 'checkout'] },
+  ];
+
+  for (const dom of domains) {
+    const matchesDomA = dom.keywordsA.some((k) => textA.includes(k));
+    const matchesDomB = dom.keywordsB.some((k) => textB.includes(k));
+    if (matchesDomA && matchesDomB) {
+      if ((hasPosA && hasNegB) || (hasNegA && hasPosB)) {
+        return {
+          isConflict: true,
+          category: 'task_status',
+          explanation: `Contradictory operational state for ${dom.name}: One source asserts completion or readiness while another asserts failure, defects, or blockage.`,
+          severity: 'critical',
+        };
+      }
     }
   }
 
@@ -584,8 +682,25 @@ export async function runFullVerification(
           resolution: existing ? existing.resolution : undefined,
         };
 
+        const conflictDetails = {
+          sourceA: {
+            name: sourceA ? sourceA.name : (findingA.citations?.[0]?.sourceName || 'Source A'),
+            claim: findingA.title,
+            reference: locA,
+            quote: quoteA,
+          },
+          sourceB: {
+            name: sourceB ? sourceB.name : (findingB.citations?.[0]?.sourceName || 'Source B'),
+            claim: findingB.title,
+            reference: locB,
+            quote: quoteB,
+          },
+        };
+
         findingA.conflictRecordId = conflictId;
         findingB.conflictRecordId = conflictId;
+        findingA.conflictDetails = conflictDetails;
+        findingB.conflictDetails = conflictDetails;
 
         if (existing) {
           const idx = detectedConflicts.findIndex((c) => c.id === existing.id);
@@ -620,3 +735,4 @@ export async function runFullVerification(
     },
   };
 }
+

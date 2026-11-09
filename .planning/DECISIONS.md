@@ -389,36 +389,125 @@ Following ADR-011, runtime user workspaces created prior to the cleanup still co
 
 ---
 
-## ADR-013: Advanced Evidence Verification & Cross-Document Contradiction Engine (Phase E)
+## ADR-014: Phase E Targeted Corrections — Conflict Provenance, Approval Gating, and Verification Metric Dynamic Integrity
+
+- **Date**: 2026-11-08
+- **Status**: Approved / Operating Standard
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
 
 ### Context
-KnoTrail's core mandate is *"NO SOURCE, NO CLAIM"*, while acknowledging that an authentic citation alone does not guarantee a claim is uncontested or non-superseded. When documents are uploaded across different phases (e.g. an early RFC vs a late architecture specification), contradictory statements can exist (e.g. PostgreSQL vs MySQL, completed vs pending, port 5432 vs 5433). Handover integrity mandates that contradictions are made visible to human reviewers with two-sided source proof, and strictly block certification until resolved.
+Manual testing of the Phase E implementation revealed critical areas requiring alignment with project governance:
+1. Two-sided conflicts occasionally only displayed a single citation in certain finding card contexts rather than preserving both quotations (e.g. Meeting Notes Page 2: completed vs. QA Report Page 3: email delivery failed and release readiness blocked).
+2. Direct approval was accessible via UI/API for findings in an active conflicting state before the conflict was resolved.
+3. The Evidence Inspector contained static copy ("TAMPER-PROOF EVIDENCE", hardcoded 96% verification) rather than displaying verified source hash and semantic claim grounding results.
+4. UI telemetry badges across several views displayed absolute or unsupported guarantees ("Zero Fabrications", hardcoded percentages) rather than dynamically computed statistics.
 
 ### Decision
-1. **Dual-Status Taxonomy**:
-   - Separated verification into two orthogonal dimensions:
-     - `EvidenceValidityStatus`: `MATCHED`, `MISSING`, `MISMATCHED`, `SOURCE_UNAVAILABLE`.
-     - `ClaimVerificationStatus`: `SUPPORTED`, `UNCERTAIN`, `CONFLICTING`, `POSSIBLY_OUTDATED`.
-   - Deterministically mapped to composite `EvidenceStatus` (`VERIFIED`, `UNCERTAIN`, `CONFLICTING`, `MISSING`) for seamless Phase A-D backward compatibility.
-2. **Two-Sided Cross-Document Contradiction Detection**:
-   - Created structured `ConflictRecord` schema capturing both sides: Claim A vs Claim B, Source A vs Source B with exact page/line coordinates and verbatim quotes.
-   - Deterministic rule engine for high-precision architectural contradictions (databases, task completion states, port configurations, and role ownership).
-   - Gemini semantic contradiction evaluator for ambiguous natural language claims, with graceful fallback.
-3. **Temporal Supersession**:
-   - Detects chronological dates within source documents. When a newer ratified document contradicts an older proposal, the older claim is tagged `POSSIBLY_OUTDATED` and `isTemporalSuperseded: true`, with supersession context presented to the human reviewer rather than silently dropped.
-4. **Interactive Conflict Resolution & Gate Enforcement**:
-   - Review Center features a dedicated Cross-Document Conflict Resolution interface where reviewers can inspect the two-sided diff, choose the prevailing claim or consensus notes, and unblock certification.
-   - Handover certification gate strictly enforces that `unresolvedConflictsCount === 0`.
-5. **Testing & Verification**:
-   - 18 automated test scenarios in `src/__tests__/evidenceVerification.test.mjs` verifying quotation matching, coordinate bounds, contradiction detection, supersession, persistence, and gate blocking.
+1. **Preserve Complete Two-Sided Conflict Provenance**:
+   - Both `ConflictRecord` and finding `conflictDetails` must retain verbatim quotations (`quoteA` and `quoteB`) alongside file names, page numbers, line ranges, and claims.
+   - Updated `EvidenceView.tsx` and `ReviewView.tsx` to render two-sided side-by-side comparison cards displaying both quotes and sources.
+2. **Strict Conflict Approval Gate (Triple-Layer Enforcement)**:
+   - **Storage Layer**: `DurableFileRepository.approveFinding` throws an explicit error if `targetFinding.status === 'CONFLICTING'` or if an open conflict involves the finding.
+   - **API Route**: `POST /api/findings/[id]/approve` returns HTTP 400 Bad Request with an explicit error explaining that the conflict must be resolved first.
+   - **UI Layer**: `ReviewView.tsx` disables the "Approve Claim" button (`Approval Locked`) with tooltip and provides a prominent "Resolve Conflict" action.
+3. **Dual-Layer Provenance Inspector**:
+   - Replaced "TAMPER-PROOF EVIDENCE" with a two-part evidence inspector:
+     1. Source Hash & Coordinate Verification (SHA-256 Checksum validated against original source).
+     2. Semantic Claim Grounding (displays actual finding status `VERIFIED | UNCERTAIN | CONFLICTING | MISSING` and dynamic confidence percentage).
+4. **Dynamic Verification Statistics**:
+   - Calculated all statistics (`verifiedCount`, `uncertainCount`, `conflictingCount`, `groundedPercent`, `totalCitationsCount`) dynamically from actual findings in state.
+   - Replaced static "0 Fabrications" and "Zero Fabrications" copy with dynamic indicators ("{verifiedCount} of {totalFindings} Claims Verified", "Strict Evidence Grounding").
+5. **Regression Verification**:
+   - Added automated tests 19–23 in `src/__tests__/evidenceVerification.test.mjs`. Total suite increased to 70 tests (100% pass rate). Production build cleanly compiles.
 
 ### Consequences
-- Total automated tests increased from 46 to 65 (100% pass rate).
-- Production Next.js build succeeds with 0 errors across 15 API routes and 6 static pages.
-- Zero fabrication invariant preserved: conflicts and verification run strictly against authentic uploaded source text.
+- Resolves all 5 manual testing findings with executable proof.
+- Direct approval of contradictory findings is strictly prevented across storage, API, and UI.
+- All 70 automated tests pass and production build succeeds with 0 errors.
 
 
+---
 
+## ADR-015: Phase F — Persistent Human Approval & Review Workflow Architecture
 
+- **Date**: 2026-11-08
+- **Status**: Approved / Operating Standard
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
 
+### Context
+In high-stakes knowledge handovers, AI generation must never unilaterally publish decisions, tasks, or risks into certified handovers. Phase F mandates an airtight, persistent Human Approval Workflow where human reviewers retain total authority over every piece of reconstructed knowledge before it enters a certified handover dossier.
+
+### Decision
+1. **Immutable Review Audit Trail (`ReviewAuditAction`)**:
+   - Every review action (`APPROVE`, `REJECT`, `EDIT`, `RESOLVE_CONFLICT`, `ADD_NOTE`) is permanently recorded in `project.reviewAuditHistory` with timestamp, reviewer identity, action type, previous status, new status, reviewer notes, and evidence references snapshot.
+2. **Mandatory Rejection Reasons**:
+   - Findings cannot be rejected without a documented technical reason ($\ge 1$ character). Enforced at the storage layer, API route (`HTTP 400`), and interactive Reject Modal.
+3. **Automated Evidence Revalidation & Approval Reset upon Editing**:
+   - Material edits to finding title or summary trigger automated lexical and semantic revalidation (`revalidateEditedFinding`) against original document texts.
+   - Ungrounded edits that contradict or lack source support are automatically classified as `status: 'UNCERTAIN'`, `claimStatus: 'UNCERTAIN'`, and `reviewStatus: 'NEEDS_CORRECTION'`, resetting `approved: false`.
+4. **Documented Justification Gate for Uncertain Findings**:
+   - Approving an `UNCERTAIN` finding strictly requires documented reviewer justification ($\ge 5$ characters) explaining how the claim was verified. The factual status remains honestly tagged as `UNCERTAIN` rather than silently falsified.
+5. **Conflict and Missing Evidence Approval Gates**:
+   - Findings involved in unresolved conflicts or lacking primary source evidence (`MISSING`) cannot be directly approved (enforced across storage, API, and UI).
+6. **Zero-Auth & Incognito Reviewer Identity**:
+   - Reviewer identity is attributed to a neutral workspace reviewer (*e.g., "Workspace Reviewer"*) or customized by the active reviewer, preserving frictionless Incognito access without registration or login walls.
+7. **Comprehensive Review Center Experience**:
+   - Filter pill strip: `All`, `Pending Review`, `Approved`, `Rejected`, `Conflicting`, `Needs Correction`.
+   - Badges for Review Status (`PENDING_REVIEW`, `APPROVED`, `REJECTED`, `NEEDS_CORRECTION`, `CONFLICT_REQUIRES_RESOLUTION`), Evidence Validity (`MATCHED`, `MISMATCHED`, `MISSING`), and Claim Status (`SUPPORTED`, `UNCERTAIN`, `CONFLICTING`).
+   - Modals: Reject Modal (mandatory reason), Edit Modal (full fields + revalidation note), Approve Justification Modal (for uncertain claims), and Audit Trail Drawer (chronological log).
+8. **Automated Verification**:
+   - 16 new automated tests in `src/__tests__/humanApprovalWorkflow.test.mjs`. Total project test suite now stands at 87/87 passing tests (100% pass rate). Production build cleanly compiles with 0 errors.
+
+### Consequences
+- Human reviewers have complete, auditable governance over the knowledge handover lifecycle.
+- Zero unreviewed, rejected, or conflicting findings can enter certified exports.
+- Next.js production build PASS (17 API routes + 6 static pages).
+
+---
+
+## ADR-016: Phase G — Final Handover Generation & Delivery Architecture
+
+- **Date**: 2026-11-09
+- **Status**: Approved / Implemented (Phase G)
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+Phase G is the culmination of KnoTrail's core workflow (**RECONSTRUCT → VERIFY → REVIEW → HANDOVER**). The objective is to transform verified, human-approved project knowledge into a professional, structured, and multi-format downloadable handover report with high-entropy share links, version incrementing, and automatic invalidation upon data drift.
+
+### Decision
+1. **Strict Eligibility & Integrity Gating**:
+   - Only findings that have `approved: true` and `reviewStatus === 'APPROVED'` enter the final handover.
+   - Any finding with `rejected: true`, open conflicting claims, unreviewed status, or missing evidence is strictly excluded.
+   - Findings accepted with noted uncertainty retain `status: 'UNCERTAIN'` with an explicit "Accepted with Uncertainty" badge and reviewer justification notes.
+2. **Comprehensive 12-Section Handover Document Schema (`HandoverDocument`)**:
+   - Section A: Cover & Project Metadata (name, code, version, audit stamp, certification hash, outgoing/incoming leads, target exit date).
+   - Section B: Executive Summary (deterministic, rule-based summary generated strictly from eligible facts with zero hallucination).
+   - Section C: Project Overview (purpose, scope, operational status, connected sources count).
+   - Section D: Important Architectural Decisions (with uncertainty badges, reviewer justifications, and citations).
+   - Section E: Pending Operational Tasks (priority badges, status, assignees, and citations).
+   - Section F: Responsibilities & Ownership (team member task counts + distinct Unassigned Tasks alert).
+   - Section G: Critical Risks & Mitigations (impact, severity, mitigation strategy, and citations).
+   - Section H: Technical Dependencies & Integrations (category, version, impact, and citations).
+   - Section I: Unresolved Questions (priority, question text, and context).
+   - Section J: Prioritized Next Actions (Immediate, Short-Term, Follow-Up).
+   - Section K: Evidence & Source Inventory (all approved claims mapped to exact primary source snippets, page/line numbers, and validity status).
+   - Section L: Human Review & Audit Trail (metrics on approvals, rejections, resolved conflicts, and chronological review audit log).
+3. **Multi-Format Export with 100% Data Parity**:
+   - **Markdown Export (`exportHandoverMarkdown`)**: Complete markdown with Table of Contents, exact citations, and all 12 sections.
+   - **JSON Export (`exportHandoverJson`)**: Typed JSON containing the full `HandoverDocument` schema.
+   - **Printable PDF Export (`generatePrintableHtml`)**: Standalone, clean A4 `@media print` layout with page-break rules, no clipped tables, and sage-green branding.
+4. **Handover Versioning & Outdated Invalidation Protocol**:
+   - Each generation increments the document version (`v1.0` -> `v1.1`), saving previous snapshots in `project.handovers` history.
+   - A SHA-256 snapshot hash of all findings and sources is embedded in `handover.sourceSnapshotHash`.
+   - When project data mutates after certification (e.g. edited finding, added source, resolved conflict), `saveProject` detects hash mismatch and immediately flags `currentHandover.isOutdated = true` with an explanatory reason, prompting reviewer re-certification.
+5. **High-Entropy Read-Only Public Share Links**:
+   - High-entropy cryptographic tokens (`kt_share_<uuid>`) permit zero-auth, read-only viewing of certified handovers via `/share/[token]`.
+   - Token records are stored per workspace and can be revoked on-demand, disabling external access immediately.
+6. **Automated Verification**:
+   - 21 new automated test scenarios in `src/__tests__/handoverGeneration.test.mjs`. Total project test suite now stands at 109/109 passing tests (100% pass rate). Production build cleanly compiles with 0 errors across 23 routes.
+
+### Consequences
+- Incoming team members and evaluators receive a complete, beautiful, and verifiable 12-section handover package.
+- Full parity between on-screen view, PDF export, Markdown download, and JSON payload.
+- Zero-auth, Incognito-compatible sharing without registration walls.
 

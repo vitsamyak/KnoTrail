@@ -1,4 +1,9 @@
 import type { KnowledgeFinding, ProjectData, ConflictRecord } from './types.ts';
+export {
+  exportHandoverMarkdown,
+  exportHandoverJson,
+  generatePrintableHtml,
+} from './handoverExport.ts';
 
 /**
  * Filter findings for the final handover dossier.
@@ -7,7 +12,13 @@ import type { KnowledgeFinding, ProjectData, ConflictRecord } from './types.ts';
  * RULE 3: Unapproved findings must never appear.
  */
 export function getApprovedFindings(findings: KnowledgeFinding[]): KnowledgeFinding[] {
-  return findings.filter((f) => f.approved === true && !f.rejected);
+  return findings.filter(
+    (f) =>
+      f.approved === true &&
+      !f.rejected &&
+      f.status !== 'MISSING' &&
+      f.reviewStatus !== 'NEEDS_CORRECTION'
+  );
 }
 
 export function getHandoverDecisions(findings: KnowledgeFinding[]): KnowledgeFinding[] {
@@ -43,6 +54,7 @@ export interface HandoverBlockStatus {
   canCertify: boolean;
   unresolvedConflictsCount: number;
   unreviewedCount: number;
+  needsCorrectionCount: number;
   totalFindingsCount: number;
   approvedCount: number;
   rejectedCount: number;
@@ -51,9 +63,11 @@ export interface HandoverBlockStatus {
 
 /**
  * Evaluates whether handover generation and viewing should be blocked.
- * Handover generation is blocked until:
- * 1. All critical conflicts are resolved (0 conflicting findings).
- * 2. All required findings are reviewed (0 unreviewed findings).
+ * Phase F Strict Approval Gate:
+ * 1. 0 open conflicts (unresolvedConflictsCount === 0).
+ * 2. 0 unreviewed findings (unreviewedCount === 0).
+ * 3. 0 findings marked NEEDS_CORRECTION (needsCorrectionCount === 0).
+ * 4. 0 ungrounded/MISSING evidence claims certified.
  */
 export function checkHandoverBlockStatus(
   findings: KnowledgeFinding[],
@@ -65,12 +79,18 @@ export function checkHandoverBlockStatus(
   const conflictingFindingsCount = findings.filter((f) => f.status === 'CONFLICTING').length;
   const unresolvedConflictsCount = Math.max(openConflictsCount, conflictingFindingsCount);
   const unreviewedCount = findings.filter((f) => !f.approved && !f.rejected).length;
-  const approvedCount = findings.filter((f) => f.approved && !f.rejected).length;
+  const needsCorrectionCount = findings.filter(
+    (f) => f.reviewStatus === 'NEEDS_CORRECTION' && !f.rejected
+  ).length;
+  const approvedCount = findings.filter(
+    (f) => f.approved && !f.rejected && f.status !== 'MISSING' && f.reviewStatus !== 'NEEDS_CORRECTION'
+  ).length;
   const rejectedCount = findings.filter((f) => f.rejected).length;
 
-  const canCertify = unresolvedConflictsCount === 0 && unreviewedCount === 0;
+  const canCertify =
+    unresolvedConflictsCount === 0 && unreviewedCount === 0 && needsCorrectionCount === 0;
 
-  // Handover is blocked if not yet certified AND (has conflicts OR has unreviewed items)
+  // Handover is blocked if not yet certified AND (has conflicts OR has unreviewed items OR needs correction)
   let isBlocked = false;
   let reason = '';
 
@@ -80,6 +100,9 @@ export function checkHandoverBlockStatus(
   } else if (unreviewedCount > 0) {
     isBlocked = true;
     reason = `${unreviewedCount} finding(s) require human review before handover can be generated.`;
+  } else if (needsCorrectionCount > 0) {
+    isBlocked = true;
+    reason = `${needsCorrectionCount} edited or ungrounded finding(s) require correction and revalidation before certification.`;
   } else if (!handoverCertified) {
     // If all are reviewed and 0 conflicts, but not yet formally certified with signature
     isBlocked = true;
@@ -91,6 +114,7 @@ export function checkHandoverBlockStatus(
     canCertify,
     unresolvedConflictsCount,
     unreviewedCount,
+    needsCorrectionCount,
     totalFindingsCount,
     approvedCount,
     rejectedCount,

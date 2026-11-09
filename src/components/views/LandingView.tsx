@@ -24,124 +24,53 @@ export function LandingView() {
         </div>
 
         {/* Hero Section */}
-        <section className="w-full px-gutter mb-space-2xl">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center">
-            {/* Left Column: Headlines & CTAs */}
-            <div className="lg:col-span-7 flex flex-col space-y-space-md pr-0 lg:pr-space-lg">
-              <div className="space-y-space-xs">
-                <p className="font-label-md text-label-md text-secondary tracking-wider uppercase font-semibold">
-                  Project Knowledge Handover
-                </p>
-                <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight leading-tight">
-                  Keep Your Project Knowledge Even When People Leave.
-                </h1>
-              </div>
-              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl leading-relaxed">
-                KnoTrail helps teams collect project information, find important decisions and pending work, and prepare clear handovers with links to the original sources.
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap items-center gap-space-sm pt-space-xs">
-                <button
-                  onClick={() => setActiveView('sources')}
-                  className="inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-primary hover:bg-inverse-surface text-on-primary rounded-lg shadow-sm transition-all duration-200 active:scale-95 group"
-                  id="cta-add-docs"
-                >
-                  <span className="font-headline-sm text-headline-sm font-semibold">Add Project Documents</span>
-                  <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">
-                    upload_file
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    const el = document.getElementById('how-it-works');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-full shadow-sm border border-outline-variant/30 transition-all duration-200"
-                >
-                  <span className="font-headline-sm text-headline-sm">How It Works</span>
-                  <span className="material-symbols-outlined text-lg text-outline">schema</span>
-                </button>
-              </div>
-
-              {/* Zero-Auth Reassurance */}
-              <div className="flex items-center gap-space-xs pt-space-2xs">
-                <span className="material-symbols-outlined text-base text-primary">verified_user</span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant">
-                  No sign-up or registration required. Works immediately in any browser window.
-                </span>
-              </div>
+        <section className="w-full px-gutter my-space-md sm:my-space-lg mb-space-2xl">
+          <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+            {/* Eyebrow Label */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/30 text-secondary text-xs font-semibold tracking-wider uppercase mb-space-md shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              <span>PROJECT KNOWLEDGE CONTINUITY</span>
             </div>
 
-            {/* Right Column: Clean Workflow Preview Card */}
-            <div className="lg:col-span-5 relative mt-space-lg lg:mt-0">
-              <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-md border border-outline-variant/40 relative overflow-hidden">
-                <div className="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-low px-space-sm py-space-2xs rounded-lg border border-outline-variant/20">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
-                    <span className="font-label-sm text-label-sm text-on-surface font-semibold">
-                      Handover Workflow Overview
-                    </span>
-                  </div>
-                  <span className="font-label-sm text-label-sm text-secondary bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant/30">
-                    3-Step Process
-                  </span>
-                </div>
+            {/* Main Heading */}
+            <h1 className="font-display-lg text-4xl sm:text-5xl lg:text-[56px] lg:leading-[1.14] font-extrabold text-on-surface tracking-tight max-w-4xl">
+              KnoTrail: Your Team Moves On.<br className="hidden sm:inline" />{' '}
+              <span className="text-primary">Your Knowledge Stays Forever.</span>
+            </h1>
 
-                {/* Workflow Preview Steps */}
-                <div className="space-y-space-xs">
-                  <div className="p-space-xs bg-surface-container-low rounded-lg flex items-start gap-space-xs border border-outline-variant/20">
-                    <div className="w-7 h-7 rounded-md bg-primary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="material-symbols-outlined text-base">upload_file</span>
-                    </div>
-                    <div>
-                      <p className="font-label-sm text-label-sm text-on-surface font-semibold">
-                        1. Collect Project Information
-                      </p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
-                        Upload architecture docs, specifications, and notes in PDF, Markdown, or text format.
-                      </p>
-                    </div>
-                  </div>
+            {/* Supporting Description */}
+            <p className="mt-space-md font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed text-center sm:text-lg">
+              Preserve important decisions, project context and unfinished work. Give every incoming team member the knowledge they need to continue with confidence.
+            </p>
 
-                  <div className="p-space-xs bg-surface-container-low rounded-lg flex items-start gap-space-xs border border-outline-variant/20">
-                    <div className="w-7 h-7 rounded-md bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="material-symbols-outlined text-base">auto_awesome</span>
-                    </div>
-                    <div>
-                      <p className="font-label-sm text-label-sm text-on-surface font-semibold">
-                        2. Find Important Knowledge
-                      </p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
-                        Identify key decisions, pending tasks, risks, and dependencies linked to original sources.
-                      </p>
-                    </div>
-                  </div>
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-space-sm pt-space-lg">
+              <button
+                onClick={() => setActiveView('sources')}
+                className="inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm bg-primary hover:bg-inverse-surface text-on-primary rounded-lg shadow-sm font-headline-sm text-headline-sm font-semibold transition-all duration-200 active:scale-95 group"
+                id="cta-add-docs"
+              >
+                <span>Add Project Documents</span>
+                <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">
+                  upload_file
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('how-it-works');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-full shadow-sm border border-outline-variant/30 font-headline-sm text-headline-sm font-medium transition-all duration-200"
+              >
+                <span>How It Works</span>
+                <span className="material-symbols-outlined text-lg text-outline">schema</span>
+              </button>
+            </div>
 
-                  <div className="p-space-xs bg-surface-container rounded-lg flex items-start gap-space-xs border border-outline-variant/20">
-                    <div className="w-7 h-7 rounded-md bg-primary text-on-primary flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="material-symbols-outlined text-base">fact_check</span>
-                    </div>
-                    <div>
-                      <p className="font-label-sm text-label-sm text-on-surface font-semibold">
-                        3. Review &amp; Handover
-                      </p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
-                        Review and approve findings, resolve any conflicting claims, and export a certified handover report.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Status */}
-                <div className="mt-space-md pt-space-xs border-t border-outline-variant/30 flex items-center justify-between text-xs text-outline">
-                  <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                    <span>Evidence-Backed Grounding</span>
-                  </div>
-                  <span className="text-primary font-medium">Zero Fabrications</span>
-                </div>
-              </div>
+            {/* Frictionless Zero-Auth Reassurance */}
+            <div className="flex items-center justify-center gap-space-xs pt-space-md text-xs text-on-surface-variant">
+              <span className="material-symbols-outlined text-base text-primary">verified_user</span>
+              <span>No sign-up or registration required. Works immediately in any browser window.</span>
             </div>
           </div>
         </section>
