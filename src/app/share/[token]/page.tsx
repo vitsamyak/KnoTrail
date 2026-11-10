@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { getStorage } from '../../../server/db/storage';
+import { apiClient } from '../../../lib/api-client';
 import { exportHandoverMarkdown } from '../../../lib/handoverFilter';
 import type { HandoverDocument } from '../../../lib/types';
 
@@ -17,8 +17,7 @@ export default async function SharedHandoverPage({
   let errorMsg = '';
 
   try {
-    const storage = getStorage();
-    const result = await storage.getSharedHandover(token);
+    const result = await apiClient.getSharedHandover(token);
     handover = result.handover;
     projectName = result.projectName;
   } catch (err: any) {

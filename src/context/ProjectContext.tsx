@@ -14,6 +14,7 @@ import {
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
+import { apiClient } from '../lib/api-client';
 
 interface ProjectContextType {
   activeView: ActiveView;
@@ -229,11 +230,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
 
     // 3. Revalidate and synchronize with backend server API
-    fetch(`/api/workspaces?workspaceId=${encodeURIComponent(wsId)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+    apiClient.getWorkspace(wsId)
       .then((data) => {
         if (data?.project) {
           setProject(data.project);
@@ -241,7 +238,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((err) => {
-        console.warn('Could not sync with /api/workspaces:', err);
+        console.warn('Could not sync with workspace API:', err);
       })
       .finally(() => {
         setIsLoading(false);
@@ -298,14 +295,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setSyncStatusMessage('Synchronizing workspace with server storage...');
 
     try {
-      const res = await fetch(`/api/workspaces?workspaceId=${encodeURIComponent(workspaceId)}`);
+      const data = await apiClient.getWorkspace(workspaceId);
       setSyncProgress(65);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.project) {
-          setProject(data.project);
-          persistToLocalCache(workspaceId, data.project);
-        }
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
       }
       setSyncProgress(100);
       setSyncStatusMessage(
@@ -328,12 +322,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   // Check AI configuration and status
   const checkAiConfig = useCallback(async () => {
     try {
-      const res = await fetch(`/api/analysis/extract?workspaceId=${encodeURIComponent(workspaceId)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setHasAiApiKey(Boolean(data.configured));
-        return data;
-      }
+      const data = await apiClient.getAiConfig(workspaceId);
+      setHasAiApiKey(Boolean(data.configured));
+      return data;
     } catch (err) {
       console.warn('Could not query AI config:', err);
     }
@@ -358,29 +349,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       setAnalysisProgress(35);
       setAnalysisStatusMessage('Processing document context and dispatching to Gemini...');
 
-      const res = await fetch('/api/analysis/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, sourceIds }),
-      });
+      const data = await apiClient.runAiExtraction(workspaceId, sourceIds);
 
       setAnalysisProgress(75);
       setAnalysisStatusMessage('Grounding quotes and computing source coordinates...');
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setAnalysisProgress(0);
-        setIsAnalysing(false);
-        setAnalysisStatusMessage('');
-        const errMessage = data.error || `HTTP ${res.status}: AI Extraction failed`;
-        setAnalysisError(errMessage);
-        return {
-          success: false,
-          error: errMessage,
-          configured: data.configured !== undefined ? data.configured : true,
-        };
-      }
 
       setAnalysisProgress(90);
       setAnalysisStatusMessage(`Extracted ${data.count} grounded findings. Saving workspace...`);
@@ -410,7 +382,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       setAnalysisStatusMessage('');
       const errMessage = err.message || 'AI extraction network failure';
       setAnalysisError(errMessage);
-      return { success: false, error: errMessage };
+      return {
+        success: false,
+        error: errMessage,
+        configured: err.statusCode !== 428,
+      };
     }
   };
 
@@ -485,19 +461,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     // Backend API persistence
     try {
-      const res = await fetch('/api/sources', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workspaceId,
-          name: newSourceData.name,
-          type: newSourceData.type,
-          content: newSourceData.content,
-          description: newSourceData.description,
-        }),
+      const data = await apiClient.addSource(workspaceId, {
+        name: newSourceData.name,
+        type: newSourceData.type,
+        content: newSourceData.content,
+        description: newSourceData.description,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -515,23 +484,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setIsSaving(true);
     setSaveError(null);
     try {
-      const formData = new FormData();
-      formData.append('workspaceId', workspaceId);
-      for (const file of files) {
-        formData.append('files', file);
-      }
-
-      const res = await fetch('/api/sources/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
+      const data = await apiClient.uploadFiles(workspaceId, files);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -569,16 +522,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     persistToLocalCache(workspaceId, updatedProject);
 
     try {
-      const res = await fetch(`/api/sources/${encodeURIComponent(sourceId)}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiClient.deleteSource(workspaceId, sourceId);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -658,16 +602,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     // Server API persistence
     try {
-      const res = await fetch(`/api/findings/${encodeURIComponent(id)}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, reviewerNotes: finalNotes, reviewerName: reviewer }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiClient.approveFinding(workspaceId, id, finalNotes, reviewer);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -720,16 +655,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     persistToLocalCache(workspaceId, updatedProject);
 
     try {
-      const res = await fetch(`/api/findings/${encodeURIComponent(id)}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, reason: cleanReason, reviewerName: reviewer }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiClient.rejectFinding(workspaceId, id, cleanReason, reviewer);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -776,16 +702,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     persistToLocalCache(workspaceId, updatedProject);
 
     try {
-      const res = await fetch(`/api/findings/${encodeURIComponent(id)}/edit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, updates, reviewerNotes, reviewerName: reviewer }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiClient.editFinding(workspaceId, id, updates, reviewerNotes, reviewer);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -833,13 +750,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     persistToLocalCache(workspaceId, updatedProject);
 
     try {
-      const res = await fetch(`/api/findings/${encodeURIComponent(id)}/resolve-conflict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, resolution, resolvedBy }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await apiClient.resolveConflict(workspaceId, id, resolution, resolvedBy);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -856,13 +767,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const runVerification = async (useAi: boolean = true) => {
     setIsVerifying(true);
     try {
-      const res = await fetch('/api/analysis/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, useAi }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await apiClient.runVerification(workspaceId, useAi);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -890,18 +795,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setIsSaving(true);
     setSaveError(null);
     try {
-      const res = await fetch(`/api/conflicts/${encodeURIComponent(conflictId)}/resolve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workspaceId,
-          chosenFindingId,
-          resolutionNotes,
-          resolvedBy: resolvedBy || project.lead?.name || 'Review Lead',
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await apiClient.resolveConflictRecord(
+        workspaceId,
+        conflictId,
+        chosenFindingId,
+        resolutionNotes,
+        resolvedBy || project.lead?.name || 'Review Lead'
+      );
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -942,16 +842,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     persistToLocalCache(workspaceId, updatedProject);
 
     try {
-      const res = await fetch('/api/handovers/certify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, signerName }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiClient.certifyHandover(workspaceId, signerName);
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -973,21 +864,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setIsSaving(true);
     setSaveError(null);
     try {
-      const res = await fetch('/api/handovers/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workspaceId,
-          signerName: signerName || project.lead?.name || 'Workspace Reviewer',
-          version: options?.version,
-          regenerate: options?.regenerate,
-        }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiClient.generateHandover(
+        workspaceId,
+        signerName || project.lead?.name || 'Workspace Reviewer',
+        options
+      );
       if (data?.project) {
         setProject(data.project);
         persistToLocalCache(workspaceId, data.project);
@@ -1005,17 +886,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   // Phase G: Generate high-entropy read-only share link
   const createShareLink = async (handoverId?: string) => {
     try {
-      const targetId = handoverId || project.currentHandover?.id;
-      const res = await fetch('/api/handovers/share', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, handoverId: targetId }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const targetId = handoverId || project.currentHandover?.id || '';
+      const data = await apiClient.createShareLink(workspaceId, targetId);
       return {
         success: true,
         shareUrl: data.shareUrl,
@@ -1029,23 +901,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   // Phase G: Revoke public share link
   const revokeShareLink = async (token: string) => {
     try {
-      const res = await fetch('/api/handovers/share', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, token }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `HTTP ${res.status}`);
-      }
+      await apiClient.revokeShareLink(workspaceId, token);
       // Refresh workspace data to update local share status
-      const getRes = await fetch(`/api/handovers?workspaceId=${encodeURIComponent(workspaceId)}`);
-      if (getRes.ok) {
-        const data = await getRes.json();
-        if (data?.project) {
-          setProject(data.project);
-          persistToLocalCache(workspaceId, data.project);
-        }
+      const data = await apiClient.getHandovers(workspaceId);
+      if (data?.project) {
+        setProject(data.project);
+        persistToLocalCache(workspaceId, data.project);
       }
       return { success: true };
     } catch (err: any) {
@@ -1071,11 +932,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      await fetch('/api/workspaces/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId }),
-      });
+      await apiClient.resetWorkspace(workspaceId);
     } catch (err) {
       console.warn('Error resetting workspace on server:', err);
     } finally {
@@ -1130,13 +987,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     persistToLocalCache(workspaceId, updatedProject);
 
     try {
-      const res = await fetch('/api/workspaces', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspaceId, project: updatedProject }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const respData = await res.json();
+      const respData = await apiClient.saveWorkspace(workspaceId, updatedProject);
       if (respData?.project) {
         setProject(respData.project);
         persistToLocalCache(workspaceId, respData.project);

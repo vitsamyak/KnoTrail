@@ -596,3 +596,78 @@ KnoTrail previously persisted workspaces as JSON files on the local filesystem v
 - Zero leakage of raw share tokens or server secrets.
 - Deterministic CI/CD tests remain fast and offline.
 
+---
+
+## ADR-012: Separate Frontend (Vercel) and Standalone Node.js Backend (Render) Architecture
+
+- **Date**: 2026-11-10
+- **Status**: Approved / In Implementation (Phase I)
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+KnoTrail previously ran as a monolithic Next.js 14 App Router application with all 23 API endpoints residing in `src/app/api/`. In production, separating the client presentation layer (hosted on Vercel) from the long-running, CPU/IO-intensive backend API service (hosted on Render) provides superior operational isolation, independent scaling, dedicated compute resources for AI extraction and PDF parsing, and strict infrastructure-level secret isolation.
+
+### Decision & Architectural Specifications
+
+1. **Decoupled Deployment Architecture**:
+   - **Frontend**: Next.js 14 App Router, React 18, Tailwind CSS deployed to Vercel as a pure web client.
+   - **Backend**: Standalone Node.js + TypeScript + Express service located in `backend/` deployed to Render as a Web Service (Singapore region, lowest latency to Mumbai Supabase).
+   - **Persistence & Cloud Storage**: Managed Supabase PostgreSQL and private Supabase Storage (`knotrail-source-files`).
+
+2. **Framework-Independent Domain Reusability**:
+   - The standalone Express backend reuses domain logic from `src/server/db/`, `src/server/ai/`, `src/server/documents/`, `src/server/verification/`, and `src/server/handover/`, along with types and utilities from `src/lib/`.
+   - The backend avoids importing any Next.js runtime modules (`NextRequest`, `NextResponse`, `next/server`), App Router handlers, or browser UI components.
+   - Zero duplication of core business logic.
+
+3. **100% API Contract & Route Parity**:
+   - The Express backend implements exact routes matching all 23 Next.js endpoint handlers:
+     - `/api/workspaces` (GET, POST)
+     - `/api/workspaces/reset` (POST)
+     - `/api/projects/:id` (GET, PATCH)
+     - `/api/sources` (GET, POST)
+     - `/api/sources/:id` (GET, DELETE)
+     - `/api/sources/upload` (POST, multipart)
+     - `/api/analysis/extract` (GET, POST)
+     - `/api/analysis/verify` (POST)
+     - `/api/findings/:id/approve` (POST)
+     - `/api/findings/:id/reject` (POST)
+     - `/api/findings/:id/edit` (POST)
+     - `/api/findings/:id/audit` (GET)
+     - `/api/findings/:id/resolve-conflict` (POST)
+     - `/api/conflicts/:id/resolve` (POST)
+     - `/api/handovers` (GET)
+     - `/api/handovers/generate` (POST)
+     - `/api/handovers/certify` (POST)
+     - `/api/handovers/export` (GET)
+     - `/api/handovers/share` (POST, DELETE)
+     - `/api/handovers/share/:token` (GET)
+   - Status codes, query parameter handling, and JSON payload structures are preserved identically.
+
+4. **Health Check Protocol**:
+   - `GET /health/live`: Fast process liveness check returning `{ status: 'ok', uptime: number }`. Does not depend on external services; allows Render to detect container responsiveness immediately.
+   - `GET /health/ready`: Deep readiness probe verifying database connectivity and configuration. Returns HTTP 200 `{ status: 'ready', ... }` if ready, or safe HTTP 503 `{ status: 'degraded', ... }` if database/dependencies are unreachable. Never leaks raw credentials or internal stack traces.
+
+5. **Strict CORS Policy**:
+   - Configured via comma-separated `CORS_ORIGINS` environment variable (e.g. `https://knotrail.vercel.app,http://localhost:3000`).
+   - Supports preflight OPTIONS requests with explicit methods (`GET, POST, PATCH, DELETE, OPTIONS`) and headers (`Content-Type, Authorization, X-Workspace-ID`).
+   - Disallows wildcard (`*`) origins in production. Uncredentialed (`credentials: false`) because KnoTrail uses capability workspace IDs in headers/payloads rather than session cookies.
+
+6. **Centralized Frontend API Client (`src/lib/api-client.ts`)**:
+   - The frontend routes all API calls through a centralized client that respects `NEXT_PUBLIC_API_BASE_URL`.
+   - Normalizes trailing slashes and handles non-2xx errors gracefully.
+   - Handles `FormData` multipart uploads seamlessly without corrupting `Content-Type` boundaries.
+   - The public `/share/[token]` route fetches handover data from the backend API, decoupling Vercel from direct database access.
+
+7. **Strict Secret Isolation**:
+   - `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `GEMINI_API_KEY` reside exclusively on Render.
+   - Vercel only receives public frontend configurations (`NEXT_PUBLIC_API_BASE_URL`).
+
+8. **Node Runtime & Build Artifacts**:
+   - Target modern Node 24 LTS runtime (`engines: { node: ">=20.18.0" }`).
+   - The Render backend compiles via TypeScript to a production `dist/` bundle executed with `node dist/backend/server.js`.
+
+### Consequences
+- True separation of concerns: Vercel serves static/SSR UI, while Render handles compute/API workload.
+- Independent deployment cycles and fail-safe scaling.
+- Preserves 100% of the zero-auth public demo journey, workspace isolation, and all 128 baseline tests.
+

@@ -78,6 +78,19 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 - [x] **SUPA-07**: Server credentials (`SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) are strictly restricted to server-side code; never exposed to browser bundles or API responses.
 - [x] **SUPA-08**: Deterministic test suite with mock adapter runs offline in `npm test` without live Supabase credentials; optional live integration tests run when credentials are provided.
 
+### Standalone Backend & Separate Frontend Deployment (SEP)
+
+- [x] **SEP-01**: Standalone Node.js Express backend service in `backend/` operating independently from Next.js with zero Next.js runtime dependencies.
+- [x] **SEP-02**: Full API contract parity across all 23 endpoints (workspaces, sources, upload, analysis, findings, conflicts, handovers, shares).
+- [x] **SEP-03**: Strict CORS middleware governed by `CORS_ORIGINS` permitting explicitly configured origins, handling preflight OPTIONS, and blocking unauthorized origins.
+- [x] **SEP-04**: Dual health endpoints: `GET /health/live` (process liveness, 200 OK) and `GET /health/ready` (deep readiness with Supabase probe, safe 503 on dependency failure) with zero secret leakage.
+- [x] **SEP-05**: Centralized frontend API client `src/lib/api-client.ts` honoring `NEXT_PUBLIC_API_BASE_URL` with trailing slash normalization, non-2xx error handling, and timeout safeguards.
+- [x] **SEP-06**: Multipart document upload preservation handling up to 5 files and 10MB per file with server-side text extraction.
+- [x] **SEP-07**: Complete secret isolation: `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `GEMINI_API_KEY` reside exclusively on Render; zero database credentials in Vercel frontend.
+- [x] **SEP-08**: Next.js frontend builds and deploys cleanly to Vercel with old route handlers removed/disabled to prevent duplicate active backends.
+- [x] **SEP-09**: Standalone backend build (`npm run backend:build`) and start scripts (`npm run backend:start`) targeting Node 24 LTS runtime.
+- [x] **SEP-10**: Comprehensive automated test suites verifying standalone backend HTTP endpoints, health checks, CORS, error handling, and frontend client integration.
+
 ## v2 Requirements
 
 Deferred to Round 3 / post-hackathon releases. Tracked but not in the 72-hour build scope.
