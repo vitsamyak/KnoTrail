@@ -16,6 +16,8 @@ import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSO
 import { revalidateEditedFinding } from '../verification/verifier.ts';
 import { buildHandoverDocument, computeProjectDataSnapshotHash } from '../handover/generator.ts';
 import { isValidWorkspaceId, type WorkspaceRecord } from './types.ts';
+import { isSupabaseConfigured, SupabaseConfigError } from './supabaseClient.ts';
+import { SupabaseStorageRepository } from './supabaseStorage.ts';
 
 export interface StorageRepository {
   getWorkspace(workspaceId: string): Promise<ProjectData | null>;
@@ -963,16 +965,19 @@ export class DurableFileRepository implements StorageRepository {
 
     // High-entropy read-only share token (crypto-secure random)
     const token = `kt_share_${crypto.randomBytes(24).toString('hex')}`;
-    const shareRecord: HandoverShareRecord = {
-      token,
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const createdAt = new Date().toISOString();
+
+    const storedShareRecord: HandoverShareRecord = {
+      token: tokenHash,
       handoverId: handover.id,
       workspaceId,
-      createdAt: new Date().toISOString(),
+      createdAt,
       isActive: true,
     };
 
-    const updatedShareRecords = [...(project.shareRecords || []), shareRecord];
-    handover.shareRecord = shareRecord;
+    const updatedShareRecords = [...(project.shareRecords || []), storedShareRecord];
+    handover.shareRecord = storedShareRecord;
 
     const updatedProject: ProjectData = {
       ...project,
@@ -981,7 +986,13 @@ export class DurableFileRepository implements StorageRepository {
     };
 
     await this.saveProject(workspaceId, updatedProject);
-    return shareRecord;
+    return {
+      token,
+      handoverId: handover.id,
+      workspaceId,
+      createdAt,
+      isActive: true,
+    };
   }
 
   async getSharedHandover(token: string): Promise<{ handover: HandoverDocument; projectName: string }> {
@@ -989,13 +1000,17 @@ export class DurableFileRepository implements StorageRepository {
       throw new Error('Invalid share token.');
     }
 
-    // Search workspace records for active share token
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Search workspace records for active share token (matching by hash or legacy token)
     const workspaceFiles = await this.listWorkspaces();
     for (const wsId of workspaceFiles) {
       const project = await this.readWorkspaceFile(wsId);
       if (!project || !project.shareRecords) continue;
 
-      const matchedRecord = project.shareRecords.find((r) => r.token === token);
+      const matchedRecord = project.shareRecords.find(
+        (r) => r.token === tokenHash || r.token === token
+      );
       if (matchedRecord) {
         if (!matchedRecord.isActive) {
           throw new Error('This share link has been revoked by the project reviewer.');
@@ -1024,9 +1039,10 @@ export class DurableFileRepository implements StorageRepository {
     let project = await this.getWorkspace(workspaceId);
     if (!project || !project.shareRecords) return false;
 
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     let found = false;
     const updatedShareRecords = project.shareRecords.map((r) => {
-      if (r.token === token) {
+      if (r.token === token || r.token === tokenHash) {
         found = true;
         return { ...r, isActive: false, revokedAt: new Date().toISOString() };
       }
@@ -1038,7 +1054,10 @@ export class DurableFileRepository implements StorageRepository {
       shareRecords: updatedShareRecords,
     };
 
-    if (project.currentHandover?.shareRecord?.token === token) {
+    if (
+      project.currentHandover?.shareRecord?.token === token ||
+      project.currentHandover?.shareRecord?.token === tokenHash
+    ) {
       project.currentHandover.shareRecord.isActive = false;
       project.currentHandover.shareRecord.revokedAt = new Date().toISOString();
     }
@@ -1067,14 +1086,62 @@ export class DurableFileRepository implements StorageRepository {
   }
 }
 
-// Global singleton instance
+// Global singleton storage instance
 let globalStorageInstance: StorageRepository | null = null;
 
+/**
+ * Storage repository factory.
+ * Dynamically routes to SupabaseStorageRepository or DurableFileRepository based on STORAGE_BACKEND.
+ * Enforces fail-fast configuration validation: throws SupabaseConfigError if STORAGE_BACKEND=supabase
+ * but required server environment credentials are missing.
+ */
 export function getStorage(): StorageRepository {
-  if (!globalStorageInstance) {
-    globalStorageInstance = new DurableFileRepository();
+  if (globalStorageInstance) {
+    return globalStorageInstance;
   }
+
+  const backend = (process.env.STORAGE_BACKEND || 'file').toLowerCase().trim();
+
+  if (backend === 'supabase') {
+    if (!isSupabaseConfigured()) {
+      throw new SupabaseConfigError(
+        'Supabase backend is configured (STORAGE_BACKEND=supabase), but required credentials (SUPABASE_URL and SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY) are missing. Refusing to silently fall back to ephemeral local storage in production.'
+      );
+    }
+    globalStorageInstance = new SupabaseStorageRepository();
+    return globalStorageInstance;
+  }
+
+  // Default to durable file repository for tests and local development
+  globalStorageInstance = new DurableFileRepository();
   return globalStorageInstance;
 }
 
-export const repository = getStorage();
+/**
+ * Sets a custom storage instance (useful for test isolation or mock adapters).
+ */
+export function setStorageInstance(instance: StorageRepository | null): void {
+  globalStorageInstance = instance;
+}
+
+/**
+ * Resets the storage singleton instance.
+ */
+export function resetStorageInstance(): void {
+  globalStorageInstance = null;
+}
+
+/**
+ * Exported repository proxy that dynamically delegates all method calls to getStorage().
+ * Prevents premature singleton instantiation at module-load time.
+ */
+export const repository: StorageRepository = new Proxy({} as StorageRepository, {
+  get(_target, prop: string | symbol) {
+    const storage = getStorage();
+    const value = (storage as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(storage);
+    }
+    return value;
+  },
+});

@@ -1,30 +1,34 @@
 {
   "mode": "implement",
-  "objective": "Phase E: Advanced Evidence Verification & Cross-Document Conflict Detection for KnoTrail. Dual-status taxonomy (Evidence Validity vs Claim Verification), cross-source contradiction detection with two-sided conflict records, temporal supersession tagging, human conflict resolution, and Phase A handover gate enforcement.",
+  "objective": "Phase H: Persistent Supabase PostgreSQL storage and Supabase Storage for KnoTrail without breaking frontend, API contracts, AI extraction, evidence verification, human review, conflict resolution, or handover workflows.",
   "acceptance_criteria": [
-    "Dual status taxonomy: Evidence Validity (MATCHED, MISSING, MISMATCHED, SOURCE_UNAVAILABLE) and Claim Verification (SUPPORTED, UNCERTAIN, CONFLICTING, POSSIBLY_OUTDATED)",
-    "Distinguish quote existence from claim correctness ('No source, no claim')",
-    "Coordinate validation: Verifies line numbers and page numbers exist within the actual source document boundaries",
-    "Source ownership validation: Validates citations belong to sources present in the current workspace",
-    "Cross-document contradiction detection: Identifies opposing claims across sources (e.g. task completed vs pending, DB PostgreSQL vs MySQL, owner Alice vs Bob)",
-    "Structured ConflictRecord: Two-sided provenance with Finding A/B, Source A/B, exact quotes, page/line coordinates, category, severity, and resolution details",
-    "Temporal analysis: Detects newer documents superseding older ones and tags superseded findings as POSSIBLY_OUTDATED",
-    "Interactive Human Conflict Resolution: Reviewers can select the prevailing claim or enter consensus notes; resolves conflict and unblocks findings",
-    "Phase A Handover Gate Enforcement: Unresolved conflicts strictly block handover certification",
-    "Evidence Explorer & Review Center UI: Renders dual statuses, conflict badges, and two-sided comparison cards",
-    "Zero Fabrication Invariant: Verification and conflict detection run genuinely against uploaded source text; no preloaded/fabricated conflicts",
-    "18 automated test scenarios in src/__tests__/evidenceVerification.test.mjs pass cleanly",
-    "Full test suite passes (npm test) and production build succeeds (npm run build) with zero errors"
+    "Canonical JSONB workspace-state schema in PostgreSQL with optimistic concurrency control via integer version and save_workspace_state RPC",
+    "Dedicated handover_shares table storing only cryptographic SHA-256 hashes of share tokens with O(1) lookup and instant revocation",
+    "Private Supabase Storage bucket (knotrail-source-files) storing uploaded PDF, TXT, and Markdown files under workspace-scoped relative paths (<workspaceId>/<sourceId>.<ext>)",
+    "Server-side reusable Supabase client respecting SUPABASE_URL, SUPABASE_SECRET_KEY, with legacy SUPABASE_SERVICE_ROLE_KEY fallback, never exposed to client bundles",
+    "SupabaseStorageRepository implementing the complete StorageRepository interface with 100% method and feature parity",
+    "Storage factory dynamically routing to SupabaseStorageRepository or DurableFileRepository based on STORAGE_BACKEND env var",
+    "Fail-fast configuration validation: missing credentials when STORAGE_BACKEND=supabase throws clear server errors rather than silent local fallback",
+    "Workspace capability isolation enforcing cryptographic unguessability and strict validation (^[a-zA-Z0-9_-]{3,64}$)",
+    "Clean workspace guarantee: New workspaces initialize without fake demo records, stakeholders, or synthetic findings",
+    "Deterministic automated test suite with mock Supabase adapter covering all 17+ scenarios in npm test without requiring live credentials",
+    "All 109 existing automated tests continue to pass cleanly without regression",
+    "Next.js production build (npm run build) compiles with 0 TypeScript/lint errors across all routes"
   ],
   "non_goals": [
-    "Do not break Phase A handover approval gates, Phase B persistence, Phase C ingestion, or Phase D Gemini extraction",
-    "Do not add login, signup, or authentication walls",
-    "Do not alter Google Stitch design tokens or warm sage aesthetic"
+    "Do not add Supabase Auth or require user login, registration, or accounts",
+    "Do not break the zero-auth public demo journey or Incognito browser accessibility",
+    "Do not expose credentials or database passwords in API responses, client bundles, or logs",
+    "Do not execute remote migrations automatically against unknown databases",
+    "Do not silently fall back to ephemeral disk storage in production when Supabase is configured"
   ],
   "risk": "medium",
   "budget": "balanced",
   "allowed_write_scope": [
     "src/**",
+    "supabase/**",
+    "package.json",
+    "package-lock.json",
     ".gravitas/**",
     ".planning/**",
     "docs/**"
@@ -33,7 +37,7 @@
     "type": "executable_evidence",
     "command": "npm test && npm run build",
     "exit_code": 0,
-    "result": "65 of 65 automated tests passed across all suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 19 tests). Production build compiles cleanly with zero errors across all 15 API routes and 6 static pages. Verification engine thoroughly tests quotation matching, out-of-bounds coordinates, cross-source contradictions, temporal supersession, human resolution, and gate blocking.",
+    "result": "128 of 128 automated tests passed across all 8 test suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 23 tests, Phase F: 16 tests, Phase G: 21 tests, Phase H Supabase: 18 tests). Next.js production build compiles cleanly with zero TypeScript errors across all 23 routes. Supabase integration thoroughly tested with mock adapter for optimistic concurrency, private Storage upload/cleanup, SHA-256 hashed share tokens, full StorageRepository parity, and fail-fast configuration checks.",
     "verdict": "PASS"
   }
 }

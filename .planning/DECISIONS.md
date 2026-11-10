@@ -511,3 +511,88 @@ Phase G is the culmination of KnoTrail's core workflow (**RECONSTRUCT → VERIFY
 - Full parity between on-screen view, PDF export, Markdown download, and JSON payload.
 - Zero-auth, Incognito-compatible sharing without registration walls.
 
+---
+
+## ADR-011: Persistent Supabase PostgreSQL & Supabase Storage Integration Architecture
+
+- **Date**: 2026-11-10
+- **Status**: Approved / In Implementation (Phase H)
+- **Deciders**: Deploy_or_Die (Samyak Gedam, Sanshrey Sanagar)
+
+### Context
+KnoTrail previously persisted workspaces as JSON files on the local filesystem via `DurableFileRepository` in `.data/workspaces` and raw document files in `.data/uploads`. In containerized, serverless, or cloud deployment environments (such as Vercel or cloud runtimes), local ephemeral disk writes are lost on redeployment or scale-out. A durable, cloud-native storage backend is required using Supabase PostgreSQL and Supabase Storage without breaking the existing Next.js App Router API contracts, AI extraction, evidence verification, human review gating, or handover delivery workflows.
+
+### Decision & Architectural Specifications
+
+1. **Canonical JSONB Workspace-State Record Model**:
+   - The authoritative `StorageRepository` interface is aggregate-oriented: reading, mutating, and saving a full `ProjectData` structure containing complex nested structures (sources with documentData and pages, findings with citations and dual statuses, two-sided conflict records, chronological review audit actions, versioned 12-section handovers, and share records).
+   - Attempting a partially normalized 10-table schema creates extreme fragility, synchronization hazards, and data impedance mismatch.
+   - We adopt a canonical PostgreSQL table `workspaces`:
+     ```sql
+     CREATE TABLE IF NOT EXISTS workspaces (
+         id VARCHAR(64) PRIMARY KEY,
+         name VARCHAR(255) NOT NULL DEFAULT 'Anonymous Workspace',
+         project_data JSONB NOT NULL,
+         version INTEGER NOT NULL DEFAULT 1,
+         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+     );
+     ```
+   - This preserves 100% fidelity to `ProjectData` without data loss or synchronization drift across unrelated tables.
+
+2. **Preservation of Handover Version History**:
+   - The initial schema draft had `handovers.project_id UNIQUE`, which broke multi-version handover tracking. In the canonical JSONB model, `project_data.handovers` contains the full array of versioned `HandoverDocument` objects (`v1.0`, `v1.1`, etc.) along with Section A through L details, audit stamps, and snapshot hashes. `project_data.currentHandover` points to the active handover.
+
+3. **Preservation of Conflict Records & Review Audit History**:
+   - Two-sided `ConflictRecord` items (connecting Finding A/B, Source A/B, quotes, locations, temporal tags, and human resolutions) are preserved inside `project_data.conflicts`.
+   - Immutable `ReviewAuditAction` items (recording `actionType`, `previousStatus`, `newStatus`, `reviewerName`, `reviewerNotes`, `timestamp`, and `evidenceReferences`) are preserved inside `project_data.reviewAuditHistory`.
+
+4. **Private Supabase Storage for Uploaded Documents**:
+   - Original document files (PDF, TXT, Markdown) are stored in a private Supabase Storage bucket named `knotrail-source-files`.
+   - Storage paths are strictly workspace-scoped relative paths: `<workspaceId>/<sourceId>.<extension>` (e.g. `ws_anon_01/src-upload-123.pdf`). Absolute local paths are prohibited in production.
+   - Server-side authorization checks are enforced before any storage read or delete.
+   - When a source is deleted (`deleteSource`), the associated storage object in `knotrail-source-files` is removed.
+   - Orphan cleanup: If storage upload succeeds but the subsequent database write fails, the uploaded object is cleaned up automatically.
+   - Extracted text, page/line counts, content hashes, and page text chunks remain saved in `project_data.sources[i].documentData`.
+
+5. **Safe Share-Token Persistence & O(1) Public Lookup**:
+   - A dedicated relational table `handover_shares` stores only cryptographic SHA-256 hashes of share tokens:
+     ```sql
+     CREATE TABLE IF NOT EXISTS handover_shares (
+         token_hash VARCHAR(64) PRIMARY KEY,
+         workspace_id VARCHAR(64) NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+         handover_id VARCHAR(64) NOT NULL,
+         is_active BOOLEAN NOT NULL DEFAULT TRUE,
+         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+         revoked_at TIMESTAMPTZ
+     );
+     ```
+   - Raw tokens (`kt_share_<random>`) are NEVER stored in plaintext in database rows, JSON state, or logs.
+   - Public retrieval via `/share/[token]` hashes the token with SHA-256 and performs an O(1) indexed lookup on `token_hash`. If active, it retrieves strictly the read-only handover document without leaking workspace data.
+   - Revocation instantly marks `is_active = FALSE` and sets `revoked_at`. Subsequent lookups immediately fail with HTTP 403.
+
+6. **Workspace Isolation & Capability-Based Access**:
+   - Workspace IDs act as capability credentials and must be cryptographically unguessable (`crypto.randomBytes`).
+   - Every operation (read, save, add source, delete source, approve, reject, edit, certify, share) strictly scopes database queries and storage keys to `workspace_id`.
+   - Workspace IDs are validated against `^[a-zA-Z0-9_-]{3,64}$` to strictly prevent injection and path traversal.
+   - No public endpoint exists to enumerate all workspaces.
+   - There is no user login/signup (No-Auth Invariant). Public demo uses synthetic test data; judges can test seamlessly in Incognito windows.
+
+7. **Optimistic Concurrency Control (OCC)**:
+   - To prevent concurrent requests from silently overwriting each other's changes, the `workspaces` table maintains an integer `version` column.
+   - Updates perform atomic conditional checks (`WHERE id = $id AND version = $expected_version`) or use a PostgreSQL stored function `save_workspace_state`.
+   - Stale writes throw a `ConcurrencyConflictError` (HTTP 409) rather than clobbering concurrent edits.
+
+8. **Dual Repository Architecture & Testing Strategy**:
+   - `DurableFileRepository` is preserved completely intact for deterministic local testing and zero-credential offline development.
+   - `SupabaseStorageRepository` implements the exact same `StorageRepository` interface.
+   - A repository factory `getStorage()` selects the backend based on `STORAGE_BACKEND=supabase` vs `file` (default).
+   - If `STORAGE_BACKEND=supabase` is configured but credentials (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) are missing, it fails fast with a clear server configuration error rather than silently writing to ephemeral disk.
+   - Deterministic automated tests run using a mock Supabase client adapter with zero network dependencies; live integration tests are optional and gated by explicit environment variables.
+
+### Consequences
+- Full durability and cloud deployment readiness across Supabase PostgreSQL and Supabase Storage.
+- Zero breaking changes to existing 23 API routes, 7 test suites (109 tests), and frontend user journey.
+- Zero leakage of raw share tokens or server secrets.
+- Deterministic CI/CD tests remain fast and offline.
+

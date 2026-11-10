@@ -124,7 +124,13 @@ const CACHE_PREFIX = 'knotrail_cache_v4_';
 
 function generateAnonymousWorkspaceId(): string {
   const timestamp = Date.now().toString(36);
-  const randomStr = Math.random().toString(36).substring(2, 8);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    const hex = Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+    return `ws_anon_${timestamp}_${hex}`;
+  }
+  const randomStr = Math.random().toString(36).substring(2, 10);
   return `ws_anon_${timestamp}_${randomStr}`;
 }
 
