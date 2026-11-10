@@ -666,6 +666,12 @@ KnoTrail previously ran as a monolithic Next.js 14 App Router application with a
    - Target modern Node 24 LTS runtime (`engines: { node: ">=20.18.0" }`).
    - The Render backend compiles via TypeScript to a production `dist/` bundle executed with `node dist/backend/server.js`.
 
+9. **Render Build Command Specification (`--include=dev`)**:
+   - In Render services with `NODE_ENV=production` configured in the container environment, npm v7+ defaults `npm ci` to `--omit=dev`.
+   - Backend compilation (`npm run backend:build`) requires build-time devDependencies (`tsc -p tsconfig.backend.json --noEmit`, `@types/express`, `@types/multer`, `@types/cors`, and `esbuild`).
+   - Therefore, `render.yaml` explicitly configures `buildCommand: npm ci --include=dev && npm run backend:build`.
+   - Runtime dependencies (`express`, `multer`, `cors`, `@supabase/supabase-js`, `@google/genai`, `unpdf`) remain strictly in `dependencies`, and type declarations stay in `devDependencies`.
+
 ### Consequences
 - True separation of concerns: Vercel serves static/SSR UI, while Render handles compute/API workload.
 - Independent deployment cycles and fail-safe scaling.

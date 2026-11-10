@@ -59,6 +59,7 @@ Progress: [██████████] 100%
   - Reconciliation: Node test runner reports 149 total tests; all pass.
 - Backend Production Build: `npm run backend:build` compiles to `dist/backend/server.js` (190 KB) in under 20ms
 - Frontend Production Build: `npm run frontend:build` compiles cleanly with 0 errors across all routes (`/`, `/_not-found`, `/share/[token]`)
+- Render Build Resolution: Configured `npm ci --include=dev && npm run backend:build` in `render.yaml` to ensure `@types/express` and `@types/multer` are retained during production builds where `NODE_ENV=production`. Simulated under production environment: verified 238 packages installed, type checks passed, and bundle emitted with zero errors.
 
 **By Screen / Workflow Stage:**
 

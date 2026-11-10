@@ -91,9 +91,12 @@ npm run frontend:build
 | **Branch** | `main` (or `deployment/render-vercel` during staging) |
 | **Root Directory** | *(leave empty / repository root)* |
 | **Runtime** | **Node** |
-| **Build Command** | `npm ci && npm run backend:build` |
+| **Build Command** | `npm ci --include=dev && npm run backend:build` |
 | **Start Command** | `npm run backend:start` |
 | **Plan Type** | **Starter** (or Free) |
+
+> [!NOTE]
+> The `--include=dev` flag in the build command is required because `NODE_ENV=production` causes npm v7+ to omit development dependencies during `npm ci`. TypeScript declarations (`@types/express`, `@types/multer`, `@types/cors`) and build tooling (`typescript`, `esbuild`) are required during the compilation step (`npm run backend:build`) to emit the standalone production bundle `dist/backend/server.js`. Runtime dependencies remain isolated in `dependencies`.
 
 ### Step 3.2: Configure Health Check Path
 - Under **Advanced Settings**, set **Health Check Path** to:  
