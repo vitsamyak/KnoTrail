@@ -41,7 +41,7 @@
     "type": "executable_evidence",
     "command": "npm test && npm run backend:build && npm run frontend:build",
     "exit_code": 0,
-    "result": "149 of 149 automated tests passed across all 9 test suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 23 tests, Phase F: 16 tests, Phase G: 21 tests, Phase H Supabase: 18 tests, Phase I Backend & API: 21 tests). Standalone Express backend compiles to dist/backend/server.js in 14ms. Frontend compiles to Next.js production bundle with 0 errors across all routes. All 23 endpoint contracts preserved, strict CORS verified, health probes verified, centralized frontend API client active, and old Next.js API route handlers disabled.",
+    "result": "149 of 149 automated tests passed across all 9 test suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 23 tests, Phase F: 16 tests, Phase G: 21 tests, Phase H Supabase: 18 tests, Phase I Backend & API: 21 tests). Standalone Express backend compiles to dist/backend/server.js in 14ms. Render build command updated to `npm ci --include=dev && npm run backend:build` in render.yaml and verified under NODE_ENV=production. Frontend compiles to Next.js production bundle with 0 errors across all routes. All 23 endpoint contracts preserved, strict CORS verified, health probes verified, centralized frontend API client active, and old Next.js API route handlers disabled.",
     "verdict": "PASS"
   }
 }
