@@ -67,6 +67,17 @@ Requirements committed for Round 2 ("The Build", 72-hour delivery). Each require
 - [ ] **DEPLOY-02**: System includes bundled sample project scenarios allowing instant judge evaluation in under 3 minutes.
 - [ ] **DEPLOY-03**: Deployed application passes verification in an incognito browser window with zero local environment dependencies.
 
+### Supabase Backend & Cloud Storage Integration (SUPA)
+
+- [x] **SUPA-01**: Persistent Supabase PostgreSQL storage with canonical JSONB aggregate model, optimistic concurrency control (`version`), and RLS security.
+- [x] **SUPA-02**: Private Supabase Storage bucket (`knotrail-source-files`) for uploaded PDFs, TXTs, and Markdown documents with workspace-scoped object paths.
+- [x] **SUPA-03**: Full `StorageRepository` interface implementation in `SupabaseStorageRepository` with 100% method and feature parity.
+- [x] **SUPA-04**: Dedicated `handover_shares` table storing only SHA-256 hashed share tokens; zero plaintext tokens in DB or logs; O(1) public retrieval and instant revocation.
+- [x] **SUPA-05**: Storage factory dynamically switches between Supabase and DurableFileRepository based on `STORAGE_BACKEND`.
+- [x] **SUPA-06**: Explicit server-side fail-fast configuration validation: missing credentials when `STORAGE_BACKEND=supabase` throws immediate configuration errors rather than silent local disk fallback.
+- [x] **SUPA-07**: Server credentials (`SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) are strictly restricted to server-side code; never exposed to browser bundles or API responses.
+- [x] **SUPA-08**: Deterministic test suite with mock adapter runs offline in `npm test` without live Supabase credentials; optional live integration tests run when credentials are provided.
+
 ## v2 Requirements
 
 Deferred to Round 3 / post-hackathon releases. Tracked but not in the 72-hour build scope.
@@ -134,12 +145,20 @@ Mapping of v1 requirements to implementation phases in ROADMAP.md.
 | DEPLOY-01 | Phase 6 | Pending |
 | DEPLOY-02 | Phase 6 | Pending |
 | DEPLOY-03 | Phase 6 | Pending |
+| SUPA-01 | Phase H | Complete |
+| SUPA-02 | Phase H | Complete |
+| SUPA-03 | Phase H | Complete |
+| SUPA-04 | Phase H | Complete |
+| SUPA-05 | Phase H | Complete |
+| SUPA-06 | Phase H | Complete |
+| SUPA-07 | Phase H | Complete |
+| SUPA-08 | Phase H | Complete |
 
 **Coverage:**
-- v1 requirements: 32 total
-- Mapped to phases: 32
+- v1 requirements: 40 total
+- Mapped to phases: 40
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-11-08*  
-*Last updated: 2026-11-08 with No-Login & Incognito Public Access Requirements*
+*Last updated: 2026-11-10 with Phase H Supabase Backend Integration Requirements*
