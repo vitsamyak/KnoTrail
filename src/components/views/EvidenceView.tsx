@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { EvidenceCitation, EvidenceStatus, KnowledgeFinding } from '../../lib/types';
+import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function EvidenceView() {
   const {
@@ -83,6 +84,16 @@ export function EvidenceView() {
           </div>
         </div>
       </div>
+
+      {/* ACTIVE EVIDENCE VERIFICATION BANNER */}
+      {isVerifying && (
+        <KnowledgeTrailLoader
+          variant="section"
+          message="Verifying supporting evidence..."
+          submessage="Matching quotations against primary document texts and auditing coordinate integrity..."
+          step={2}
+        />
+      )}
 
       {/* STATUS FILTER PILL STRIP */}
       <div className="flex flex-wrap items-center justify-between gap-space-md bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/30 shadow-xs">

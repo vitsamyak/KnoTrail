@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { ProjectSource } from '../../lib/types';
 import { formatBytes, isAllowedFile, MAX_FILE_SIZE_BYTES, MAX_FILES_PER_BATCH } from '../../server/documents/extractor';
+import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function SourceManagerView() {
   const { project, addSource, uploadSources, deleteSource, runAiSync, isSyncing, setActiveView } = useProject();
@@ -474,6 +475,16 @@ export function SourceManagerView() {
               </button>
             </div>
 
+            {/* Contextual Uploading Knowledge Trail State */}
+            {isUploading && (
+              <KnowledgeTrailLoader
+                variant="section"
+                message="Uploading your sources..."
+                submessage="Parsing document structure, extracting text coordinates, and calculating cryptographic checksums..."
+                step={1}
+              />
+            )}
+
             {/* Drag & Drop Zone */}
             <div
               onDragEnter={handleDrag}
@@ -611,12 +622,19 @@ export function SourceManagerView() {
                   type="button"
                   onClick={handleUploadSubmit}
                   disabled={isUploading || selectedFiles.some((f) => f.size > MAX_FILE_SIZE_BYTES || !isAllowedFile(f.name))}
-                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm flex items-center gap-1.5 text-xs disabled:opacity-60"
+                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm flex items-center gap-2 text-xs disabled:opacity-60"
                 >
-                  <span className={`material-symbols-outlined text-[16px] ${isUploading ? 'animate-spin' : ''}`}>
-                    {isUploading ? 'autorenew' : 'upload'}
-                  </span>
-                  <span>{isUploading ? 'Extracting Text...' : `Process & Ingest (${selectedFiles.length})`}</span>
+                  {isUploading ? (
+                    <>
+                      <KnowledgeTrailLoader variant="inline" message="Uploading and extracting..." />
+                      <span>Extracting Text & Coordinates...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[16px]">upload</span>
+                      <span>Process & Ingest ({selectedFiles.length})</span>
+                    </>
+                  )}
                 </button>
               )}
             </div>

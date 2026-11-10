@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { FindingType, KnowledgeFinding } from '../../lib/types';
+import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function AnalysisView() {
   const {
@@ -117,10 +118,17 @@ export function AnalysisView() {
             disabled={isAnalysing || isSyncing || isVerifying}
             className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all disabled:opacity-60"
           >
-            <span className={`material-symbols-outlined text-[18px] ${isAnalysing ? 'animate-spin' : ''}`}>
-              auto_awesome
-            </span>
-            <span>{isAnalysing ? 'Extracting with Gemini...' : 'Extract Knowledge with AI'}</span>
+            {isAnalysing ? (
+              <>
+                <KnowledgeTrailLoader variant="inline" message="Analysing project knowledge..." />
+                <span>Analysing with Gemini...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                <span>Extract Knowledge with AI</span>
+              </>
+            )}
           </button>
 
           <button
@@ -129,10 +137,17 @@ export function AnalysisView() {
             className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md shadow-xs transition-all border border-outline-variant/30 disabled:opacity-50"
             title="Verify quotations and scan for cross-document conflicts"
           >
-            <span className={`material-symbols-outlined text-[18px] text-primary ${isVerifying ? 'animate-spin' : ''}`}>
-              fact_check
-            </span>
-            <span>{isVerifying ? 'Verifying...' : 'Verify Claims & Detect Conflicts'}</span>
+            {isVerifying ? (
+              <>
+                <KnowledgeTrailLoader variant="inline" message="Verifying evidence..." />
+                <span>Verifying Claims...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px] text-primary">fact_check</span>
+                <span>Verify Claims & Detect Conflicts</span>
+              </>
+            )}
           </button>
 
           <button
@@ -211,21 +226,23 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
       {/* ACTIVE EXTRACTION PROGRESS BANNER */}
       {isAnalysing && (
-        <div className="bg-surface-container-lowest rounded-xl p-space-md border border-primary/30 shadow-sm flex flex-col gap-2 animate-in fade-in">
-          <div className="flex items-center justify-between text-xs font-semibold">
-            <div className="flex items-center gap-2 text-primary">
-              <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-              <span>{analysisStatusMessage || 'Extracting knowledge with Gemini...'}</span>
-            </div>
-            <span className="font-mono text-outline">{analysisProgress}%</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-300"
-              style={{ width: `${analysisProgress}%` }}
-            ></div>
-          </div>
-        </div>
+        <KnowledgeTrailLoader
+          variant="section"
+          message="Analysing project knowledge..."
+          submessage={analysisStatusMessage || 'Reconstructing decisions, tasks, risks, and dependencies anchored to source evidence...'}
+          progress={analysisProgress}
+          step={1}
+        />
+      )}
+
+      {/* ACTIVE VERIFICATION BANNER */}
+      {isVerifying && (
+        <KnowledgeTrailLoader
+          variant="section"
+          message="Verifying supporting evidence..."
+          submessage="Cross-referencing quotations against source text and checking for contradictory claims..."
+          step={2}
+        />
       )}
 
       {/* VERIFY NOTICE */}
@@ -452,8 +469,17 @@ GEMINI_API_KEY=your_gemini_api_key_here
                 disabled={isAnalysing}
                 className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
               >
-                <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-                <span>Extract Knowledge with AI</span>
+                {isAnalysing ? (
+                  <>
+                    <KnowledgeTrailLoader variant="inline" message="Analysing..." />
+                    <span>Analysing with Gemini...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                    <span>Extract Knowledge with AI</span>
+                  </>
+                )}
               </button>
             ) : (
               <button

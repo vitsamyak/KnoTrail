@@ -9,6 +9,7 @@ import {
   ReviewAuditAction,
   getFindingReviewStatus,
 } from '../../lib/types';
+import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function ReviewView() {
   const {
@@ -1095,10 +1096,19 @@ export function ReviewView() {
                 <button
                   type="submit"
                   disabled={isSubmittingApproval || !approveJustification.trim()}
-                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm flex items-center gap-1 disabled:opacity-50"
+                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                  <span>{isSubmittingApproval ? 'Approving...' : 'Approve with Justification'}</span>
+                  {isSubmittingApproval ? (
+                    <>
+                      <KnowledgeTrailLoader variant="inline" message="Approving claim..." />
+                      <span>Recording Approval...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      <span>Approve with Justification</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1135,7 +1145,14 @@ export function ReviewView() {
             </div>
 
             {isLoadingAudit ? (
-              <div className="py-8 text-center text-xs text-outline">Loading audit trail...</div>
+              <div className="py-6">
+                <KnowledgeTrailLoader
+                  variant="section"
+                  message="Loading review history..."
+                  submessage="Retrieving verified audit trail and status transitions..."
+                  step={3}
+                />
+              </div>
             ) : auditHistoryData.length === 0 ? (
               <div className="py-8 text-center text-xs text-outline bg-surface-container-low rounded-xl border border-outline-variant/20">
                 No formal review actions logged yet for this finding. Actions will record automatically when reviewed.

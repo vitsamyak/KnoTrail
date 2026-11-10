@@ -21,6 +21,7 @@ interface ProjectContextType {
   project: ProjectData;
   workspaceId: string;
   isLoading: boolean;
+  isNavigating: boolean;
   isSaving: boolean;
   saveError: string | null;
   lastSavedAt: Date | null;
@@ -132,6 +133,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [project, setProject] = useState<ProjectData>(INITIAL_PROJECT_DATA);
   const [workspaceId, setWorkspaceId] = useState<string>('default_workspace');
   const [isLoading, setIsLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -267,12 +269,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Update URL hash when activeView changes
+  // Update URL hash when activeView changes with subtle transition telemetry
   const handleSetActiveView = (view: ActiveView) => {
-    setActiveView(view);
-    if (typeof window !== 'undefined') {
-      window.location.hash = view;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (view !== activeView) {
+      setIsNavigating(true);
+      setActiveView(view);
+      if (typeof window !== 'undefined') {
+        window.location.hash = view;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 220);
     }
   };
 
@@ -1179,6 +1187,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         project,
         workspaceId,
         isLoading,
+        isNavigating,
         isSaving,
         saveError,
         lastSavedAt,

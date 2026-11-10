@@ -5,11 +5,14 @@ import { useProject } from '../../context/ProjectContext';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { CreateProjectModal } from '../modals/CreateProjectModal';
+import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const {
     activeView,
     setActiveView,
+    isLoading,
+    isNavigating,
     isSyncing,
     syncProgress,
     syncStatusMessage,
@@ -17,17 +20,49 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setShowCreateProjectModal,
   } = useProject();
 
-  // If on Landing page, render clean landing canvas without side rail
+  // 1. GLOBAL INITIAL LOADING SCREEN (While workspace is initializing)
+  if (isLoading) {
+    return (
+      <KnowledgeTrailLoader
+        variant="fullscreen"
+        message="Preparing your workspace..."
+        submessage="Connecting workspace sources and verifying knowledge integrity..."
+        step={1}
+      />
+    );
+  }
+
+  // 2. LANDING PAGE VIEW (Clean layout without left sidebar)
   if (activeView === 'landing') {
     return (
-      <div className="min-h-screen bg-background font-body-md text-on-surface antialiased">
-        {children}
+      <div className="min-h-screen bg-background font-body-md text-on-surface antialiased relative">
+        {/* Subtle Top Route Progress Indicator */}
+        {isNavigating && (
+          <div
+            role="progressbar"
+            aria-label="Navigating view"
+            className="fixed top-0 left-0 right-0 h-[2.5px] z-50 bg-gradient-to-r from-primary/30 via-primary to-primary-container shadow-[0_0_8px_rgba(65,99,82,0.4)] transition-opacity duration-200"
+          />
+        )}
+        <div key={activeView} className="animate-in fade-in duration-200">
+          {children}
+        </div>
       </div>
     );
   }
 
+  // 3. MAIN APPLICATION SHELL (With navigation rail and header)
   return (
     <div className="min-h-screen bg-background font-body-md text-on-surface antialiased relative">
+      {/* Subtle Top Route Progress Indicator for fast, tactile navigation feedback */}
+      {isNavigating && (
+        <div
+          role="progressbar"
+          aria-label="Navigating view"
+          className="fixed top-0 left-0 right-0 h-[2.5px] z-50 bg-gradient-to-r from-primary/30 via-primary to-primary-container shadow-[0_0_8px_rgba(65,99,82,0.4)] transition-opacity duration-200"
+        />
+      )}
+
       {/* Floating Left Navigation Rail */}
       <Sidebar />
 
@@ -36,37 +71,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Fixed Top Header */}
         <Header />
 
-        {/* Dynamic View Content */}
-        <main className="relative pt-24 pr-4 pb-space-2xl min-h-screen">
+        {/* Dynamic View Content with smooth fade-in */}
+        <main
+          key={activeView}
+          className="relative pt-24 pr-4 pb-space-2xl min-h-screen animate-in fade-in duration-200"
+        >
           {children}
         </main>
       </div>
 
-      {/* Live AI Sync Progress Modal / Overlay */}
+      {/* Live AI Sync Modal with KnoTrail Knowledge Trail */}
       {isSyncing && (
         <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-surface-container-lowest max-w-md w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-outline-variant/40 flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-space-md animate-pulse">
-              <span className="material-symbols-outlined text-[28px] animate-spin">sync</span>
-            </div>
-            <h3 className="font-headline-md text-headline-md text-on-surface">
-              Synthesizing Engineering State
-            </h3>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1 mb-space-lg">
-              {syncStatusMessage}
-            </p>
-
-            {/* Progress bar */}
-            <div className="w-full bg-surface-container-high rounded-full h-2 overflow-hidden mb-space-xs">
-              <div
-                className="bg-primary h-full transition-all duration-300 rounded-full"
-                style={{ width: `${syncProgress}%` }}
-              ></div>
-            </div>
-            <div className="w-full flex items-center justify-between text-xs text-outline font-mono">
-              <span>Grounding check: PASS</span>
-              <span>{syncProgress}%</span>
-            </div>
+            <KnowledgeTrailLoader
+              variant="section"
+              message="Synthesizing Engineering State"
+              submessage={syncStatusMessage || 'Synchronizing workspace with server storage...'}
+              progress={syncProgress}
+              step={2}
+            />
           </div>
         </div>
       )}

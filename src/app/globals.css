@@ -72,3 +72,95 @@
     page-break-after: always;
   }
 }
+
+/* ==========================================================================
+   KnoTrail Knowledge Trail Animations (Sage Green Design System)
+   ========================================================================== */
+
+@keyframes trail-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+@keyframes trail-beam {
+  0% {
+    stroke-dashoffset: 240;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+}
+
+@keyframes trail-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes trail-dot-stagger {
+  0%, 80%, 100% {
+    transform: scale(0.75);
+    opacity: 0.35;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.animate-trail-pulse {
+  animation: trail-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-trail-beam {
+  stroke-dasharray: 60 180;
+  animation: trail-beam 2.2s linear infinite;
+}
+
+.animate-trail-shimmer {
+  animation: trail-shimmer 1.8s ease-in-out infinite;
+}
+
+.animate-trail-dot-1 {
+  animation: trail-dot-stagger 1.4s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.animate-trail-dot-2 {
+  animation: trail-dot-stagger 1.4s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.animate-trail-dot-3 {
+  animation: trail-dot-stagger 1.4s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+
+/* Accessible reduced motion override */
+@media (prefers-reduced-motion: reduce) {
+  .animate-trail-pulse,
+  .animate-trail-beam,
+  .animate-trail-shimmer,
+  .animate-trail-dot-1,
+  .animate-trail-dot-2,
+  .animate-trail-dot-3,
+  .animate-spin,
+  .animate-pulse {
+    animation: none !important;
+    transition: none !important;
+  }
+}

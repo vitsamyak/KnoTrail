@@ -8,6 +8,7 @@ import {
   generatePrintableHtml,
 } from '../../lib/handoverFilter';
 import type { HandoverDocument, KnowledgeFinding } from '../../lib/types';
+import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function HandoverView() {
   const {
@@ -29,6 +30,7 @@ export function HandoverView() {
   const [shareRevoked, setShareRevoked] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [exportingType, setExportingType] = useState<'pdf' | 'md' | 'json' | null>(null);
 
   // Active handover document to render (prefer certified currentHandover)
   const doc: HandoverDocument | null = currentHandover || null;
@@ -52,52 +54,67 @@ export function HandoverView() {
   // Export to Markdown using the Phase G 12-section generator
   const handleExportMarkdown = () => {
     if (!doc) return;
-    const md = exportHandoverMarkdown(doc);
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `KnoTrail-Handover-${doc.metadata.projectCode}-${doc.version}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setExportingType('md');
+    try {
+      const md = exportHandoverMarkdown(doc);
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `KnoTrail-Handover-${doc.metadata.projectCode}-${doc.version}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setTimeout(() => setExportingType(null), 600);
+    }
   };
 
   // Export to JSON with 100% data parity
   const handleExportJSON = () => {
     if (!doc) return;
-    const data = exportHandoverJson(doc);
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json;charset=utf-8',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `KnoTrail-Handover-${doc.metadata.projectCode}-${doc.version}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setExportingType('json');
+    try {
+      const data = exportHandoverJson(doc);
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json;charset=utf-8',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `KnoTrail-Handover-${doc.metadata.projectCode}-${doc.version}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setTimeout(() => setExportingType(null), 600);
+    }
   };
 
   // Open printable PDF preview using dedicated A4 print layout
   const handlePrintPDF = () => {
-    if (!doc) {
-      window.print();
-      return;
-    }
-    const html = generatePrintableHtml(doc);
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-      }, 400);
-    } else {
-      window.print();
+    setExportingType('pdf');
+    try {
+      if (!doc) {
+        window.print();
+        return;
+      }
+      const html = generatePrintableHtml(doc);
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 400);
+      } else {
+        window.print();
+      }
+    } finally {
+      setTimeout(() => setExportingType(null), 600);
     }
   };
 
@@ -321,6 +338,17 @@ export function HandoverView() {
             All {stats.approvedCount} project findings are verified and approved with zero outstanding conflicts. Click below to generate the formal 12-section certified handover package.
           </p>
 
+          {isGenerating && (
+            <div className="w-full my-4">
+              <KnowledgeTrailLoader
+                variant="section"
+                message="Preparing your handover..."
+                submessage="Compiling verified decisions, tasks, risks, and evidence into the formal 12-section dossier..."
+                step={4}
+              />
+            </div>
+          )}
+
           {generationError && (
             <div className="w-full bg-error-container text-on-error-container p-3 rounded-lg text-xs mt-3">
               {generationError}
@@ -333,9 +361,11 @@ export function HandoverView() {
               disabled={isGenerating}
               className="inline-flex items-center gap-2 px-space-xl py-space-md bg-primary hover:bg-primary-container text-on-primary rounded-xl font-headline-sm text-headline-sm shadow-md transition-all active:scale-95 disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[20px]">
-                {isGenerating ? 'sync' : 'auto_fix_high'}
-              </span>
+              {isGenerating ? (
+                <KnowledgeTrailLoader variant="inline" size="sm" />
+              ) : (
+                <span className="material-symbols-outlined text-[20px]">auto_fix_high</span>
+              )}
               <span>{isGenerating ? 'Compiling 12-Section Handover...' : 'Generate Certified Handover'}</span>
             </button>
           </div>
@@ -376,10 +406,12 @@ export function HandoverView() {
             disabled={isGenerating}
             className="inline-flex items-center gap-2 px-space-md py-space-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-label-md text-label-md shadow-sm transition-all active:scale-95 shrink-0 disabled:opacity-50"
           >
-            <span className="material-symbols-outlined text-[16px]">
-              {isGenerating ? 'sync' : 'refresh'}
-            </span>
-            <span>{isGenerating ? 'Updating...' : 'Regenerate Handover'}</span>
+            {isGenerating ? (
+              <KnowledgeTrailLoader variant="inline" size="sm" />
+            ) : (
+              <span className="material-symbols-outlined text-[16px]">refresh</span>
+            )}
+            <span>{isGenerating ? 'Updating Handover...' : 'Regenerate Handover'}</span>
           </button>
         </aside>
       )}
@@ -515,26 +547,41 @@ export function HandoverView() {
 
             <button
               onClick={handlePrintPDF}
-              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30"
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30 disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[17px]">print</span>
-              <span>Export PDF</span>
+              {exportingType === 'pdf' ? (
+                <KnowledgeTrailLoader variant="inline" size="sm" />
+              ) : (
+                <span className="material-symbols-outlined text-[17px]">print</span>
+              )}
+              <span>{exportingType === 'pdf' ? 'Preparing PDF...' : 'Export PDF'}</span>
             </button>
 
             <button
               onClick={handleExportMarkdown}
-              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30"
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30 disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[17px]">markdown</span>
-              <span>Export Markdown</span>
+              {exportingType === 'md' ? (
+                <KnowledgeTrailLoader variant="inline" size="sm" />
+              ) : (
+                <span className="material-symbols-outlined text-[17px]">markdown</span>
+              )}
+              <span>{exportingType === 'md' ? 'Exporting MD...' : 'Export Markdown'}</span>
             </button>
 
             <button
               onClick={handleExportJSON}
-              className="inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-all font-label-md text-label-md"
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-all font-label-md text-label-md disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[17px]">data_object</span>
-              <span>Export JSON</span>
+              {exportingType === 'json' ? (
+                <KnowledgeTrailLoader variant="inline" size="sm" />
+              ) : (
+                <span className="material-symbols-outlined text-[17px]">data_object</span>
+              )}
+              <span>{exportingType === 'json' ? 'Generating JSON...' : 'Export JSON'}</span>
             </button>
           </div>
         </div>
@@ -1195,9 +1242,13 @@ export function HandoverView() {
             </div>
 
             {isSharing ? (
-              <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-outline">
-                <span className="material-symbols-outlined animate-spin text-[28px] text-primary">sync</span>
-                <span>Generating high-entropy read-only link...</span>
+              <div className="py-6 flex flex-col items-center justify-center">
+                <KnowledgeTrailLoader
+                  variant="section"
+                  message="Preparing shareable handover link..."
+                  submessage="Generating cryptographically secure read-only token..."
+                  step={4}
+                />
               </div>
             ) : shareError ? (
               <div className="p-3 rounded-lg bg-error-container text-on-error-container text-xs">
