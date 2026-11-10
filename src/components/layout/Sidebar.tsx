@@ -12,7 +12,16 @@ interface NavItem {
 }
 
 export function Sidebar() {
-  const { activeView, setActiveView, stats, project, resetDemoData, isProjectCreated } = useProject();
+  const {
+    activeView,
+    setActiveView,
+    stats,
+    project,
+    resetDemoData,
+    isProjectCreated,
+    isMobileNavOpen,
+    setIsMobileNavOpen,
+  } = useProject();
 
   const navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
@@ -29,27 +38,42 @@ export function Sidebar() {
     },
   ];
 
-  return (
-    <aside className="fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-50 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] border border-outline-variant/30 flex flex-col justify-between py-space-lg px-space-md select-none transition-all">
+  const renderNavContent = (isMobile = false) => (
+    <div className="flex flex-col justify-between h-full py-space-lg px-space-md select-none">
       <div className="flex flex-col gap-space-lg">
         {/* Brand Header */}
-        <button
-          onClick={() => setActiveView('landing')}
-          className="flex items-center gap-space-sm px-space-xs text-left group transition-transform active:scale-95"
-          title="Return to Landing Page"
-        >
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:bg-primary-container transition-colors">
-            <span className="material-symbols-outlined text-[22px]">route</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none group-hover:text-primary transition-colors">
-              KnoTrail
-            </span>
-            <span className="font-label-sm text-label-sm text-outline mt-0.5 leading-none">
-              Knowledge Handover
-            </span>
-          </div>
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => {
+              setActiveView('landing');
+              if (isMobile) setIsMobileNavOpen(false);
+            }}
+            className="flex items-center gap-space-sm px-space-xs text-left group transition-transform active:scale-95"
+            title="Return to Landing Page"
+          >
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:bg-primary-container transition-colors shrink-0">
+              <span className="material-symbols-outlined text-[22px]">route</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none group-hover:text-primary transition-colors">
+                KnoTrail
+              </span>
+              <span className="font-label-sm text-label-sm text-outline mt-0.5 leading-none">
+                Knowledge Handover
+              </span>
+            </div>
+          </button>
+
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileNavOpen(false)}
+              aria-label="Close navigation menu"
+              className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          )}
+        </div>
 
         {/* Navigation Items */}
         <nav className="flex flex-col gap-space-2xs">
@@ -58,8 +82,11 @@ export function Sidebar() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveView(item.id)}
-                className={`flex items-center justify-between px-space-md py-space-xs rounded-xl transition-all duration-200 text-left group ${
+                onClick={() => {
+                  setActiveView(item.id);
+                  if (isMobile) setIsMobileNavOpen(false);
+                }}
+                className={`flex items-center justify-between px-space-md py-2.5 rounded-xl transition-all duration-200 text-left group min-h-[40px] ${
                   isActive
                     ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -93,7 +120,7 @@ export function Sidebar() {
       </div>
 
       {/* Bottom Sprint & System Status */}
-      <div className="flex flex-col gap-space-sm px-space-xs">
+      <div className="flex flex-col gap-space-sm px-space-xs mt-6">
         {/* Active Handover Sprint Progress Card */}
         <div className="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs border border-outline-variant/30">
           <div className="flex items-center justify-between">
@@ -129,6 +156,7 @@ export function Sidebar() {
             onClick={() => {
               if (confirm('Reset workspace to clean empty state?')) {
                 resetDemoData();
+                if (isMobile) setIsMobileNavOpen(false);
               }
             }}
             title="Reset Workspace"
@@ -139,6 +167,37 @@ export function Sidebar() {
           </button>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* 1. Desktop Floating Navigation Rail (Unchanged for lg+ screens) */}
+      <aside className="hidden lg:flex fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-30 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] border border-outline-variant/30 flex-col overflow-y-auto no-scrollbar transition-all">
+        {renderNavContent(false)}
+      </aside>
+
+      {/* 2. Mobile Responsive Drawer (< lg screens) */}
+      {isMobileNavOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop overlay */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsMobileNavOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Slide-over Drawer */}
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation Drawer"
+            className="relative w-72 max-w-[85vw] h-full bg-surface-container-lowest shadow-2xl overflow-y-auto no-scrollbar animate-in slide-in-from-left duration-200 border-r border-outline-variant/30"
+          >
+            {renderNavContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

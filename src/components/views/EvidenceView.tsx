@@ -51,7 +51,7 @@ export function EvidenceView() {
   return (
     <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-4 sm:p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
         <div className="flex flex-col">
           <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
             <span
@@ -363,13 +363,13 @@ export function EvidenceView() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-error/20 text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-error/20 text-xs">
                     <span className="text-error text-[11px] font-medium">
                       Mandatory human resolution required before handover certification.
                     </span>
                     <button
                       onClick={() => setActiveView('review')}
-                      className="px-3 py-1 bg-error text-on-error hover:bg-error/90 rounded text-xs font-semibold transition-colors flex items-center gap-1"
+                      className="w-full sm:w-auto justify-center px-3 py-1.5 bg-error text-on-error hover:bg-error/90 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 min-h-[34px]"
                     >
                       <span>Resolve in Review Center</span>
                       <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -468,8 +468,8 @@ export function EvidenceView() {
 
       {/* SIDE DRAWER / MODAL: CITATION PROVENANCE INSPECTOR */}
       {activeInspectorCitation && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-2xl w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-2xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[22px]">policy</span>
@@ -486,7 +486,7 @@ export function EvidenceView() {
             </div>
 
             <div className="flex flex-col gap-space-sm text-xs">
-              <div className="grid grid-cols-2 gap-space-sm bg-surface-container-low p-space-md rounded-xl border border-outline-variant/20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm bg-surface-container-low p-space-md rounded-xl border border-outline-variant/20">
                 <div>
                   <span className="text-outline uppercase text-[10px] font-semibold block">Source Stream</span>
                   <span className="font-medium text-on-surface text-sm">{activeInspectorCitation.sourceName}</span>
@@ -505,7 +505,7 @@ export function EvidenceView() {
                 </div>
                 <div>
                   <span className="text-outline uppercase text-[10px] font-semibold block">Cryptographic Hash</span>
-                  <span className="font-mono text-primary font-semibold">
+                  <span className="font-mono text-primary font-semibold break-all">
                     {activeInspectorCitation.contentHash}
                   </span>
                 </div>

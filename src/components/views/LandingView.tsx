@@ -7,16 +7,16 @@ export function LandingView() {
   const { setActiveView } = useProject();
 
   return (
-    <main className="min-h-screen w-full flex items-center justify-center p-space-md bg-background text-on-surface antialiased">
-      <div className="flex flex-col w-full max-w-7xl mx-auto py-space-xl">
+    <main className="min-h-screen w-full flex items-center justify-center px-3 sm:px-space-md py-space-md bg-background text-on-surface antialiased">
+      <div className="flex flex-col w-full max-w-7xl mx-auto py-space-md sm:py-space-xl">
         {/* Top Global Announcement Pill */}
-        <div className="w-full px-gutter mb-space-xl flex justify-center">
-          <div className="inline-flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-2xs rounded-full shadow-sm border border-outline-variant/30">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <div className="w-full px-2 sm:px-gutter mb-space-lg sm:mb-space-xl flex justify-center">
+          <div className="inline-flex flex-wrap items-center justify-center text-center gap-1 sm:gap-space-xs bg-surface-container-low px-3 sm:px-space-md py-1 sm:py-space-2xs rounded-full shadow-sm border border-outline-variant/30">
+            <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></span>
             <span className="font-label-sm text-label-sm text-secondary tracking-wide uppercase font-semibold">
               Built by Team Deploy_or_Die
             </span>
-            <span className="font-body-sm text-body-sm text-outline">•</span>
+            <span className="font-body-sm text-body-sm text-outline hidden sm:inline">•</span>
             <span className="font-label-sm text-label-sm text-primary font-medium">
               Free Open Access (Zero Login Required)
             </span>
@@ -24,16 +24,16 @@ export function LandingView() {
         </div>
 
         {/* Hero Section */}
-        <section className="w-full px-gutter my-space-md sm:my-space-lg mb-space-2xl">
+        <section className="w-full px-2 sm:px-gutter my-space-sm sm:my-space-lg mb-space-xl sm:mb-space-2xl">
           <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
             {/* Eyebrow Label */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/30 text-secondary text-xs font-semibold tracking-wider uppercase mb-space-md shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
               <span>PROJECT KNOWLEDGE CONTINUITY</span>
             </div>
 
             {/* Main Heading */}
-            <h1 className="font-display-lg text-4xl sm:text-5xl lg:text-[56px] lg:leading-[1.14] font-extrabold text-on-surface tracking-tight max-w-4xl">
+            <h1 className="font-display-lg text-3xl sm:text-4xl md:text-5xl lg:text-[56px] lg:leading-[1.14] font-extrabold text-on-surface tracking-tight max-w-4xl">
               KnoTrail: Your Team Moves On.<br className="hidden sm:inline" />{' '}
               <span className="text-primary">Your Knowledge Stays Forever.</span>
             </h1>
@@ -44,10 +44,10 @@ export function LandingView() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-space-sm pt-space-lg">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-space-sm pt-space-lg w-full sm:w-auto">
               <button
                 onClick={() => setActiveView('sources')}
-                className="inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm bg-primary hover:bg-inverse-surface text-on-primary rounded-lg shadow-sm font-headline-sm text-headline-sm font-semibold transition-all duration-200 active:scale-95 group"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm bg-primary hover:bg-inverse-surface text-on-primary rounded-lg shadow-sm font-headline-sm text-headline-sm font-semibold transition-all duration-200 active:scale-95 group min-h-[44px]"
                 id="cta-add-docs"
               >
                 <span>Add Project Documents</span>
@@ -60,7 +60,7 @@ export function LandingView() {
                   const el = document.getElementById('how-it-works');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-full shadow-sm border border-outline-variant/30 font-headline-sm text-headline-sm font-medium transition-all duration-200"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-xl py-space-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-full shadow-sm border border-outline-variant/30 font-headline-sm text-headline-sm font-medium transition-all duration-200 min-h-[44px]"
               >
                 <span>How It Works</span>
                 <span className="material-symbols-outlined text-lg text-outline">schema</span>

@@ -248,7 +248,7 @@ export function ReviewView() {
   return (
     <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-4 sm:p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
         <div className="flex flex-col">
           <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
             <span
@@ -306,15 +306,15 @@ export function ReviewView() {
         </div>
 
         {/* Real-time Approval Progress & Certification Action */}
-        <div className="flex items-center gap-space-md shrink-0 self-end md:self-center">
-          <div className="flex flex-col items-end">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between md:justify-end gap-3 shrink-0 self-stretch md:self-center w-full md:w-auto">
+          <div className="flex items-center justify-between sm:flex-col sm:items-end">
             <span className="text-xs text-outline font-medium">Certification Level</span>
             <span className="text-xl font-bold text-on-surface">{stats.certificationProgressPercent}%</span>
           </div>
           <button
             onClick={() => setShowCertifyConfirm(true)}
             disabled={!stats.canCertifyHandover}
-            className={`px-space-md py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+            className={`w-full sm:w-auto justify-center px-space-md py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm min-h-[40px] ${
               !stats.canCertifyHandover
                 ? 'bg-surface-container text-outline cursor-not-allowed border border-outline-variant/30'
                 : 'bg-primary text-on-primary hover:bg-primary-container active:scale-95'
@@ -831,8 +831,8 @@ export function ReviewView() {
 
       {/* REJECT FINDING MODAL */}
       {rejectModalFinding && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-lg w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-lg w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-error text-[22px]">cancel</span>
@@ -910,8 +910,8 @@ export function ReviewView() {
 
       {/* EDIT FINDING MODAL */}
       {editModalFinding && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-xl w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-xl w-full rounded-2xl p-4 sm:p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[22px]">edit</span>
@@ -1035,8 +1035,8 @@ export function ReviewView() {
 
       {/* APPROVE UNCERTAIN FINDING JUSTIFICATION MODAL */}
       {approveModalFinding && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-lg w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-lg w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-tertiary text-[22px]">verified</span>
@@ -1116,8 +1116,8 @@ export function ReviewView() {
 
       {/* AUDIT HISTORY MODAL / DRAWER */}
       {auditModalFinding && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-2xl w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md max-h-[85vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-2xl w-full rounded-2xl p-4 sm:p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md max-h-[85vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[22px]">history</span>
@@ -1220,8 +1220,8 @@ export function ReviewView() {
 
       {/* PHASE E: CONFLICT RECORD RESOLUTION MODAL */}
       {activeConflictRecord && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-2xl w-full rounded-2xl p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-2xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-error text-[22px]">balance</span>
@@ -1365,8 +1365,8 @@ export function ReviewView() {
 
       {/* CERTIFY CONFIRMATION MODAL */}
       {showCertifyConfirm && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-lg w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md text-center">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-lg w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-outline-variant/40 flex flex-col gap-space-md text-center">
             <div className="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container mx-auto flex items-center justify-center">
               <span className="material-symbols-outlined text-[28px]">verified</span>
             </div>

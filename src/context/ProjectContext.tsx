@@ -23,6 +23,8 @@ interface ProjectContextType {
   workspaceId: string;
   isLoading: boolean;
   isNavigating: boolean;
+  isMobileNavOpen: boolean;
+  setIsMobileNavOpen: (open: boolean) => void;
   isSaving: boolean;
   saveError: string | null;
   lastSavedAt: Date | null;
@@ -141,6 +143,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [workspaceId, setWorkspaceId] = useState<string>('default_workspace');
   const [isLoading, setIsLoading] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -274,6 +277,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   // Update URL hash when activeView changes with subtle transition telemetry
   const handleSetActiveView = (view: ActiveView) => {
+    setIsMobileNavOpen(false);
     if (view !== activeView) {
       setIsNavigating(true);
       setActiveView(view);
@@ -1045,6 +1049,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         workspaceId,
         isLoading,
         isNavigating,
+        isMobileNavOpen,
+        setIsMobileNavOpen,
         isSaving,
         saveError,
         lastSavedAt,

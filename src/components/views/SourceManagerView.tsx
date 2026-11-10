@@ -135,14 +135,14 @@ export function SourceManagerView() {
         </div>
 
         {/* Action Group */}
-        <div className="flex items-center gap-space-xs flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           <button
             onClick={() => {
               setSelectedFiles([]);
               setUploadResults([]);
               setShowUploadModal(true);
             }}
-            className="inline-flex items-center gap-2 px-space-md py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all text-xs min-h-[38px]"
           >
             <span className="material-symbols-outlined text-[18px]">upload_file</span>
             <span>Upload Documents</span>
@@ -150,7 +150,7 @@ export function SourceManagerView() {
 
           <button
             onClick={() => setShowPasteModal(true)}
-            className="inline-flex items-center gap-2 px-space-md py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all text-xs min-h-[38px]"
           >
             <span className="material-symbols-outlined text-[18px]">edit_note</span>
             <span>Paste Notes</span>
@@ -159,7 +159,7 @@ export function SourceManagerView() {
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing}
-            className="inline-flex items-center gap-2 px-space-md py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all disabled:opacity-60"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all disabled:opacity-60 text-xs min-h-[38px]"
           >
             <span className={`material-symbols-outlined text-[18px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
               sync
@@ -456,8 +456,8 @@ export function SourceManagerView() {
 
       {/* MODAL 1: FILE UPLOAD (DRAG & DROP + BROWSE) */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-xl w-full rounded-2xl p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
@@ -644,8 +644,8 @@ export function SourceManagerView() {
 
       {/* MODAL 2: PASTE RAW NOTES */}
       {showPasteModal && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-xl w-full rounded-2xl p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
@@ -678,7 +678,7 @@ export function SourceManagerView() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="font-label-sm text-on-surface font-semibold block mb-1">
                     Category
@@ -747,20 +747,20 @@ export function SourceManagerView() {
 
       {/* MODAL 3: INSPECT EXTRACTED TEXT */}
       {inspectSource && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-2xl w-full max-h-[85vh] rounded-2xl p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-2xl w-full max-h-[85vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-[18px]">
                     {inspectSource.documentData?.fileFormat === 'pdf' ? 'picture_as_pdf' : 'description'}
                   </span>
                 </div>
-                <div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface truncate max-w-md">
+                <div className="min-w-0">
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface truncate max-w-xs sm:max-w-md">
                     {inspectSource.name}
                   </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-outline font-mono">
+                  <div className="flex items-center gap-2 text-[11px] text-outline font-mono flex-wrap">
                     <span>Format: {inspectSource.documentData?.fileFormat?.toUpperCase()}</span>
                     <span>•</span>
                     <span>Size: {inspectSource.documentData?.fileSizeFormatted}</span>
@@ -781,18 +781,18 @@ export function SourceManagerView() {
               </div>
               <button
                 onClick={() => setInspectSource(null)}
-                className="text-outline hover:text-on-surface p-1 rounded-lg"
+                className="text-outline hover:text-on-surface p-1 rounded-lg shrink-0"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             {/* Content Hash & Security Clearance */}
-            <div className="flex items-center justify-between bg-surface-container-low p-2 rounded-lg text-xs font-mono text-outline">
-              <span className="truncate max-w-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 bg-surface-container-low p-2 rounded-lg text-xs font-mono text-outline">
+              <span className="truncate min-w-0 flex-1 break-all">
                 SHA-256: {inspectSource.documentData?.contentHash || 'N/A'}
               </span>
-              <span className="text-primary font-semibold">Genuinely Extracted</span>
+              <span className="text-primary font-semibold shrink-0">Genuinely Extracted</span>
             </div>
 
             {/* Extracted Text Body */}
@@ -828,8 +828,8 @@ export function SourceManagerView() {
 
       {/* MODAL 4: CONFIRM DELETE SOURCE */}
       {deleteConfirmSource && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-md w-full rounded-2xl p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest max-w-md w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[22px]">delete_forever</span>

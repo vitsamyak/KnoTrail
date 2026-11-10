@@ -81,7 +81,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-space-xl flex flex-col gap-space-md animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-4 sm:p-space-xl flex flex-col gap-space-md animate-in zoom-in-95 duration-150"
       >
         {/* Header */}
         <div className="flex items-start justify-between border-b border-outline-variant/20 pb-space-sm">

@@ -17,6 +17,8 @@ export function Header() {
     resetDemoData,
     isProjectCreated,
     setShowCreateProjectModal,
+    isMobileNavOpen,
+    setIsMobileNavOpen,
   } = useProject();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -24,20 +26,29 @@ export function Header() {
   const pendingReviewCount = stats.unreviewedCount;
 
   return (
-    <header className="fixed top-4 left-[18rem] right-4 h-16 bg-surface-container-lowest/95 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] border border-outline-variant/30 z-40 flex items-center justify-between px-space-lg transition-all">
-      {/* Left Group: Active Project Selector & Search */}
-      <div className="flex items-center gap-space-md">
+    <header className="fixed top-2 sm:top-4 left-2 sm:left-4 lg:left-[18rem] right-2 sm:right-4 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-xl rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.04),0_4px_10px_-2px_rgba(32,40,34,0.02)] border border-outline-variant/30 z-40 flex items-center justify-between px-2.5 sm:px-space-lg transition-all">
+      {/* Left Group: Mobile Hamburger + Project Selector & Search */}
+      <div className="flex items-center gap-1.5 sm:gap-space-md min-w-0">
+        {/* Mobile Drawer Hamburger Button */}
+        <button
+          onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+          aria-label="Open navigation menu"
+          className="lg:hidden inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface border border-outline-variant/20 transition-colors shrink-0"
+        >
+          <span className="material-symbols-outlined text-[20px] sm:text-[22px]">menu</span>
+        </button>
+
         {/* Project Selector Pill */}
         <button
           onClick={() => setActiveView('workspace')}
-          className="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-full text-on-surface hover:bg-surface-container transition-colors border border-outline-variant/20 group"
+          className="flex items-center gap-1.5 sm:gap-space-xs bg-surface-container-low px-2 sm:px-space-md py-1 sm:py-1.5 rounded-full text-on-surface hover:bg-surface-container transition-colors border border-outline-variant/20 group min-w-0"
           title="Go to Project Workspace"
         >
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          <span className="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[200px]">
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></span>
+          <span className="font-label-md text-label-md font-semibold text-on-surface truncate max-w-[100px] sm:max-w-[180px] md:max-w-[220px]">
             {isProjectCreated ? project.name : 'Your Workspace'}
           </span>
-          <span className="material-symbols-outlined text-[18px] text-outline group-hover:text-primary transition-colors">
+          <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-outline group-hover:text-primary transition-colors shrink-0">
             folder_open
           </span>
         </button>
@@ -113,7 +124,7 @@ export function Header() {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.12)] border border-outline-variant/40 p-space-md z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-80 max-w-sm bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.12)] border border-outline-variant/40 p-space-md z-50 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
                 <span className="font-headline-sm text-headline-sm text-on-surface">Review Notifications</span>
                 <span className="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded-full font-semibold">
@@ -186,7 +197,7 @@ export function Header() {
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-72 bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.12)] border border-outline-variant/40 p-space-md z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-72 max-w-sm bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.12)] border border-outline-variant/40 p-space-md z-50 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center gap-space-sm pb-space-sm border-b border-outline-variant/30">
                 <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-[24px]">shield_person</span>

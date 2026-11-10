@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -13,12 +13,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setActiveView,
     isLoading,
     isNavigating,
+    isMobileNavOpen,
+    setIsMobileNavOpen,
     isSyncing,
     syncProgress,
     syncStatusMessage,
     showCreateProjectModal,
     setShowCreateProjectModal,
   } = useProject();
+
+  // Lock background scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileNavOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileNavOpen]);
 
   // 1. GLOBAL INITIAL LOADING SCREEN (While workspace is initializing)
   if (isLoading) {
@@ -63,18 +77,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Floating Left Navigation Rail */}
+      {/* Floating Left Navigation Rail / Responsive Mobile Drawer */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="pl-[18rem] transition-all">
+      <div className="lg:pl-[18rem] pl-0 transition-all">
         {/* Fixed Top Header */}
         <Header />
 
         {/* Dynamic View Content with smooth fade-in */}
         <main
           key={activeView}
-          className="relative pt-24 pr-4 pb-space-2xl min-h-screen animate-in fade-in duration-200"
+          className="relative pt-20 sm:pt-24 px-3 sm:px-6 lg:pr-6 lg:pl-0 pb-space-2xl min-h-screen animate-in fade-in duration-200"
         >
           {children}
         </main>

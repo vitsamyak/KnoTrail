@@ -384,7 +384,7 @@ export function HandoverView() {
       {(stats.isHandoverOutdated || doc.isOutdated) && (
         <aside
           role="alert"
-          className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-sm shadow-sm"
+          className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-3 sm:p-space-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm shadow-sm"
         >
           <div className="flex items-center gap-space-sm min-w-0">
             <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
@@ -404,7 +404,7 @@ export function HandoverView() {
           <button
             onClick={() => handleGenerate(true)}
             disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-space-md py-space-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-label-md text-label-md shadow-sm transition-all active:scale-95 shrink-0 disabled:opacity-50"
+            className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-space-md py-space-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-label-md text-label-md shadow-sm transition-all active:scale-95 shrink-0 disabled:opacity-50"
           >
             {isGenerating ? (
               <KnowledgeTrailLoader variant="inline" size="sm" />
@@ -501,12 +501,12 @@ export function HandoverView() {
       {/* TOP HEADER / ACTION CONTROLS BAR */}
       <section
         id="section-cover"
-        className="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-md border border-outline-variant/30"
+        className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-space-xl flex flex-col gap-space-md border border-outline-variant/30"
       >
-        <div className="flex flex-wrap items-center justify-between gap-space-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
           {/* Breadcrumb & Title */}
           <div className="flex flex-col gap-space-2xs min-w-0">
-            <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+            <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline flex-wrap">
               <span
                 onClick={() => setActiveView('workspace')}
                 className="hover:text-primary cursor-pointer transition-colors"
@@ -516,7 +516,7 @@ export function HandoverView() {
               <span className="material-symbols-outlined text-[13px]">chevron_right</span>
               <span
                 onClick={() => setActiveView('workspace')}
-                className="hover:text-primary cursor-pointer transition-colors"
+                className="hover:text-primary cursor-pointer transition-colors truncate max-w-[140px] sm:max-w-none"
               >
                 {meta.projectName}
               </span>
@@ -525,7 +525,7 @@ export function HandoverView() {
             </div>
 
             <div className="flex items-center gap-space-sm mt-1 flex-wrap">
-              <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight">
+              <h1 className="font-display-lg text-xl sm:text-display-lg text-on-surface tracking-tight">
                 {meta.projectName} Engineering Handover Dossier
               </h1>
               <span className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold border border-primary/20">
@@ -536,10 +536,10 @@ export function HandoverView() {
           </div>
 
           {/* Action Export & Share Buttons */}
-          <div className="flex items-center gap-space-xs flex-wrap" id="action-bar">
+          <div className="flex items-center gap-2 flex-wrap w-full md:w-auto" id="action-bar">
             <button
               onClick={handleOpenShareModal}
-              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30"
+              className="flex-1 sm:flex-initial justify-center min-h-[38px] text-xs inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md border border-outline-variant/30"
             >
               <span className="material-symbols-outlined text-[17px]">share</span>
               <span>Share Link</span>
@@ -548,7 +548,7 @@ export function HandoverView() {
             <button
               onClick={handlePrintPDF}
               disabled={exportingType !== null}
-              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30 disabled:opacity-50"
+              className="flex-1 sm:flex-initial justify-center min-h-[38px] text-xs inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md border border-outline-variant/30 disabled:opacity-50"
             >
               {exportingType === 'pdf' ? (
                 <KnowledgeTrailLoader variant="inline" size="sm" />
@@ -561,7 +561,7 @@ export function HandoverView() {
             <button
               onClick={handleExportMarkdown}
               disabled={exportingType !== null}
-              className="inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/30 disabled:opacity-50"
+              className="flex-1 sm:flex-initial justify-center min-h-[38px] text-xs inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md border border-outline-variant/30 disabled:opacity-50"
             >
               {exportingType === 'md' ? (
                 <KnowledgeTrailLoader variant="inline" size="sm" />
@@ -574,7 +574,7 @@ export function HandoverView() {
             <button
               onClick={handleExportJSON}
               disabled={exportingType !== null}
-              className="inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-all font-label-md text-label-md disabled:opacity-50"
+              className="flex-1 sm:flex-initial justify-center min-h-[38px] text-xs inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-all font-label-md disabled:opacity-50"
             >
               {exportingType === 'json' ? (
                 <KnowledgeTrailLoader variant="inline" size="sm" />
@@ -647,7 +647,7 @@ export function HandoverView() {
       {/* SECTION B: EXECUTIVE SUMMARY */}
       <section
         id="section-summary"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-sm"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-sm"
       >
         <div className="flex items-center gap-2 text-primary font-bold">
           <span className="material-symbols-outlined text-[20px]">feed</span>
@@ -663,7 +663,7 @@ export function HandoverView() {
       {/* SECTION C: PROJECT OVERVIEW */}
       <section
         id="section-overview"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center gap-2 text-primary font-bold">
           <span className="material-symbols-outlined text-[20px]">info</span>
@@ -681,7 +681,7 @@ export function HandoverView() {
             <p className="text-on-surface text-sm leading-relaxed">{doc.projectOverview.scope}</p>
           </div>
         </div>
-        <div className="flex items-center justify-between text-xs text-outline pt-2 border-t border-outline-variant/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-outline pt-2 border-t border-outline-variant/20">
           <span>
             Operational Status: <strong className="text-on-surface">{doc.projectOverview.operationalStatus}</strong>
           </span>
@@ -695,7 +695,7 @@ export function HandoverView() {
       {/* SECTION D: IMPORTANT DECISIONS */}
       <section
         id="section-decisions"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -774,7 +774,7 @@ export function HandoverView() {
       {/* SECTION E: PENDING TASKS */}
       <section
         id="section-tasks"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -830,7 +830,7 @@ export function HandoverView() {
       {/* SECTION F: RESPONSIBILITIES & OWNERSHIP */}
       <section
         id="section-responsibilities"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -898,7 +898,7 @@ export function HandoverView() {
       {/* SECTION G: RISKS & MITIGATIONS */}
       <section
         id="section-risks"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -946,7 +946,7 @@ export function HandoverView() {
       {/* SECTION H: TECHNICAL DEPENDENCIES */}
       <section
         id="section-dependencies"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -990,7 +990,7 @@ export function HandoverView() {
       {/* SECTION I: UNRESOLVED QUESTIONS */}
       <section
         id="section-questions"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -1027,7 +1027,7 @@ export function HandoverView() {
       {/* SECTION J: RECOMMENDED NEXT ACTIONS */}
       <section
         id="section-actions"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -1104,7 +1104,7 @@ export function HandoverView() {
       {/* SECTION K: EVIDENCE & SOURCE REFERENCES */}
       <section
         id="section-evidence"
-        className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
+        className="bg-surface-container-lowest rounded-xl p-4 sm:p-space-xl border border-outline-variant/30 shadow-sm flex flex-col gap-space-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary font-bold">
@@ -1154,7 +1154,7 @@ export function HandoverView() {
       {/* SECTION L: HUMAN REVIEW HISTORY & AUDIT TRAIL */}
       <section
         id="section-history"
-        className="bg-inverse-surface text-inverse-on-surface rounded-xl p-space-xl border border-primary/40 shadow-md flex flex-col gap-space-md print-page-break"
+        className="bg-inverse-surface text-inverse-on-surface rounded-xl p-4 sm:p-space-xl border border-primary/40 shadow-md flex flex-col gap-space-md print-page-break"
       >
         <div className="flex flex-wrap items-center justify-between gap-space-sm border-b border-inverse-on-surface/10 pb-space-md">
           <div className="flex items-center gap-space-sm">
@@ -1224,8 +1224,8 @@ export function HandoverView() {
 
       {/* SHARE MODAL DIALOG */}
       {shareModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-xl border border-outline-variant/30 flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto no-scrollbar p-4 sm:p-6 shadow-xl border border-outline-variant/30 flex flex-col gap-4">
             <div className="flex items-center justify-between pb-3 border-b border-outline-variant/20">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[22px]">share</span>
@@ -1266,16 +1266,16 @@ export function HandoverView() {
                   Anyone with this link can view the read-only, certified engineering handover dossier without logging in or signing up.
                 </p>
 
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant/30 font-mono text-[11px]">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant/30 font-mono text-[11px]">
                   <input
                     type="text"
                     readOnly
                     value={shareUrl}
-                    className="bg-transparent flex-1 outline-none text-on-surface truncate"
+                    className="bg-transparent flex-1 outline-none text-on-surface truncate min-w-0"
                   />
                   <button
                     onClick={handleCopyShareUrl}
-                    className="px-3 py-1 bg-primary text-on-primary rounded font-semibold text-xs hover:bg-primary-container transition-colors shrink-0 flex items-center gap-1"
+                    className="w-full sm:w-auto px-3 py-1.5 bg-primary text-on-primary rounded font-semibold text-xs hover:bg-primary-container transition-colors shrink-0 flex items-center justify-center gap-1 min-h-[36px] sm:min-h-0"
                   >
                     <span className="material-symbols-outlined text-[14px]">
                       {copySuccess ? 'check' : 'content_copy'}
@@ -1284,10 +1284,10 @@ export function HandoverView() {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-outline-variant/20">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-outline-variant/20">
                   <button
                     onClick={handleRevokeShare}
-                    className="inline-flex items-center gap-1 text-error hover:underline text-xs font-semibold"
+                    className="inline-flex items-center gap-1 text-error hover:underline text-xs font-semibold py-1"
                   >
                     <span className="material-symbols-outlined text-[14px]">link_off</span>
                     <span>Revoke Share Link</span>
@@ -1296,7 +1296,7 @@ export function HandoverView() {
                     href={shareUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-semibold"
+                    className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-semibold py-1"
                   >
                     <span>Open in New Tab</span>
                     <span className="material-symbols-outlined text-[14px]">open_in_new</span>

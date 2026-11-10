@@ -49,7 +49,7 @@ export default async function SharedHandoverPage({
   const counts = handover.sectionCounts;
 
   return (
-    <div className="min-h-screen bg-background text-on-surface p-4 sm:p-8 flex flex-col items-center">
+    <div className="min-h-screen bg-background text-on-surface p-3 sm:p-6 md:p-8 flex flex-col items-center">
       <div className="max-w-4xl w-full flex flex-col gap-6">
         {/* Top Navbar */}
         <header className="flex items-center justify-between pb-4 border-b border-outline-variant/20">
@@ -64,20 +64,20 @@ export default async function SharedHandoverPage({
         </header>
 
         {/* Cover Header */}
-        <div className="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 border border-outline-variant/30 shadow-sm flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 md:p-8 border border-outline-variant/30 shadow-sm flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span className="text-xs font-mono text-outline uppercase tracking-wider block">
                 {meta.projectCode} • Handover {meta.version}
               </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight mt-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight mt-1">
                 {meta.projectName}
               </h1>
               <p className="text-xs sm:text-sm text-on-surface-variant mt-1 leading-relaxed max-w-2xl">
                 {meta.description}
               </p>
             </div>
-            <div className="flex flex-col items-end text-xs">
+            <div className="flex flex-col items-start sm:items-end text-xs shrink-0">
               <span className="inline-flex items-center gap-1 font-semibold text-primary bg-primary-fixed px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[15px]">verified</span>
                 <span>Certified &amp; Approved</span>
@@ -109,7 +109,7 @@ export default async function SharedHandoverPage({
         </div>
 
         {/* 1. Executive Summary */}
-        <section className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-2">
+        <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-2">
           <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">summarize</span>
             <span>Executive Transition Summary</span>
@@ -120,7 +120,7 @@ export default async function SharedHandoverPage({
         </section>
 
         {/* 2. Decisions */}
-        <section className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-3">
+        <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-3">
           <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">gavel</span>
             <span>Important Decisions ({handover.decisions.length})</span>
@@ -151,23 +151,23 @@ export default async function SharedHandoverPage({
         </section>
 
         {/* 3. Tasks */}
-        <section className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-3">
+        <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-3">
           <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary text-[20px]">checklist</span>
             <span>Pending Operational Tasks ({handover.tasks.length})</span>
           </h2>
           <div className="space-y-2">
             {handover.tasks.map((t, i) => (
-              <div key={t.id || i} className="p-3 bg-surface-container-low rounded-lg border border-outline-variant/20 text-xs flex items-start justify-between gap-4">
-                <div>
+              <div key={t.id || i} className="p-3 bg-surface-container-low rounded-lg border border-outline-variant/20 text-xs flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                <div className="flex-1">
                   <strong className="text-on-surface text-sm block">{t.title}</strong>
                   <p className="text-on-surface-variant mt-0.5">{t.summary}</p>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start text-right shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-outline-variant/10">
                   <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-error-container text-on-error-container">
                     {t.urgency || 'medium'}
                   </span>
-                  <span className="block text-[11px] text-outline mt-1">{t.owner || 'Unassigned'}</span>
+                  <span className="block text-[11px] text-outline sm:mt-1">{t.owner || 'Unassigned'}</span>
                 </div>
               </div>
             ))}
@@ -176,7 +176,7 @@ export default async function SharedHandoverPage({
 
         {/* 4. Risks & Dependencies */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs flex flex-col gap-2 text-xs">
+          <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-5 border border-outline-variant/30 shadow-xs flex flex-col gap-2 text-xs">
             <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-error text-[18px]">warning</span>
               <span>Key Operational Risks ({handover.risks.length})</span>
@@ -191,7 +191,7 @@ export default async function SharedHandoverPage({
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs flex flex-col gap-2 text-xs">
+          <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-5 border border-outline-variant/30 shadow-xs flex flex-col gap-2 text-xs">
             <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[18px]">hub</span>
               <span>Technical Dependencies ({handover.dependencies.length})</span>

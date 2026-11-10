@@ -91,7 +91,7 @@ export function AnalysisView() {
   return (
     <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-4 sm:p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
         <div className="flex flex-col">
           <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
             <span
@@ -112,11 +112,11 @@ export function AnalysisView() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           <button
             onClick={() => handleRunAiExtraction()}
             disabled={isAnalysing || isSyncing || isVerifying}
-            className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all disabled:opacity-60"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 sm:px-space-md py-2 sm:py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all disabled:opacity-60 text-xs sm:text-sm min-h-[40px]"
           >
             {isAnalysing ? (
               <>
@@ -134,7 +134,7 @@ export function AnalysisView() {
           <button
             onClick={() => handleRunVerification()}
             disabled={isAnalysing || isSyncing || isVerifying || project.findings.length === 0}
-            className="inline-flex items-center gap-2 px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md shadow-xs transition-all border border-outline-variant/30 disabled:opacity-50"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 sm:px-space-md py-2 sm:py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md shadow-xs transition-all border border-outline-variant/30 disabled:opacity-50 text-xs sm:text-sm min-h-[40px]"
             title="Verify quotations and scan for cross-document conflicts"
           >
             {isVerifying ? (
@@ -153,7 +153,7 @@ export function AnalysisView() {
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing || isAnalysing || isVerifying}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors disabled:opacity-60"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors disabled:opacity-60 text-xs sm:text-sm min-h-[40px]"
             title="Synchronize workspace with server"
           >
             <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>
@@ -247,7 +247,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
       {/* VERIFY NOTICE */}
       {verifyNotice && (
-        <div className="bg-primary/10 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex items-start justify-between gap-2.5 animate-in fade-in">
+        <div className="bg-primary/10 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
           <div className="flex items-start gap-2.5">
             <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">verified</span>
             <div className="flex-1">
@@ -257,7 +257,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
           </div>
           <button
             onClick={() => setActiveView('evidence')}
-            className="px-3 py-1 bg-primary text-on-primary hover:bg-primary-container rounded text-xs font-semibold whitespace-nowrap transition-colors"
+            className="w-full sm:w-auto text-center px-3 py-1.5 bg-primary text-on-primary hover:bg-primary-container rounded-lg text-xs font-semibold whitespace-nowrap transition-colors min-h-[34px] flex items-center justify-center"
           >
             Inspect in Evidence Explorer
           </button>
@@ -277,7 +277,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
       {/* SUCCESS NOTIFICATION */}
       {analysisSuccessMsg && (
-        <div className="bg-secondary-container/30 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex items-start justify-between gap-2.5 animate-in fade-in">
+        <div className="bg-secondary-container/30 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
           <div className="flex items-start gap-2.5">
             <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">check_circle</span>
             <div className="flex-1">
@@ -287,7 +287,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
           </div>
           <button
             onClick={() => setActiveView('review')}
-            className="px-3 py-1 bg-primary text-on-primary hover:bg-primary-container rounded text-xs font-semibold whitespace-nowrap transition-colors"
+            className="w-full sm:w-auto text-center px-3 py-1.5 bg-primary text-on-primary hover:bg-primary-container rounded-lg text-xs font-semibold whitespace-nowrap transition-colors min-h-[34px] flex items-center justify-center"
           >
             Go to Review Center
           </button>
@@ -418,7 +418,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-outline-variant/20 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-1.5 border-b border-outline-variant/20 pb-2 overflow-x-auto no-scrollbar -mx-2 px-2">
         {[
           { id: 'all', label: 'All Analysis', count: project.findings.length },
           { id: 'decision', label: 'Decisions', count: stats.decisionsCount },

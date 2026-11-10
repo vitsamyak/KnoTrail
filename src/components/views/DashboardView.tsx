@@ -21,10 +21,10 @@ export function DashboardView() {
   return (
     <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
       {/* Top Banner / Project Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-4 sm:p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
         <div className="flex flex-col">
           <div className="flex items-center gap-space-xs">
-            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-primary animate-ping shrink-0"></span>
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">
               {isProjectCreated ? `Project Handover • ${project.name}` : 'Knowledge Handover Workspace'}
             </span>
@@ -38,10 +38,10 @@ export function DashboardView() {
         </div>
 
         {/* Action Group */}
-        <div className="flex items-center gap-space-xs flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           <button
             onClick={() => setShowCreateProjectModal(true)}
-            className="inline-flex items-center gap-space-2xs px-space-md py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30 text-xs min-h-[38px]"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">create_new_folder</span>
@@ -49,7 +49,7 @@ export function DashboardView() {
           </button>
           <button
             onClick={() => setActiveView('sources')}
-            className="inline-flex items-center gap-space-2xs px-space-md py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm text-xs min-h-[38px]"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">upload_file</span>
@@ -58,7 +58,7 @@ export function DashboardView() {
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing}
-            className="inline-flex items-center gap-space-2xs px-space-md py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30 disabled:opacity-60"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30 disabled:opacity-60 text-xs min-h-[38px]"
             type="button"
           >
             <span className={`material-symbols-outlined text-[18px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
@@ -68,7 +68,7 @@ export function DashboardView() {
           </button>
           <button
             onClick={() => setActiveView('handover')}
-            className="inline-flex items-center gap-space-2xs px-space-md py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm border border-outline-variant/30 text-xs min-h-[38px]"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">description</span>
@@ -299,11 +299,11 @@ export function DashboardView() {
               </div>
             </div>
 
-            <div className="mt-space-lg pt-space-md border-t border-outline-variant/20 flex items-center justify-between">
+            <div className="mt-space-lg pt-space-md border-t border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-xs text-outline">Target Date: {project.targetExitDate}</span>
               <button
                 onClick={() => setActiveView('review')}
-                className="px-4 py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5"
+                className="w-full sm:w-auto justify-center px-4 py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5"
               >
                 <span>Review Center</span>
                 <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
