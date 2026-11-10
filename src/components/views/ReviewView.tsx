@@ -10,6 +10,7 @@ import {
   getFindingReviewStatus,
 } from '../../lib/types';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
+import { apiClient } from '../../lib/api-client';
 
 export function ReviewView() {
   const {
@@ -189,12 +190,9 @@ export function ReviewView() {
     setAuditHistoryData(localEntries);
     setIsLoadingAudit(true);
     try {
-      const res = await fetch(`/api/findings/${encodeURIComponent(finding.id)}/audit?workspaceId=${workspaceId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.auditHistory) {
-          setAuditHistoryData(data.auditHistory);
-        }
+      const data = await apiClient.getAuditHistory(workspaceId, finding.id);
+      if (data?.auditHistory) {
+        setAuditHistoryData(data.auditHistory);
       }
     } catch (err) {
       // localEntries is sufficient fallback

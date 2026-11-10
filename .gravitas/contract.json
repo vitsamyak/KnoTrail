@@ -1,43 +1,47 @@
 {
   "mode": "implement",
-  "objective": "Phase H: Persistent Supabase PostgreSQL storage and Supabase Storage for KnoTrail without breaking frontend, API contracts, AI extraction, evidence verification, human review, conflict resolution, or handover workflows.",
+  "objective": "Phase I: Separate Standalone Node.js Express Backend on Render and Decoupled Next.js Frontend on Vercel with persistent Supabase PostgreSQL and private Storage.",
   "acceptance_criteria": [
-    "Canonical JSONB workspace-state schema in PostgreSQL with optimistic concurrency control via integer version and save_workspace_state RPC",
-    "Dedicated handover_shares table storing only cryptographic SHA-256 hashes of share tokens with O(1) lookup and instant revocation",
-    "Private Supabase Storage bucket (knotrail-source-files) storing uploaded PDF, TXT, and Markdown files under workspace-scoped relative paths (<workspaceId>/<sourceId>.<ext>)",
-    "Server-side reusable Supabase client respecting SUPABASE_URL, SUPABASE_SECRET_KEY, with legacy SUPABASE_SERVICE_ROLE_KEY fallback, never exposed to client bundles",
-    "SupabaseStorageRepository implementing the complete StorageRepository interface with 100% method and feature parity",
-    "Storage factory dynamically routing to SupabaseStorageRepository or DurableFileRepository based on STORAGE_BACKEND env var",
-    "Fail-fast configuration validation: missing credentials when STORAGE_BACKEND=supabase throws clear server errors rather than silent local fallback",
-    "Workspace capability isolation enforcing cryptographic unguessability and strict validation (^[a-zA-Z0-9_-]{3,64}$)",
-    "Clean workspace guarantee: New workspaces initialize without fake demo records, stakeholders, or synthetic findings",
-    "Deterministic automated test suite with mock Supabase adapter covering all 17+ scenarios in npm test without requiring live credentials",
-    "All 109 existing automated tests continue to pass cleanly without regression",
-    "Next.js production build (npm run build) compiles with 0 TypeScript/lint errors across all routes"
+    "Standalone Node.js + Express backend service under backend/ operating independently from Next.js with zero Next.js runtime imports",
+    "100% route contract parity across all 23 API endpoints with matching HTTP methods, status codes, and JSON response shapes",
+    "Strict CORS middleware governed by CORS_ORIGINS permitting explicitly configured origins, handling preflight OPTIONS, and blocking unauthorized origins",
+    "Dual health endpoints: GET /health/live (process liveness, 200 OK) and GET /health/ready (deep readiness with Supabase probe, safe 503 on dependency failure) with zero secret leakage",
+    "Centralized frontend API client src/lib/api-client.ts honoring NEXT_PUBLIC_API_BASE_URL with trailing slash normalization, non-2xx error handling, and timeout safeguards",
+    "Multipart document upload preservation handling up to 5 files and 10MB per file with server-side text extraction",
+    "Complete secret isolation: SUPABASE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, and GEMINI_API_KEY reside exclusively on Render; zero database credentials in Vercel frontend",
+    "Next.js frontend builds and deploys cleanly to Vercel with old route handlers removed or disabled to prevent duplicate active backends",
+    "Standalone backend build (npm run backend:build) and start scripts (npm run backend:start) targeting Node 24 LTS runtime",
+    "Comprehensive automated test suites verifying standalone backend HTTP endpoints, health checks, CORS, error handling, and frontend client integration",
+    "All 128 existing automated tests continue to pass cleanly without regression",
+    "Complete deployment runbook docs/DEPLOYMENT.md and Render blueprint render.yaml"
   ],
   "non_goals": [
     "Do not add Supabase Auth or require user login, registration, or accounts",
     "Do not break the zero-auth public demo journey or Incognito browser accessibility",
     "Do not expose credentials or database passwords in API responses, client bundles, or logs",
     "Do not execute remote migrations automatically against unknown databases",
-    "Do not silently fall back to ephemeral disk storage in production when Supabase is configured"
+    "Do not duplicate business logic across two separate implementations"
   ],
   "risk": "medium",
   "budget": "balanced",
   "allowed_write_scope": [
+    "backend/**",
     "src/**",
     "supabase/**",
     "package.json",
     "package-lock.json",
+    "tsconfig.json",
+    "tsconfig.backend.json",
+    "render.yaml",
+    "docs/**",
     ".gravitas/**",
-    ".planning/**",
-    "docs/**"
+    ".planning/**"
   ],
   "verification": {
     "type": "executable_evidence",
-    "command": "npm test && npm run build",
+    "command": "npm test && npm run backend:build && npm run frontend:build",
     "exit_code": 0,
-    "result": "128 of 128 automated tests passed across all 8 test suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 23 tests, Phase F: 16 tests, Phase G: 21 tests, Phase H Supabase: 18 tests). Next.js production build compiles cleanly with zero TypeScript errors across all 23 routes. Supabase integration thoroughly tested with mock adapter for optimistic concurrency, private Storage upload/cleanup, SHA-256 hashed share tokens, full StorageRepository parity, and fail-fast configuration checks.",
+    "result": "149 of 149 automated tests passed across all 9 test suites (Phase A: 8 tests, Phase B: 9 tests, Phase C: 13 tests, Phase D: 15 tests, Phase E: 23 tests, Phase F: 16 tests, Phase G: 21 tests, Phase H Supabase: 18 tests, Phase I Backend & API: 21 tests). Standalone Express backend compiles to dist/backend/server.js in 14ms. Frontend compiles to Next.js production bundle with 0 errors across all routes. All 23 endpoint contracts preserved, strict CORS verified, health probes verified, centralized frontend API client active, and old Next.js API route handlers disabled.",
     "verdict": "PASS"
   }
 }

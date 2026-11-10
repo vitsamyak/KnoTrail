@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["backend/**/*.ts", "src/server/**/*.ts", "src/lib/**/*.ts"],
+  "exclude": ["node_modules", "src/components", "src/context", "src/app"]
+}

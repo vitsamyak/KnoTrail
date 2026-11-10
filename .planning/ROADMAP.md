@@ -52,6 +52,11 @@ KnoTrail is engineered across three major hackathon milestones:
 **Requirements**: SUPA-01, SUPA-02, SUPA-03, SUPA-04, SUPA-05, SUPA-06, SUPA-07, SUPA-08
 **Status**: COMPLETED (18/18 tests passing, total 128/128 passing across 8 test suites, Next.js build passing)
 
+### Phase I: Separate Backend on Render and Frontend on Vercel
+**Goal**: Decouple the monolithic Next.js architecture into a standalone Node.js Express backend (`backend/`) deployable to Render and a pure web frontend deployable to Vercel, with 100% route contract parity across all 23 endpoints, strict CORS, health liveness/readiness probes, centralized frontend API client (`src/lib/api-client.ts`), secret isolation, Node 24 LTS support, and zero regressions.
+**Requirements**: SEP-01, SEP-02, SEP-03, SEP-04, SEP-05, SEP-06, SEP-07, SEP-08, SEP-09, SEP-10
+**Status**: COMPLETED (21/21 tests passing, total 149/149 passing across 9 test suites, backend build in 14ms, frontend Next.js production build passing with 0 errors)
+
 
 
 ### Phase 1: Core Domain Models, Provenance Schema & Storage Foundation

@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: knotrail-backend
+    env: node
+    plan: starter
+    region: singapore
+    branch: main
+    buildCommand: npm ci && npm run backend:build
+    startCommand: npm run backend:start
+    healthCheckPath: /health/live
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: STORAGE_BACKEND
+        value: supabase
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: knotrail-source-files
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://knotrail.vercel.app,http://localhost:3000
+
