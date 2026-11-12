@@ -444,7 +444,11 @@ export function LandingView() {
                         src="/team/samyak.jpeg"
                         alt="Samyak Gedam"
                         className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 15%' }}
+                        style={{
+                          objectPosition: 'center 15%',
+                          transform: 'scale(1.5)',
+                          transformOrigin: 'center 36%',
+                        }}
                         onError={() => setSamyakImgFailed(true)}
                       />
                     ) : (
@@ -475,7 +479,7 @@ export function LandingView() {
                   </h3>
 
                   <p className="font-label-md text-xs sm:text-sm font-semibold text-primary mt-1">
-                    Frontend Engineering &amp; UI Design
+                    Product Lead &amp; Full-Stack Development
                   </p>
 
                   <p className="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-2 leading-relaxed">
