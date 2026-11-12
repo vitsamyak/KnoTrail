@@ -1,22 +1,19 @@
 import { Router, type Request, type Response } from 'express';
 import { getStorage } from '../../src/server/db/storage.ts';
-import { isValidWorkspaceId } from '../../src/server/db/types.ts';
+import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
 
 export const conflictsRouter = Router();
 
 /**
  * POST /api/conflicts/:id/resolve
  * Resolves a two-sided conflict record by picking the authoritative finding.
+ * Safeguard: ONLY Managers can resolve architectural conflicts.
  */
-conflictsRouter.post('/:id/resolve', async (req: Request, res: Response) => {
+conflictsRouter.post('/:id/resolve', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
     const conflictId = String(req.params.id);
-    const { workspaceId, chosenFindingId, resolutionNotes, resolvedBy } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: `Invalid or missing workspace ID: "${workspaceId}"` });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { chosenFindingId, resolutionNotes, resolvedBy } = req.body || {};
 
     if (!conflictId) {
       res.status(400).json({ error: 'Conflict ID is required' });
@@ -29,7 +26,7 @@ conflictsRouter.post('/:id/resolve', async (req: Request, res: Response) => {
       conflictId,
       chosenFindingId,
       resolutionNotes,
-      resolvedBy
+      resolvedBy || req.workspaceAuth?.email || 'Project Manager'
     );
 
     res.status(200).json({

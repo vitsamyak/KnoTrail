@@ -33,6 +33,15 @@ export interface DatabaseHandoverShareRow {
   revoked_at?: string | null;
 }
 
+export interface DatabaseWorkspaceMemberRow {
+  workspace_id: string;
+  user_id: string;
+  email: string;
+  role: 'MANAGER' | 'DEVELOPER' | 'EXTERNAL';
+  created_at: string;
+  updated_at: string;
+}
+
 export interface HumanReviewActionRecord {
   id: string;
   projectId: string;
@@ -89,6 +98,14 @@ export function generateSecureWorkspaceId(): string {
   const timestamp = Date.now().toString(36);
   const randomBytes = crypto.randomBytes(16).toString('hex');
   return `ws_anon_${timestamp}_${randomBytes}`;
+}
+
+/**
+ * Determines whether a workspace ID is an ephemeral anonymous demo workspace.
+ * Format: ws_anon_*
+ */
+export function isAnonymousWorkspace(id: unknown): boolean {
+  return typeof id === 'string' && id.startsWith('ws_anon_');
 }
 
 /**

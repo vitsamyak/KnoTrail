@@ -1,6 +1,8 @@
 import { Router, type Request, type Response } from 'express';
 import { getStorage } from '../../src/server/db/storage.ts';
 import { isValidWorkspaceId } from '../../src/server/db/types.ts';
+import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
+import { redactHandoverDocument } from '../../src/server/security/redactor.ts';
 import {
   checkHandoverBlockStatus,
   generateHandoverMarkdown,
@@ -16,14 +18,9 @@ export const handoversRouter = Router();
  * GET /api/handovers?workspaceId=...
  * Retrieves current handover, history, block status, and representations.
  */
-handoversRouter.get('/', async (req: Request, res: Response) => {
+handoversRouter.get('/', requireWorkspaceAccess, async (req: Request, res: Response) => {
   try {
-    const workspaceId = req.query.workspaceId as string | undefined;
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
 
     const storage = getStorage();
     let project = await storage.getWorkspace(workspaceId);
@@ -36,8 +33,13 @@ handoversRouter.get('/', async (req: Request, res: Response) => {
       project.handoverCertified,
       project.conflicts
     );
-    const currentHandover = await storage.getHandover(workspaceId);
-    const handovers = await storage.getHandoverHistory(workspaceId);
+    let currentHandover = await storage.getHandover(workspaceId);
+    let handovers = await storage.getHandoverHistory(workspaceId);
+
+    if (req.workspaceAuth?.role === 'EXTERNAL') {
+      if (currentHandover) currentHandover = redactHandoverDocument(currentHandover);
+      handovers = handovers.map(redactHandoverDocument);
+    }
 
     const markdown = currentHandover
       ? exportHandoverMarkdown(currentHandover)
@@ -65,15 +67,12 @@ handoversRouter.get('/', async (req: Request, res: Response) => {
 /**
  * POST /api/handovers/generate
  * Generates and saves a formal 12-section handover package.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-handoversRouter.post('/generate', async (req: Request, res: Response) => {
+handoversRouter.post('/generate', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, signerName, version, regenerate } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { signerName, version, regenerate } = req.body || {};
 
     const storage = getStorage();
     const result = await storage.generateAndSaveHandover(workspaceId, signerName, {
@@ -100,20 +99,17 @@ handoversRouter.post('/generate', async (req: Request, res: Response) => {
 /**
  * POST /api/handovers/certify
  * Formally certifies handover after validating all Phase A and F gates.
+ * Safeguard: ONLY Managers can certify handovers.
  */
-handoversRouter.post('/certify', async (req: Request, res: Response) => {
+handoversRouter.post('/certify', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, signerName } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { signerName } = req.body || {};
 
     const storage = getStorage();
     const certifiedProject = await storage.certifyHandover(
       workspaceId,
-      signerName || 'Project Reviewer'
+      signerName || req.workspaceAuth?.email || 'Project Manager'
     );
 
     const handover = certifiedProject.currentHandover;
@@ -136,24 +132,25 @@ handoversRouter.post('/certify', async (req: Request, res: Response) => {
 /**
  * GET /api/handovers/export?workspaceId=...&format=...&handoverId=...
  * Exports certified handover in Markdown, JSON, or printable HTML format.
+ * Safeguard: Redacts confidential evidence citations when accessed by EXTERNAL role.
  */
-handoversRouter.get('/export', async (req: Request, res: Response) => {
+handoversRouter.get('/export', requireWorkspaceAccess, async (req: Request, res: Response) => {
   try {
-    const workspaceId = req.query.workspaceId as string | undefined;
+    const workspaceId = req.workspaceAuth!.workspaceId;
     const format = (req.query.format as string) || 'markdown';
     const handoverId = (req.query.handoverId as string) || undefined;
 
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
-
     const storage = getStorage();
-    const handover = await storage.getHandover(workspaceId, handoverId);
+    let handover = await storage.getHandover(workspaceId, handoverId);
 
     if (!handover) {
       res.status(404).json({ error: 'No certified handover found. Generate a handover first.' });
       return;
+    }
+
+    // Redact for EXTERNAL role
+    if (req.workspaceAuth?.role === 'EXTERNAL') {
+      handover = redactHandoverDocument(handover);
     }
 
     if (format === 'json') {
@@ -188,15 +185,12 @@ handoversRouter.get('/export', async (req: Request, res: Response) => {
 /**
  * POST /api/handovers/share
  * Generates an active, high-entropy public share token for a certified handover.
+ * Safeguard: ONLY Managers can generate public share links.
  */
-handoversRouter.post('/share', async (req: Request, res: Response) => {
+handoversRouter.post('/share', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, handoverId } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { handoverId } = req.body || {};
 
     const storage = getStorage();
     const shareRecord = await storage.createShareToken(workspaceId, handoverId);
@@ -215,15 +209,12 @@ handoversRouter.post('/share', async (req: Request, res: Response) => {
 /**
  * DELETE /api/handovers/share
  * Revokes a public share link immediately.
+ * Safeguard: ONLY Managers can revoke public share links.
  */
-handoversRouter.delete('/share', async (req: Request, res: Response) => {
+handoversRouter.delete('/share', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, token } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { token } = req.body || {};
 
     if (!token) {
       res.status(400).json({ error: 'Token is required' });
@@ -243,6 +234,7 @@ handoversRouter.delete('/share', async (req: Request, res: Response) => {
 /**
  * GET /api/handovers/share/:token
  * Public read-only endpoint for retrieving shared handover without authentication.
+ * Safeguard: Independently enforces clearance-based redaction so CONFIDENTIAL data is never leaked.
  */
 handoversRouter.get('/share/:token', async (req: Request, res: Response) => {
   try {
@@ -254,10 +246,13 @@ handoversRouter.get('/share/:token', async (req: Request, res: Response) => {
 
     const storage = getStorage();
     const { handover, projectName } = await storage.getSharedHandover(token);
-    const markdown = exportHandoverMarkdown(handover);
+
+    // Safeguard: Redact all confidential evidence from public shares
+    const sanitizedHandover = redactHandoverDocument(handover);
+    const markdown = exportHandoverMarkdown(sanitizedHandover);
 
     res.status(200).json({
-      handover,
+      handover: sanitizedHandover,
       projectName,
       markdown,
       status: 'success',

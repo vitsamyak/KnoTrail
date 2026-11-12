@@ -1,5 +1,25 @@
 export type EvidenceStatus = 'VERIFIED' | 'UNCERTAIN' | 'CONFLICTING' | 'MISSING';
 
+// Round 3: Server-Verified Role-Based Access Control
+export type UserRole = 'MANAGER' | 'DEVELOPER' | 'EXTERNAL';
+
+export interface WorkspaceMemberRecord {
+  workspaceId: string;
+  userId: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AuthSession {
+  userId: string;
+  email: string;
+  role?: UserRole;
+  workspaceId?: string;
+  isAnonymousDemo?: boolean;
+}
+
 // Phase E: Dual-Status Taxonomy
 // Evidence Validity separates quote existence and coordinate bounds from claim correctness.
 export type EvidenceValidityStatus = 'MATCHED' | 'MISSING' | 'MISMATCHED' | 'SOURCE_UNAVAILABLE';
@@ -193,6 +213,9 @@ export interface ProjectData {
   executiveSummary: string;
   isCreated?: boolean;
   category?: string;
+  isProtected?: boolean;
+  ownerId?: string;
+  currentUserRole?: UserRole;
   handovers?: HandoverDocument[];
   currentHandover?: HandoverDocument;
   shareRecords?: HandoverShareRecord[];

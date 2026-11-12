@@ -3,6 +3,7 @@ import { getStorage } from '../../src/server/db/storage.ts';
 import { isValidWorkspaceId } from '../../src/server/db/types.ts';
 import { extractDocument, MAX_FILES_PER_BATCH } from '../../src/server/documents/extractor.ts';
 import { uploadMiddleware, handleUploadErrors } from '../middleware/upload.ts';
+import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
 import type { ProjectSource } from '../../src/lib/types.ts';
 
 export const sourcesRouter = Router();
@@ -11,14 +12,9 @@ export const sourcesRouter = Router();
  * GET /api/sources?workspaceId=...
  * Lists all sources in the given workspace.
  */
-sourcesRouter.get('/', async (req: Request, res: Response) => {
+sourcesRouter.get('/', requireWorkspaceAccess, async (req: Request, res: Response) => {
   try {
-    const workspaceId = req.query.workspaceId as string | undefined;
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
 
     const storage = getStorage();
     let project = await storage.getWorkspace(workspaceId);
@@ -36,15 +32,12 @@ sourcesRouter.get('/', async (req: Request, res: Response) => {
 /**
  * POST /api/sources
  * Creates a text/notes source in the workspace.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-sourcesRouter.post('/', async (req: Request, res: Response) => {
+sourcesRouter.post('/', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, name, type, content, description } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { name, type, content, description } = req.body || {};
 
     if (!name || typeof name !== 'string') {
       res.status(400).json({ error: 'Source name is required' });
@@ -79,21 +72,17 @@ sourcesRouter.post('/', async (req: Request, res: Response) => {
 /**
  * POST /api/sources/upload
  * Handles multipart file upload (PDF, TXT, MD) up to 10MB per file and 5 files per batch.
+ * Requires MANAGER or DEVELOPER permissions.
  */
 sourcesRouter.post(
   '/upload',
   uploadMiddleware.array('files', MAX_FILES_PER_BATCH),
   handleUploadErrors,
+  requireWorkspaceAccess,
+  requireRole(['MANAGER', 'DEVELOPER']),
   async (req: Request, res: Response) => {
     try {
-      const workspaceId = req.body?.workspaceId as string | undefined;
-
-      if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-        res.status(400).json({
-          error: 'Invalid or missing workspaceId. Must be 3-64 alphanumeric/hyphen/underscore characters.',
-        });
-        return;
-      }
+      const workspaceId = req.workspaceAuth!.workspaceId;
 
       const files = req.files as Express.Multer.File[] | undefined;
 
@@ -212,15 +201,9 @@ sourcesRouter.post(
  * GET /api/sources/:id?workspaceId=...
  * Retrieves single source metadata.
  */
-sourcesRouter.get('/:id', async (req: Request, res: Response) => {
+sourcesRouter.get('/:id', requireWorkspaceAccess, async (req: Request, res: Response) => {
   try {
-    const workspaceId = req.query.workspaceId as string | undefined;
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
-
+    const workspaceId = req.workspaceAuth!.workspaceId;
     const storage = getStorage();
     const sourceId = String(req.params.id);
     const source = await storage.getSource(workspaceId, sourceId);
@@ -240,16 +223,11 @@ sourcesRouter.get('/:id', async (req: Request, res: Response) => {
 /**
  * DELETE /api/sources/:id
  * Deletes a source and its uploaded raw document.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-sourcesRouter.delete('/:id', async (req: Request, res: Response) => {
+sourcesRouter.delete('/:id', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    let workspaceId = (req.query.workspaceId || req.body?.workspaceId) as string | undefined;
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
-
+    const workspaceId = req.workspaceAuth!.workspaceId;
     const storage = getStorage();
     const sourceId = String(req.params.id);
     const updatedProject = await storage.deleteSource(workspaceId, sourceId);

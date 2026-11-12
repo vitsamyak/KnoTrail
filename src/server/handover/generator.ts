@@ -231,7 +231,7 @@ export async function buildHandoverDocument(
     return {
       findingId: f.id,
       findingTitle: f.title,
-      findingType: f.type,
+      findingType: f.type || (f.category as any) || 'DECISION',
       status: f.status,
       evidenceValidity: f.evidenceValidity,
       claimStatus: f.claimStatus,

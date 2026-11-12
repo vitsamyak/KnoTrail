@@ -16,6 +16,7 @@ export function HandoverView() {
     stats,
     setActiveView,
     currentHandover,
+    currentUserRole,
     generateHandover,
     createShareLink,
     revokeShareLink,
@@ -358,15 +359,24 @@ export function HandoverView() {
           <div className="flex items-center gap-space-sm mt-space-lg">
             <button
               onClick={() => handleGenerate(false)}
-              disabled={isGenerating}
+              disabled={isGenerating || currentUserRole === 'EXTERNAL'}
+              title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External role cannot generate handovers' : undefined}
               className="inline-flex items-center gap-2 px-space-xl py-space-md bg-primary hover:bg-primary-container text-on-primary rounded-xl font-headline-sm text-headline-sm shadow-md transition-all active:scale-95 disabled:opacity-50"
             >
               {isGenerating ? (
                 <KnowledgeTrailLoader variant="inline" size="sm" />
               ) : (
-                <span className="material-symbols-outlined text-[20px]">auto_fix_high</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  {currentUserRole === 'EXTERNAL' ? 'lock' : 'auto_fix_high'}
+                </span>
               )}
-              <span>{isGenerating ? 'Compiling 12-Section Handover...' : 'Generate Certified Handover'}</span>
+              <span>
+                {isGenerating
+                  ? 'Compiling 12-Section Handover...'
+                  : currentUserRole === 'EXTERNAL'
+                  ? 'Read-Only (External)'
+                  : 'Generate Certified Handover'}
+              </span>
             </button>
           </div>
         </section>
@@ -403,15 +413,24 @@ export function HandoverView() {
           </div>
           <button
             onClick={() => handleGenerate(true)}
-            disabled={isGenerating}
+            disabled={isGenerating || currentUserRole === 'EXTERNAL'}
+            title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External role cannot regenerate handovers' : undefined}
             className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-space-md py-space-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-label-md text-label-md shadow-sm transition-all active:scale-95 shrink-0 disabled:opacity-50"
           >
             {isGenerating ? (
               <KnowledgeTrailLoader variant="inline" size="sm" />
             ) : (
-              <span className="material-symbols-outlined text-[16px]">refresh</span>
+              <span className="material-symbols-outlined text-[16px]">
+                {currentUserRole === 'EXTERNAL' ? 'lock' : 'refresh'}
+              </span>
             )}
-            <span>{isGenerating ? 'Updating Handover...' : 'Regenerate Handover'}</span>
+            <span>
+              {isGenerating
+                ? 'Updating Handover...'
+                : currentUserRole === 'EXTERNAL'
+                ? 'Read-Only (External)'
+                : 'Regenerate Handover'}
+            </span>
           </button>
         </aside>
       )}
@@ -539,9 +558,21 @@ export function HandoverView() {
           <div className="flex items-center gap-2 flex-wrap w-full md:w-auto" id="action-bar">
             <button
               onClick={handleOpenShareModal}
-              className="flex-1 sm:flex-initial justify-center min-h-[38px] text-xs inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md border border-outline-variant/30"
+              disabled={currentUserRole !== 'MANAGER'}
+              title={
+                currentUserRole !== 'MANAGER'
+                  ? `Manager permissions required to create public share links (current role: ${currentUserRole}).`
+                  : undefined
+              }
+              className={`flex-1 sm:flex-initial justify-center min-h-[38px] text-xs inline-flex items-center gap-1.5 px-space-sm py-2 rounded-lg font-label-md border transition-colors ${
+                currentUserRole !== 'MANAGER'
+                  ? 'bg-surface-container text-outline opacity-50 cursor-not-allowed border-outline-variant/20'
+                  : 'bg-surface-container-low text-on-surface hover:bg-surface-container border-outline-variant/30'
+              }`}
             >
-              <span className="material-symbols-outlined text-[17px]">share</span>
+              <span className="material-symbols-outlined text-[17px]">
+                {currentUserRole !== 'MANAGER' ? 'lock' : 'share'}
+              </span>
               <span>Share Link</span>
             </button>
 

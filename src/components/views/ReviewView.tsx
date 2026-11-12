@@ -18,6 +18,7 @@ export function ReviewView() {
     conflicts,
     stats,
     workspaceId,
+    currentUserRole,
     approveFinding,
     rejectFinding,
     editFinding,
@@ -313,16 +314,25 @@ export function ReviewView() {
           </div>
           <button
             onClick={() => setShowCertifyConfirm(true)}
-            disabled={!stats.canCertifyHandover}
+            disabled={!stats.canCertifyHandover || currentUserRole !== 'MANAGER'}
+            title={
+              currentUserRole !== 'MANAGER'
+                ? `Certification requires Manager permissions (current role: ${currentUserRole}).`
+                : undefined
+            }
             className={`w-full sm:w-auto justify-center px-space-md py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm min-h-[40px] ${
-              !stats.canCertifyHandover
+              !stats.canCertifyHandover || currentUserRole !== 'MANAGER'
                 ? 'bg-surface-container text-outline cursor-not-allowed border border-outline-variant/30'
                 : 'bg-primary text-on-primary hover:bg-primary-container active:scale-95'
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">verified</span>
+            <span className="material-symbols-outlined text-[16px]">
+              {currentUserRole !== 'MANAGER' ? 'lock' : 'verified'}
+            </span>
             <span>
-              {hasBlockingConflicts
+              {currentUserRole !== 'MANAGER'
+                ? 'Manager Role Required to Certify'
+                : hasBlockingConflicts
                 ? 'Resolve Conflicts to Certify'
                 : stats.needsCorrectionCount > 0
                 ? `Revalidate Corrections (${stats.needsCorrectionCount} pending)`
@@ -756,9 +766,17 @@ export function ReviewView() {
                             handleOpenConflictModal(finding);
                           }
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-error text-on-error hover:bg-error/90 font-semibold text-xs flex items-center gap-1 shadow-xs transition-colors"
+                        className={`px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1 shadow-xs transition-colors ${
+                          currentUserRole !== 'MANAGER'
+                            ? 'bg-surface-container text-outline opacity-60 cursor-not-allowed'
+                            : 'bg-error text-on-error hover:bg-error/90'
+                        }`}
+                        disabled={currentUserRole !== 'MANAGER'}
+                        title={currentUserRole !== 'MANAGER' ? 'Manager role required to resolve conflicts' : undefined}
                       >
-                        <span className="material-symbols-outlined text-[15px]">balance</span>
+                        <span className="material-symbols-outlined text-[15px]">
+                          {currentUserRole !== 'MANAGER' ? 'lock' : 'balance'}
+                        </span>
                         <span>Resolve Conflict</span>
                       </button>
                     )}
@@ -766,7 +784,13 @@ export function ReviewView() {
                     {/* Edit Finding */}
                     <button
                       onClick={() => handleOpenEditModal(finding)}
-                      className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-medium text-xs flex items-center gap-1 transition-colors"
+                      disabled={currentUserRole === 'EXTERNAL'}
+                      title={currentUserRole === 'EXTERNAL' ? 'Read-only access for External role' : undefined}
+                      className={`px-3 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1 transition-colors ${
+                        currentUserRole === 'EXTERNAL'
+                          ? 'bg-surface-container text-outline opacity-50 cursor-not-allowed'
+                          : 'bg-surface-container hover:bg-surface-container-high text-on-surface'
+                      }`}
                     >
                       <span className="material-symbols-outlined text-[15px]">edit</span>
                       <span>Edit Finding</span>
@@ -775,8 +799,12 @@ export function ReviewView() {
                     {/* Reject Finding */}
                     <button
                       onClick={() => handleOpenRejectModal(finding)}
+                      disabled={currentUserRole === 'EXTERNAL'}
+                      title={currentUserRole === 'EXTERNAL' ? 'Read-only access for External role' : undefined}
                       className={`px-3 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1 transition-colors ${
-                        finding.rejected
+                        currentUserRole === 'EXTERNAL'
+                          ? 'bg-surface-container text-outline opacity-50 cursor-not-allowed'
+                          : finding.rejected
                           ? 'bg-error-container text-error font-semibold'
                           : 'bg-surface-container hover:bg-error-container text-outline hover:text-on-error-container'
                       }`}
@@ -788,9 +816,11 @@ export function ReviewView() {
                     {/* Approve Finding Button */}
                     <button
                       onClick={() => handleApproveClick(finding)}
-                      disabled={isConflictBlocked || isMissingEvidence}
+                      disabled={isConflictBlocked || isMissingEvidence || currentUserRole === 'EXTERNAL'}
                       title={
-                        isConflictBlocked
+                        currentUserRole === 'EXTERNAL'
+                          ? 'Read-only access: External members cannot approve findings.'
+                          : isConflictBlocked
                           ? 'Direct approval locked: Resolve contradictory sources first.'
                           : isMissingEvidence
                           ? 'Approval locked: Primary source evidence is MISSING. Provide documentation first.'
@@ -799,7 +829,7 @@ export function ReviewView() {
                           : undefined
                       }
                       className={`px-4 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1 transition-all shadow-xs ${
-                        isConflictBlocked || isMissingEvidence
+                        isConflictBlocked || isMissingEvidence || currentUserRole === 'EXTERNAL'
                           ? 'bg-surface-container text-outline opacity-50 cursor-not-allowed border border-outline-variant/30'
                           : finding.approved
                           ? 'bg-secondary-container text-on-secondary-container'
@@ -807,10 +837,12 @@ export function ReviewView() {
                       }`}
                     >
                       <span className="material-symbols-outlined text-[15px]">
-                        {isConflictBlocked || isMissingEvidence ? 'lock' : 'check'}
+                        {isConflictBlocked || isMissingEvidence || currentUserRole === 'EXTERNAL' ? 'lock' : 'check'}
                       </span>
                       <span>
-                        {isConflictBlocked
+                        {currentUserRole === 'EXTERNAL'
+                          ? 'Read-Only (External)'
+                          : isConflictBlocked
                           ? 'Approval Locked (Conflict)'
                           : isMissingEvidence
                           ? 'Evidence Missing'

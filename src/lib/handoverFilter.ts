@@ -173,9 +173,9 @@ ${
   approvedTasks.length > 0
     ? approvedTasks
         .map(
-          (f, i) => `### ${i + 1}. [${f.urgency.toUpperCase()}] ${f.title}
+          (f, i) => `### ${i + 1}. [${(f.urgency || 'MEDIUM').toUpperCase()}] ${f.title}
 - **Status:** ${f.status}
-- **Owner:** ${f.owner}
+- **Owner:** ${f.owner || 'Unassigned'}
 - **Details:** ${f.summary}
 `
         )
@@ -191,7 +191,7 @@ ${
     ? approvedRisks
         .map(
           (f, i) => `### ${i + 1}. ${f.title}
-- **Urgency:** ${f.urgency.toUpperCase()}
+- **Urgency:** ${(f.urgency || 'MEDIUM').toUpperCase()}
 - **Risk Assessment:** ${f.summary}
 - **Mitigation Status:** ${f.reviewerNotes || 'Pending SRE validation'}
 `

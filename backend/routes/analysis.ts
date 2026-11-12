@@ -1,9 +1,9 @@
 import { Router, type Request, type Response } from 'express';
 import { getStorage } from '../../src/server/db/storage.ts';
-import { isValidWorkspaceId } from '../../src/server/db/types.ts';
 import { isGeminiConfigured, GeminiConfigError } from '../../src/server/ai/gemini.ts';
 import { runKnowledgeExtractionPipeline } from '../../src/server/ai/pipeline.ts';
 import { runFullVerification } from '../../src/server/verification/verifier.ts';
+import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
 
 export const analysisRouter = Router();
 
@@ -11,16 +11,9 @@ export const analysisRouter = Router();
  * GET /api/analysis/extract?workspaceId=...
  * Returns AI configuration status and available source telemetry.
  */
-analysisRouter.get('/extract', async (req: Request, res: Response) => {
+analysisRouter.get('/extract', requireWorkspaceAccess, async (req: Request, res: Response) => {
   try {
-    const workspaceId = (req.query.workspaceId as string) || 'default_workspace';
-
-    if (!isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({
-        error: 'Invalid workspace ID format. Must be 3-64 alphanumeric characters.',
-      });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
 
     const storage = getStorage();
     const project = await storage.getWorkspace(workspaceId);
@@ -47,17 +40,12 @@ analysisRouter.get('/extract', async (req: Request, res: Response) => {
 /**
  * POST /api/analysis/extract
  * Executes real AI extraction using Gemini 2.5 Flash across ingested project documents.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-analysisRouter.post('/extract', async (req: Request, res: Response) => {
+analysisRouter.post('/extract', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, sourceIds, model } = req.body || {};
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({
-        error: 'Valid workspaceId is required (3-64 alphanumeric characters).',
-      });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { sourceIds, model } = req.body || {};
 
     // MANDATORY ZERO FAKE AI INVARIANT: Check API key configuration
     if (!isGeminiConfigured()) {
@@ -140,16 +128,12 @@ analysisRouter.post('/extract', async (req: Request, res: Response) => {
 /**
  * POST /api/analysis/verify
  * Runs evidence verification and conflict detection across workspace findings and sources.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-analysisRouter.post('/verify', async (req: Request, res: Response) => {
+analysisRouter.post('/verify', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId: incomingWsId, useAi } = req.body || {};
-    const workspaceId = incomingWsId || 'default';
-
-    if (!isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: `Invalid workspace ID: "${workspaceId}"` });
-      return;
-    }
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { useAi } = req.body || {};
 
     const storage = getStorage();
     let project = await storage.getWorkspace(workspaceId);

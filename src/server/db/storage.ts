@@ -10,6 +10,8 @@ import type {
   ReviewStatus,
   HandoverDocument,
   HandoverShareRecord,
+  UserRole,
+  WorkspaceMemberRecord,
 } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSON } from '../../lib/handoverFilter.ts';
@@ -90,6 +92,15 @@ export interface StorageRepository {
   revokeShareToken(workspaceId: string, token: string): Promise<boolean>;
   resetWorkspace(workspaceId: string): Promise<ProjectData>;
   listWorkspaces(): Promise<string[]>;
+  getWorkspaceMember(workspaceId: string, userId: string): Promise<WorkspaceMemberRecord | null>;
+  addWorkspaceMember(
+    workspaceId: string,
+    member: { userId: string; email: string; role: UserRole }
+  ): Promise<WorkspaceMemberRecord>;
+  listWorkspaceMembers(workspaceId: string): Promise<WorkspaceMemberRecord[]>;
+  removeWorkspaceMember(workspaceId: string, userId: string): Promise<boolean>;
+  isWorkspaceProtected(workspaceId: string): Promise<boolean>;
+  setWorkspaceProtected(workspaceId: string, isProtected: boolean, ownerId?: string): Promise<void>;
 }
 
 export function sanitizeProjectData(project: ProjectData): ProjectData {
@@ -151,13 +162,16 @@ export function sanitizeProjectData(project: ProjectData): ProjectData {
 export class DurableFileRepository implements StorageRepository {
   private baseDir: string;
   private uploadDir: string;
+  private membershipsDir: string;
   private memoryCache: Map<string, ProjectData> = new Map();
 
   constructor(customBaseDir?: string, customUploadDir?: string) {
     this.baseDir = customBaseDir || path.join(process.cwd(), '.data', 'workspaces');
     this.uploadDir = customUploadDir || path.join(process.cwd(), '.data', 'uploads');
+    this.membershipsDir = path.join(process.cwd(), '.data', 'memberships');
     this.ensureDirectoryExists(this.baseDir);
     this.ensureDirectoryExists(this.uploadDir);
+    this.ensureDirectoryExists(this.membershipsDir);
   }
 
   private ensureDirectoryExists(dir: string) {
@@ -1083,6 +1097,87 @@ export class DurableFileRepository implements StorageRepository {
     } catch {
       return [];
     }
+  }
+
+  async isWorkspaceProtected(workspaceId: string): Promise<boolean> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project) return false;
+    if (project.isProtected !== undefined) {
+      return Boolean(project.isProtected);
+    }
+    return !workspaceId.startsWith('ws_anon_');
+  }
+
+  async setWorkspaceProtected(workspaceId: string, isProtected: boolean, ownerId?: string): Promise<void> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project) throw new Error(`Workspace ${workspaceId} not found`);
+    project.isProtected = isProtected;
+    if (ownerId) project.ownerId = ownerId;
+    await this.saveProject(workspaceId, project);
+  }
+
+  private getMembershipsFilePath(workspaceId: string): string {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}"`);
+    }
+    return path.join(this.membershipsDir, `${workspaceId}.json`);
+  }
+
+  private async readMemberships(workspaceId: string): Promise<WorkspaceMemberRecord[]> {
+    const filePath = this.getMembershipsFilePath(workspaceId);
+    if (!fs.existsSync(filePath)) return [];
+    try {
+      const data = await fs.promises.readFile(filePath, 'utf-8');
+      return JSON.parse(data);
+    } catch {
+      return [];
+    }
+  }
+
+  private async writeMemberships(workspaceId: string, members: WorkspaceMemberRecord[]): Promise<void> {
+    const filePath = this.getMembershipsFilePath(workspaceId);
+    await fs.promises.writeFile(filePath, JSON.stringify(members, null, 2), 'utf-8');
+  }
+
+  async getWorkspaceMember(workspaceId: string, userId: string): Promise<WorkspaceMemberRecord | null> {
+    const members = await this.readMemberships(workspaceId);
+    return members.find((m) => m.userId === userId) || null;
+  }
+
+  async addWorkspaceMember(
+    workspaceId: string,
+    member: { userId: string; email: string; role: UserRole }
+  ): Promise<WorkspaceMemberRecord> {
+    const members = await this.readMemberships(workspaceId);
+    const existingIndex = members.findIndex((m) => m.userId === member.userId);
+    const now = new Date().toISOString();
+    const record: WorkspaceMemberRecord = {
+      workspaceId,
+      userId: member.userId,
+      email: member.email,
+      role: member.role,
+      createdAt: existingIndex >= 0 ? members[existingIndex].createdAt : now,
+      updatedAt: now,
+    };
+    if (existingIndex >= 0) {
+      members[existingIndex] = record;
+    } else {
+      members.push(record);
+    }
+    await this.writeMemberships(workspaceId, members);
+    return record;
+  }
+
+  async listWorkspaceMembers(workspaceId: string): Promise<WorkspaceMemberRecord[]> {
+    return this.readMemberships(workspaceId);
+  }
+
+  async removeWorkspaceMember(workspaceId: string, userId: string): Promise<boolean> {
+    const members = await this.readMemberships(workspaceId);
+    const filtered = members.filter((m) => m.userId !== userId);
+    if (filtered.length === members.length) return false;
+    await this.writeMemberships(workspaceId, filtered);
+    return true;
   }
 }
 

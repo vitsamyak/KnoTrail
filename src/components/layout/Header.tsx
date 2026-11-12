@@ -14,6 +14,10 @@ export function Header() {
     runAiSync,
     isSaving,
     workspaceId,
+    currentUserRole,
+    isProtectedWorkspace,
+    demoPerspective,
+    setDemoPerspective,
     resetDemoData,
     isProjectCreated,
     setShowCreateProjectModal,
@@ -74,8 +78,47 @@ export function Header() {
         </div>
       </div>
 
-      {/* Right Group: Sync, Notifications, Workspace Profile */}
-      <div className="flex items-center gap-space-md">
+      {/* Right Group: Role Switcher, Sync, Notifications, Workspace Profile */}
+      <div className="flex items-center gap-2 sm:gap-space-md">
+        {/* Role & Demo Perspective Switcher Pill */}
+        <div
+          className="flex items-center gap-1.5 bg-surface-container-low px-2 sm:px-2.5 py-1 rounded-full border border-outline-variant/30 text-xs shadow-xs"
+          title={
+            isProtectedWorkspace
+              ? `Server-Verified Role: ${currentUserRole}`
+              : 'Demo Simulation Mode — Not an Authentication Boundary'
+          }
+        >
+          <span className="material-symbols-outlined text-[15px] text-primary shrink-0">
+            {isProtectedWorkspace ? 'verified_user' : 'shield_person'}
+          </span>
+          <span className="font-semibold text-on-surface text-[11px] uppercase tracking-wide hidden sm:inline">
+            {isProtectedWorkspace ? currentUserRole : 'Demo'}:
+          </span>
+          {isProtectedWorkspace ? (
+            <span className="text-[11px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+              {currentUserRole}
+            </span>
+          ) : (
+            <div className="flex items-center gap-0.5">
+              {(['MANAGER', 'DEVELOPER', 'EXTERNAL'] as const).map((role) => (
+                <button
+                  key={role}
+                  onClick={() => setDemoPerspective(role)}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                    demoPerspective === role
+                      ? 'bg-primary text-on-primary font-bold shadow-xs'
+                      : 'text-outline hover:text-on-surface hover:bg-surface-container'
+                  }`}
+                  title={`Simulate ${role} perspective (Demo simulation preview only)`}
+                >
+                  {role === 'MANAGER' ? 'Manager' : role === 'DEVELOPER' ? 'Developer' : 'External'}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Sync Button */}
         <button
           onClick={() => runAiSync()}

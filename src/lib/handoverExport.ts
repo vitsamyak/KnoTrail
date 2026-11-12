@@ -206,7 +206,7 @@ export function exportHandoverMarkdown(doc: HandoverDocument): string {
   // Section K: Evidence & Source References
   lines.push(`## 10. Evidence & Source References (${doc.evidenceInventory.length})\n`);
   doc.evidenceInventory.forEach((item, idx) => {
-    lines.push(`### 10.${idx + 1} [${item.findingType.toUpperCase()}] ${item.findingTitle}`);
+    lines.push(`### 10.${idx + 1} [${(item.findingType || 'FINDING').toUpperCase()}] ${item.findingTitle}`);
     lines.push(`- **Grounding Status:** ${item.status}${item.isAcceptedUncertain ? ' *(Accepted with Uncertainty)*' : ''}`);
     if (item.reviewerJustification) {
       lines.push(`- **Reviewer Justification:** ${item.reviewerJustification}`);
@@ -461,7 +461,7 @@ ${doc.dependencies.map((dep, i) => `
 <h2>9. Traceable Evidence &amp; Citations (${doc.evidenceInventory.length})</h2>
 ${doc.evidenceInventory.slice(0, 10).map((ev, i) => `
 <div class="item-card no-break" style="font-size: 9pt;">
-  <strong>[${escapeHtml(ev.findingType.toUpperCase())}] ${escapeHtml(ev.findingTitle)}</strong>
+  <strong>[${escapeHtml((ev.findingType || 'FINDING').toUpperCase())}] ${escapeHtml(ev.findingTitle)}</strong>
   <span style="color: #5a7b60;">(${escapeHtml(ev.status)})</span>
   ${ev.citations.map((c) => `<div class="quote">&ldquo;${escapeHtml(c.snippet)}&rdquo; — <em>${escapeHtml(c.sourceName)} (${escapeHtml(c.lineRange)})</em></div>`).join('')}
 </div>

@@ -6,7 +6,29 @@ import type {
   ReviewAuditAction,
   HandoverDocument,
   HandoverShareRecord,
+  UserRole,
+  WorkspaceMemberRecord,
 } from './types.ts';
+
+// In-memory auth token and demo perspective state
+let clientAuthToken: string | null = null;
+let clientDemoPerspective: UserRole | null = null;
+
+export function setClientAuthToken(token: string | null) {
+  clientAuthToken = token;
+}
+
+export function getClientAuthToken(): string | null {
+  return clientAuthToken;
+}
+
+export function setClientDemoPerspective(role: UserRole | null) {
+  clientDemoPerspective = role;
+}
+
+export function getClientDemoPerspective(): UserRole | null {
+  return clientDemoPerspective;
+}
 
 /**
  * Returns the normalized backend API base URL.
@@ -64,6 +86,16 @@ async function request<T>(
     Accept: 'application/json',
     ...(options.headers as Record<string, string>),
   };
+
+  // Attach verified authentication token if available
+  if (clientAuthToken && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${clientAuthToken}`;
+  }
+
+  // Attach demo perspective for anonymous demo preview if configured
+  if (clientDemoPerspective && !headers['X-Demo-Perspective']) {
+    headers['X-Demo-Perspective'] = clientDemoPerspective;
+  }
 
   // If body is NOT FormData, set Content-Type: application/json
   if (options.body && !(options.body instanceof FormData)) {
@@ -166,6 +198,48 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify({ workspaceId }),
     });
+  },
+
+  async claimWorkspace(
+    workspaceId: string
+  ): Promise<{ status: string; workspaceId: string; member: WorkspaceMemberRecord; isProtected: boolean }> {
+    return request<{ status: string; workspaceId: string; member: WorkspaceMemberRecord; isProtected: boolean }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/claim`,
+      { method: 'POST' }
+    );
+  },
+
+  async getWorkspaceMembers(
+    workspaceId: string
+  ): Promise<{ workspaceId: string; members: WorkspaceMemberRecord[]; status: string }> {
+    return request<{ workspaceId: string; members: WorkspaceMemberRecord[]; status: string }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/members?workspaceId=${encodeURIComponent(workspaceId)}`
+    );
+  },
+
+  async addWorkspaceMember(
+    workspaceId: string,
+    member: { userId: string; email: string; role: UserRole }
+  ): Promise<{ status: string; workspaceId: string; member: WorkspaceMemberRecord }> {
+    return request<{ status: string; workspaceId: string; member: WorkspaceMemberRecord }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/members`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ workspaceId, ...member }),
+      }
+    );
+  },
+
+  async removeWorkspaceMember(
+    workspaceId: string,
+    userId: string
+  ): Promise<{ status: string; workspaceId: string; userId: string }> {
+    return request<{ status: string; workspaceId: string; userId: string }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}?workspaceId=${encodeURIComponent(workspaceId)}`,
+      {
+        method: 'DELETE',
+      }
+    );
   },
 
   // --- Projects ---

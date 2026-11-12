@@ -11,16 +11,21 @@ import {
   ConflictRecord,
   HandoverDocument,
   HandoverShareRecord,
+  UserRole,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
-import { apiClient } from '../lib/api-client';
+import { apiClient, setClientDemoPerspective } from '../lib/api-client';
 
 interface ProjectContextType {
   activeView: ActiveView;
   setActiveView: (view: ActiveView) => void;
   project: ProjectData;
   workspaceId: string;
+  currentUserRole: UserRole;
+  isProtectedWorkspace: boolean;
+  demoPerspective: UserRole;
+  setDemoPerspective: (role: UserRole) => void;
   isLoading: boolean;
   isNavigating: boolean;
   isMobileNavOpen: boolean;
@@ -148,6 +153,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [demoPerspective, setDemoPerspectiveState] = useState<UserRole>('MANAGER');
+
+  const setDemoPerspective = useCallback((role: UserRole) => {
+    setDemoPerspectiveState(role);
+    setClientDemoPerspective(role);
+  }, []);
+
+  const currentUserRole: UserRole = project.isProtected
+    ? (project.currentUserRole || 'MANAGER')
+    : demoPerspective;
+
+  const isProtectedWorkspace: boolean = Boolean(project.isProtected);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [evidenceFilter, setEvidenceFilter] = useState<'ALL' | EvidenceStatus>('ALL');
@@ -1047,6 +1064,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         setActiveView: handleSetActiveView,
         project,
         workspaceId,
+        currentUserRole,
+        isProtectedWorkspace,
+        demoPerspective,
+        setDemoPerspective,
         isLoading,
         isNavigating,
         isMobileNavOpen,

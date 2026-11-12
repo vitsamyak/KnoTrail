@@ -8,6 +8,8 @@ import type {
   ReviewAuditAction,
   HandoverDocument,
   HandoverShareRecord,
+  UserRole,
+  WorkspaceMemberRecord,
 } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { revalidateEditedFinding } from '../verification/verifier.ts';
@@ -1096,5 +1098,108 @@ export class SupabaseStorageRepository implements StorageRepository {
     } catch {
       return [];
     }
+  }
+
+  async isWorkspaceProtected(workspaceId: string): Promise<boolean> {
+    if (!isValidWorkspaceId(workspaceId)) return false;
+    const { data, error } = await this.client
+      .from('workspaces')
+      .select('is_protected')
+      .eq('id', workspaceId)
+      .maybeSingle();
+    if (error || !data) {
+      return !workspaceId.startsWith('ws_anon_');
+    }
+    if (data.is_protected !== null && data.is_protected !== undefined) {
+      return Boolean(data.is_protected);
+    }
+    return !workspaceId.startsWith('ws_anon_');
+  }
+
+  async setWorkspaceProtected(workspaceId: string, isProtected: boolean, ownerId?: string): Promise<void> {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}"`);
+    }
+    const updates: any = { is_protected: isProtected, updated_at: new Date().toISOString() };
+    if (ownerId) updates.owner_id = ownerId;
+    const { error } = await this.client.from('workspaces').update(updates).eq('id', workspaceId);
+    if (error) throw error;
+  }
+
+  async getWorkspaceMember(workspaceId: string, userId: string): Promise<WorkspaceMemberRecord | null> {
+    if (!isValidWorkspaceId(workspaceId) || !userId) return null;
+    const { data, error } = await this.client
+      .from('workspace_members')
+      .select('workspace_id, user_id, email, role, created_at, updated_at')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return {
+      workspaceId: data.workspace_id,
+      userId: data.user_id,
+      email: data.email,
+      role: data.role as UserRole,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  async addWorkspaceMember(
+    workspaceId: string,
+    member: { userId: string; email: string; role: UserRole }
+  ): Promise<WorkspaceMemberRecord> {
+    if (!isValidWorkspaceId(workspaceId)) {
+      throw new Error(`Invalid workspace ID: "${workspaceId}"`);
+    }
+    const now = new Date().toISOString();
+    const { data, error } = await this.client
+      .from('workspace_members')
+      .upsert({
+        workspace_id: workspaceId,
+        user_id: member.userId,
+        email: member.email,
+        role: member.role,
+        updated_at: now,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return {
+      workspaceId: data.workspace_id,
+      userId: data.user_id,
+      email: data.email,
+      role: data.role as UserRole,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  async listWorkspaceMembers(workspaceId: string): Promise<WorkspaceMemberRecord[]> {
+    if (!isValidWorkspaceId(workspaceId)) return [];
+    const { data, error } = await this.client
+      .from('workspace_members')
+      .select('workspace_id, user_id, email, role, created_at, updated_at')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: true });
+    if (error || !data) return [];
+    return data.map((d: any) => ({
+      workspaceId: d.workspace_id,
+      userId: d.user_id,
+      email: d.email,
+      role: d.role as UserRole,
+      createdAt: d.created_at,
+      updatedAt: d.updated_at,
+    }));
+  }
+
+  async removeWorkspaceMember(workspaceId: string, userId: string): Promise<boolean> {
+    if (!isValidWorkspaceId(workspaceId) || !userId) return false;
+    const { error } = await this.client
+      .from('workspace_members')
+      .delete()
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', userId);
+    return !error;
   }
 }

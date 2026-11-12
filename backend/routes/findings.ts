@@ -1,22 +1,19 @@
 import { Router, type Request, type Response } from 'express';
 import { getStorage } from '../../src/server/db/storage.ts';
-import { isValidWorkspaceId } from '../../src/server/db/types.ts';
+import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
 
 export const findingsRouter = Router();
 
 /**
  * POST /api/findings/:id/approve
  * Approves a finding subject to Phase A and Phase F review gates.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-findingsRouter.post('/:id/approve', async (req: Request, res: Response) => {
+findingsRouter.post('/:id/approve', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, reviewerNotes, reviewerName } = req.body || {};
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { reviewerNotes, reviewerName } = req.body || {};
     const findingId = String(req.params.id);
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
 
     if (!findingId) {
       res.status(400).json({ error: 'Finding ID is required' });
@@ -28,7 +25,7 @@ findingsRouter.post('/:id/approve', async (req: Request, res: Response) => {
       workspaceId,
       findingId,
       reviewerNotes,
-      reviewerName
+      reviewerName || req.workspaceAuth?.email
     );
     const approvedFinding = updatedProject.findings.find((f) => f.id === findingId);
 
@@ -52,16 +49,13 @@ findingsRouter.post('/:id/approve', async (req: Request, res: Response) => {
 /**
  * POST /api/findings/:id/reject
  * Rejects a finding with mandatory documented reason.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-findingsRouter.post('/:id/reject', async (req: Request, res: Response) => {
+findingsRouter.post('/:id/reject', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, reason, reviewerName } = req.body || {};
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { reason, reviewerName } = req.body || {};
     const findingId = String(req.params.id);
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
 
     if (!findingId) {
       res.status(400).json({ error: 'Finding ID is required' });
@@ -78,7 +72,7 @@ findingsRouter.post('/:id/reject', async (req: Request, res: Response) => {
       workspaceId,
       findingId,
       reason.trim(),
-      reviewerName
+      reviewerName || req.workspaceAuth?.email
     );
     const rejectedFinding = updatedProject.findings.find((f) => f.id === findingId);
 
@@ -96,16 +90,13 @@ findingsRouter.post('/:id/reject', async (req: Request, res: Response) => {
 /**
  * POST /api/findings/:id/edit
  * Edits a finding, resets approval on material edits, and logs audit action.
+ * Requires MANAGER or DEVELOPER permissions.
  */
-findingsRouter.post('/:id/edit', async (req: Request, res: Response) => {
+findingsRouter.post('/:id/edit', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, updates, reviewerNotes, reviewerName } = req.body || {};
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { updates, reviewerNotes, reviewerName } = req.body || {};
     const findingId = String(req.params.id);
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
 
     if (!findingId) {
       res.status(400).json({ error: 'Finding ID is required' });
@@ -123,7 +114,7 @@ findingsRouter.post('/:id/edit', async (req: Request, res: Response) => {
       findingId,
       updates,
       reviewerNotes,
-      reviewerName
+      reviewerName || req.workspaceAuth?.email
     );
     const editedFinding = updatedProject.findings.find((f) => f.id === findingId);
 
@@ -141,16 +132,12 @@ findingsRouter.post('/:id/edit', async (req: Request, res: Response) => {
 /**
  * GET /api/findings/:id/audit?workspaceId=...
  * Retrieves chronological review audit trail for a finding.
+ * Redacts internal reviewer notes if accessed by EXTERNAL role.
  */
-findingsRouter.get('/:id/audit', async (req: Request, res: Response) => {
+findingsRouter.get('/:id/audit', requireWorkspaceAccess, async (req: Request, res: Response) => {
   try {
-    const workspaceId = req.query.workspaceId as string | undefined;
+    const workspaceId = req.workspaceAuth!.workspaceId;
     const findingId = String(req.params.id);
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
 
     if (!findingId) {
       res.status(400).json({ error: 'Finding ID is required' });
@@ -158,7 +145,15 @@ findingsRouter.get('/:id/audit', async (req: Request, res: Response) => {
     }
 
     const storage = getStorage();
-    const auditHistory = await storage.getReviewAuditHistory(workspaceId, findingId);
+    let auditHistory = await storage.getReviewAuditHistory(workspaceId, findingId);
+
+    if (req.workspaceAuth?.role === 'EXTERNAL') {
+      auditHistory = auditHistory.map((item) => ({
+        ...item,
+        reviewerNotes: undefined,
+        notes: undefined,
+      }));
+    }
 
     res.status(200).json({
       findingId,
@@ -174,16 +169,13 @@ findingsRouter.get('/:id/audit', async (req: Request, res: Response) => {
 /**
  * POST /api/findings/:id/resolve-conflict
  * Resolves a conflict on a specific finding.
+ * Safeguard: ONLY Managers can resolve conflicts.
  */
-findingsRouter.post('/:id/resolve-conflict', async (req: Request, res: Response) => {
+findingsRouter.post('/:id/resolve-conflict', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
-    const { workspaceId, resolution, resolvedBy } = req.body || {};
+    const workspaceId = req.workspaceAuth!.workspaceId;
+    const { resolution, resolvedBy } = req.body || {};
     const findingId = String(req.params.id);
-
-    if (!workspaceId || !isValidWorkspaceId(workspaceId)) {
-      res.status(400).json({ error: 'Invalid or missing workspaceId' });
-      return;
-    }
 
     if (!findingId) {
       res.status(400).json({ error: 'Finding ID is required' });
@@ -200,7 +192,7 @@ findingsRouter.post('/:id/resolve-conflict', async (req: Request, res: Response)
       workspaceId,
       findingId,
       resolution,
-      resolvedBy || 'Lead Architect'
+      resolvedBy || req.workspaceAuth?.email || 'Lead Architect'
     );
     const resolvedFinding = updatedProject.findings.find((f) => f.id === findingId);
 

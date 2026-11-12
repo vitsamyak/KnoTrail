@@ -1,66 +1,56 @@
 ---
 gsd_state_version: "1.0"
 milestone: "Round 3 - Final Build"
-current_phase: "Phase 0: Complete System Audit & Development Planning"
-status: "planning_revised"
-stopped_at: "Revised Round 3 security architecture based on senior critique. Eliminated client-supplied role headers (X-KnoTrail-Role) as an authorization mechanism. Established dual-space architecture (Space 1: Anonymous demo workspaces ws_anon_* with visual perspective switcher strictly labeled as demo simulation; Space 2: Protected workspaces ws_proj_* governed by server-verified session tokens and trusted database membership records in workspace_members table). Enforced Express authorization middleware on every protected API endpoint with workspace ownership checks and server-side confidential finding redaction. Preserved zero-auth Incognito demo accessibility and public share links. Updated ROUND3_AUDIT.md, ROUND3_DECISIONS.md (ADR-013 through ADR-016), and ROUND3_ROADMAP.md with strict security acceptance criteria. Awaiting user approval before proceeding to Phase 1."
-last_updated: "2026-11-12T16:00:00.000Z"
+current_phase: "Phase 1: Server-Verified Role-Based Security"
+status: "phase_1_completed"
+stopped_at: "Successfully implemented and fully verified Phase 1: Server-Verified Role-Based Security. Implemented database migration for workspace_members table with RLS enabled; added StorageRepository interfaces and implementations in DurableFileRepository and SupabaseStorage; implemented backend/middleware/auth.ts (verifying Supabase Auth & HMAC dev tokens) and backend/middleware/roleAuth.ts (enforcing membership checks, dual-space separation between ws_anon_* and ws_proj_*, and strict role authorization); guarded all sensitive routes (workspaces, handovers, conflicts, sources, findings, analysis); implemented server-side redaction utility (src/server/security/redactor.ts) protecting CONFIDENTIAL citations; integrated Demo Perspective Switcher in Header, updated ReviewView & HandoverView; created comprehensive security test suite in src/__tests__/roleSecurity.test.mjs with 10 passing security scenarios. All 160 automated tests passing with 0 failures; backend and frontend builds compile with 0 errors. Ready to proceed to Phase 2: GitHub Integration."
+last_updated: "2026-11-12T16:30:00.000Z"
 last_activity: "2026-11-12"
 state_head: "main"
 round3_progress:
   total_phases: 4
-  completed_phases: 0
-  active_phase: "Phase 1: Server-Verified Role-Based Security (Revised Architecture - Ready for Execution)"
+  completed_phases: 1
+  active_phase: "Phase 2: GitHub Integration (Ready to Plan/Execute)"
   baseline_tests_passing: 149
+  current_tests_passing: 160
   targeted_tests_passing: 175
 ---
 
-# KnoTrail Round 3 State (Revised Security Architecture)
+# KnoTrail Round 3 State (Phase 1 Complete)
 
 ## Milestone Overview
 - **Event**: CodersInPune Hackathon 2026 — Final Round 3 Preparation
 - **Team**: Deploy_or_Die (Samyak Gedam & Sanshrey Sanagar)
-- **Active Phase**: Phase 0 — Complete System Audit & Development Planning (REVISED)
-- **Next Phase**: Phase 1 — Server-Verified Role-Based Security (Awaiting User Approval)
+- **Completed Phase**: Phase 1 — Server-Verified Role-Based Security (100% COMPLETE)
+- **Next Phase**: Phase 2 — GitHub Integration
 
 ## Architectural Baseline
 - **Frontend**: Next.js 14.2.15 (App Router, React 18, Tailwind CSS)
-- **Backend**: Standalone Node.js Express 5.3.0 in `backend/` compiling via `esbuild` to `dist/backend/server.js` (190 KB)
-- **Database**: Supabase PostgreSQL (Mumbai `ap-south-1`) with JSONB aggregate state, OCC, and RLS enabled
+- **Backend**: Standalone Node.js Express 5.3.0 in `backend/` compiling via `esbuild` to `dist/backend/server.js` (207 KB)
+- **Database**: Supabase PostgreSQL (Mumbai `ap-south-1`) with JSONB aggregate state, OCC, `workspace_members` table, and RLS enabled
 - **Object Storage**: Private Supabase Storage bucket (`knotrail-source-files`)
 - **AI Extraction**: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash) with Zero Fake AI Invariant
-- **Test Suite**: 149 / 149 automated tests passing across 9 test suites
+- **Test Suite**: 160 / 160 automated tests passing across 10 test suites (0 failures)
 - **Build Status**:
-  - `npm run backend:build`: PASS (14ms)
-  - `npm run frontend:build`: PASS (0 errors across 4 static/dynamic routes)
+  - `npm run backend:build`: PASS (11ms)
+  - `npm run frontend:build`: PASS (0 errors across static & dynamic routes)
 
-## Security Architecture Revision Highlights
-1. **Rejection of Client-Supplied Role Headers**: `X-KnoTrail-Role` is strictly prohibited as an authorization mechanism.
-2. **Dual-Space Architecture**:
-   - **Anonymous Demo Workspaces (`ws_anon_*`)**: Fully accessible without login in Incognito mode. A visual perspective switcher lets judges view how screens adapt. Clearly labeled as `"Demo Simulation Mode — Not an Authentication Boundary"`.
-   - **Protected Workspaces (`ws_proj_*`)**: Require server-verified authentication tokens. Anonymous callers cannot access or mutate protected workspaces.
-3. **Trusted Server-Side Membership**:
-   - Authoritative roles stored in `workspace_members` table (`workspace_id`, `user_id`, `email`, `role`).
-   - Express middleware queries database records for `(workspaceId, userId)` before allowing route handlers to execute.
-4. **Cross-Workspace & Role Enforcement**:
-   - Users from Workspace 1 attempting to access Workspace 2 receive HTTP 403 Forbidden.
-   - Developer role attempting to certify handovers or resolve conflicts receives HTTP 403 Forbidden.
-5. **Confidential Data Redaction**:
-   - External users calling read endpoints automatically have `clearanceTier: 'CONFIDENTIAL'` findings, citations, and sensitive emails redacted server-side.
-6. **Preservation of Public Shares**:
-   - `/share/[token]` continues functioning without login via SHA-256 hash lookup in `handover_shares`.
-
-## Planning Artifacts Updated
-- [.planning/ROUND3_AUDIT.md](file:///Users/samyakvikasgedam/My%20Files/COLLEGE/CodersInPune/.planning/ROUND3_AUDIT.md): Revised audit including threat modeling (SEC-01 through SEC-06), BOLA analysis, Supabase Auth evaluation, and dual-space segregation.
-- [.planning/ROUND3_DECISIONS.md](file:///Users/samyakvikasgedam/My%20Files/COLLEGE/CodersInPune/.planning/ROUND3_DECISIONS.md): Revised [ADR-013] detailing server-verified role security, trusted membership storage, and confidential data redaction.
-- [.planning/ROUND3_ROADMAP.md](file:///Users/samyakvikasgedam/My%20Files/COLLEGE/CodersInPune/.planning/ROUND3_ROADMAP.md): Revised Phase 1 plan with `workspace_members` schema, middleware specifications, and 7 automated security test scenarios.
-- [.planning/ROUND3_STATE.md](file:///Users/samyakvikasgedam/My%20Files/COLLEGE/CodersInPune/.planning/ROUND3_STATE.md): This state document.
-
-## Strict Rules Check
-- [x] Zero application code modified.
-- [x] Zero database schemas altered.
-- [x] Zero files deleted or renamed.
-- [x] Zero UI changes applied.
-- [x] Working public demo preserved.
-- [x] Existing 149 tests confirmed passing.
-- [x] Stopped after Phase 0 revision. Awaiting approval.
+## Phase 1 Deliverables Summary
+1. **Database Schema & RLS**:
+   - `supabase/migrations/20261112000001_knotrail_workspace_members.sql`
+   - `src/server/db/schema.sql` updated with `workspace_members` table and `is_protected`/`owner_id` columns.
+2. **Server-Side Authentication**:
+   - `backend/middleware/auth.ts`: Bearer token extraction, Supabase `auth.getUser(token)` server-side verification, constant-time HMAC signature verification with strict issuer, audience, and expiry validation.
+3. **Authorization & Dual-Space Isolation**:
+   - `backend/middleware/roleAuth.ts`: `requireWorkspaceAccess` and `requireRole(allowedRoles)` middleware.
+   - Rejects client-supplied `X-KnoTrail-Role` headers for authorization.
+   - Segregates anonymous demo workspaces (`ws_anon_*`) from protected workspaces (`ws_proj_*`).
+4. **Confidential Data Redaction**:
+   - `src/server/security/redactor.ts`: `redactProjectDataForRole`, `redactHandoverDocument`, `redactFinding`, `redactCitation` masking `CONFIDENTIAL` citations and stripping internal reviewer notes for `EXTERNAL` users and public share endpoints.
+5. **Route Protection**:
+   - `backend/routes/workspaces.ts`, `backend/routes/handovers.ts`, `backend/routes/conflicts.ts`, `backend/routes/sources.ts`, `backend/routes/findings.ts`, `backend/routes/analysis.ts` fully guarded.
+6. **Frontend UI Adaptations**:
+   - `src/components/layout/Header.tsx`: Interactive Demo Perspective Switcher pill `[Demo: Manager | Developer | External]` labeled as simulation preview.
+   - `src/components/views/ReviewView.tsx` & `src/components/views/HandoverView.tsx`: Mutation controls (Certify, Resolve Conflict, Approve, Reject, Edit, Share) adapt cleanly to current user role.
+7. **Automated Security Test Suite**:
+   - `src/__tests__/roleSecurity.test.mjs`: 10 comprehensive security test scenarios passing with 100% success rate.

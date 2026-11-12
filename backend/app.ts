@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import { strictCorsMiddleware } from './middleware/cors.ts';
+import { authMiddleware } from './middleware/auth.ts';
 import { healthRouter } from './routes/health.ts';
 import { apiRouter } from './routes/index.ts';
 
@@ -25,6 +26,9 @@ export function createApp() {
 
   // Health probe routes (unprefixed at /health)
   app.use('/health', healthRouter);
+
+  // Authentication token verification on /api routes
+  app.use('/api', authMiddleware);
 
   // KnoTrail API routes mounted under /api
   app.use('/api', apiRouter);
