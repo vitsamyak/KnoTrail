@@ -434,16 +434,17 @@ export function LandingView() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
             {/* Member 1: Samyak Gedam */}
             <div className="bg-surface-container-lowest p-6 sm:p-7 rounded-2xl border border-outline-variant/30 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full group">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                {/* Real Photograph */}
-                <div className="relative shrink-0">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center overflow-hidden shadow-sm ring-4 ring-primary/10">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5">
+                {/* Real Photograph with Fixed Square Container */}
+                <div className="relative shrink-0 w-28 h-28 aspect-square">
+                  <div className="w-28 h-28 aspect-square rounded-full bg-surface-container-low border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-sm ring-4 ring-primary/10">
                     {!samyakImgFailed ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src="/team/samyak.jpeg"
                         alt="Samyak Gedam"
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 15%' }}
                         onError={() => setSamyakImgFailed(true)}
                       />
                     ) : (
@@ -454,7 +455,7 @@ export function LandingView() {
                     )}
                   </div>
                   <div
-                    className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-xs border-2 border-surface-container-lowest"
+                    className="absolute bottom-0.5 right-0.5 w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-xs border-2 border-surface-container-lowest pointer-events-none"
                     title="Team Leader"
                   >
                     <span className="material-symbols-outlined text-[15px]">stars</span>
@@ -500,16 +501,17 @@ export function LandingView() {
 
             {/* Member 2: Sanshrey Sanagar */}
             <div className="bg-surface-container-lowest p-6 sm:p-7 rounded-2xl border border-outline-variant/30 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full group">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                {/* Real Photograph */}
-                <div className="relative shrink-0">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center overflow-hidden shadow-sm ring-4 ring-primary/10">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5">
+                {/* Real Photograph with Fixed Square Container */}
+                <div className="relative shrink-0 w-28 h-28 aspect-square">
+                  <div className="w-28 h-28 aspect-square rounded-full bg-surface-container-low border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-sm ring-4 ring-primary/10">
                     {!sanshreyImgFailed ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src="/team/sanshrey.png"
                         alt="Sanshrey Sanagar"
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 62%' }}
                         onError={() => setSanshreyImgFailed(true)}
                       />
                     ) : (
@@ -520,7 +522,7 @@ export function LandingView() {
                     )}
                   </div>
                   <div
-                    className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-xs border-2 border-surface-container-lowest"
+                    className="absolute bottom-0.5 right-0.5 w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-xs border-2 border-surface-container-lowest pointer-events-none"
                     title="Core Engineer"
                   >
                     <span className="material-symbols-outlined text-[15px]">code</span>
