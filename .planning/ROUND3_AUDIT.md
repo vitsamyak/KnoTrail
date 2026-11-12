@@ -1,8 +1,8 @@
-# KnoTrail Round 3 System Audit (Phase 0)
+# KnoTrail Round 3 System Audit (Phase 0 - Revised Security Architecture)
 
 > **Event**: CodersInPune Hackathon 2026 — Round 3 Final Build  
 > **Team**: Deploy_or_Die (Samyak Gedam & Sanshrey Sanagar)  
-> **Audited Date**: 2026-11-12  
+> **Audited Date**: 2026-11-12 (Security Revision 2.0)  
 > **Repository**: `/Users/samyakvikasgedam/My Files/COLLEGE/CodersInPune`  
 > **Status**: COMPLETED — Phase 0 Planning & Audit Only (Zero Code Modifications)
 
@@ -18,23 +18,21 @@ KnoTrail is architected as a **decoupled, multi-cloud knowledge handover platfor
 │                        NEXT.JS 14 WEB FRONTEND                         │
 │                    (Deployed to Vercel / Client)                       │
 │                                                                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────────┐  │
-│  │ LandingView  │  │WorkspaceView │  │SourceManager │  │AnalysisView│  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └────────────┘  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────────┐  │
-│  │ EvidenceView │  │  ReviewView  │  │ HandoverView │  │/share/[tok]│  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └────────────┘  │
+│  8 Application Views + Public Share Viewer:                            │
+│  LandingView, WorkspaceView, SourceManagerView, AnalysisView,          │
+│  EvidenceView, ReviewView, HandoverView, /share/[token]                │
 │                                                                        │
-│               Centralized API Client: src/lib/api-client.ts            │
-│               Context & Cache Sync:   src/context/ProjectContext.tsx   │
+│  Centralized API Client: src/lib/api-client.ts                         │
+│  State & Cache Sync:    src/context/ProjectContext.tsx                 │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ HTTP / REST (CORS Governed)
+                                    │ HTTP / REST (Bearer Auth & CORS)
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                  STANDALONE NODE.JS EXPRESS BACKEND                    │
 │                 (Deployed to Render in Singapore)                      │
 │                                                                        │
-│  Middleware: strictCorsMiddleware, uploadMiddleware (multer, 10MB)     │
+│  Middleware: strictCorsMiddleware, authMiddleware, roleAuthMiddleware, │
+│              uploadMiddleware (multer, 10MB)                           │
 │  Routes: /api/workspaces, /api/projects, /api/sources, /api/analysis,  │
 │          /api/findings, /api/conflicts, /api/handovers, /health/*      │
 │  Engines: Gemini 2.5 Flash Pipeline, Verification & Grounding Engine,  │
@@ -47,6 +45,7 @@ KnoTrail is architected as a **decoupled, multi-cloud knowledge handover platfor
 │                       (Hosted in Mumbai ap-south-1)                    │
 │                                                                        │
 │  Table: workspaces (Canonical JSONB project_data, version, OCC)        │
+│  Table: workspace_members (Trusted server membership & roles)          │
 │  Table: handover_shares (SHA-256 token_hash, workspace_id, is_active)  │
 │  Stored Proc: save_workspace_state() (Row locks, OCC validation)       │
 │  Storage Bucket: knotrail-source-files (Private, 10MB limit)           │
@@ -102,27 +101,63 @@ KnoTrail is architected as a **decoupled, multi-cloud knowledge handover platfor
   - `DurableFileRepository`: Local disk storage (`.data/workspaces/*.json`) with atomic `fs.rename` writes.
   - Dynamic routing via `STORAGE_BACKEND=supabase` or `STORAGE_BACKEND=file`.
 
-### 2.4 AI Extraction & Evidence Grounding Engine
-- **SDK**: Google GenAI SDK (`@google/genai` v3.0.0). Model: `gemini-2.5-flash`.
-- **Zero Fake AI Invariant**: Extraction only runs if `GEMINI_API_KEY` is present and source text exists; returns HTTP 428 Precondition Required otherwise. Zero mock entities fabricated.
-- **7 Operational Categories**: `decision`, `task`, `risk`, `dependency`, `contact`, `next_action`, `unresolved_question`.
-- **Grounding & Coordinates**: Every finding requires verbatim quotes and exact coordinate calculations (`Page X` for PDFs, `Lines Y-Z` for TXT/MD).
-- **Verification Engine**: Dual-status model separating `evidenceValidity` (`MATCHED`, `MISSING`, `MISMATCHED`, `SOURCE_UNAVAILABLE`) from `claimStatus` (`SUPPORTED`, `UNCERTAIN`, `CONFLICTING`, `POSSIBLY_OUTDATED`).
+---
 
-### 2.5 Human Review & Handover Delivery
-- **Governance**: Mandatory human review before certified handover generation.
-- **Audit Log**: Immutable `ReviewAuditAction` records for all actions (`APPROVE`, `REJECT`, `EDIT`, `RESOLVE_CONFLICT`).
-- **Strict Handover Gating**: Handover blocked if:
-  1. Open conflicts exist (`unresolvedConflictsCount > 0`).
-  2. Unreviewed findings exist (`unreviewedCount > 0`).
-  3. Findings marked `NEEDS_CORRECTION` exist.
-  4. Unsupported or `MISSING` evidence claims exist.
-- **12-Section Formal Handover**: Section A through L (Cover/Meta, Executive Summary, Overview, Decisions, Tasks, Responsibilities, Risks, Dependencies, Questions, Next Actions, Evidence Inventory, Review History).
-- **Outdated Invalidation Protocol**: SHA-256 fingerprint hash of findings and sources detects drift and flags `isOutdated: true` if underlying project data changes post-certification.
+## 3. Security Audit & Flaw Analysis of Initial Proposal
+
+### 3.1 The Flaw: Client-Controlled Role Headers
+The initial proposal suggested sending `X-KnoTrail-Role: manager|developer|external` from the frontend. This was **critically flawed**:
+1. **Broken Object Level Authorization (BOLA)**: Any client using `curl`, Postman, or browser devtools could modify the header to `X-KnoTrail-Role: manager` and bypass all role restrictions.
+2. **Missing Function Level Access Control**: The server had no way to verify if the caller actually had the rights to assume that role.
+3. **No Workspace Boundary**: Clients could pass any `workspaceId` and declare themselves `manager`, gaining administrative control over another team's workspace.
+
+### 3.2 The Revised Security Architecture: Dual-Space Segregation
+To solve this without breaking the hackathon Incognito demo requirement, the platform is segregated into two strictly separated spaces:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        SPACE 1: ANONYMOUS DEMO                         │
+│                           (ws_anon_*)                                  │
+│                                                                        │
+│  - Zero authentication required; preserves Incognito testing.          │
+│  - Sandboxed ephemeral workspace.                                      │
+│  - Visual Perspective Switcher: strictly a DEMO UI SIMULATION.         │
+│  - The server marks this workspace as isDemo = true.                   │
+│  - CANNOT access, read, or modify protected workspaces (ws_proj_*).    │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│                       SPACE 2: PROTECTED WORKSPACES                    │
+│                           (ws_proj_*)                                  │
+│                                                                        │
+│  - Requires server-verified authentication (Bearer session token).     │
+│  - Authoritative role & workspace membership stored in server records  │
+│    (workspace_members table in Supabase / server membership registry). │
+│  - ZERO trust in client headers (X-KnoTrail-Role is strictly ignored). │
+│  - Express authMiddleware verifies token signature.                    │
+│  - Express roleAuthMiddleware checks (workspaceId, userId) membership. │
+│  - Enforces Manager, Developer, External permission gates on every API.│
+│  - External users automatically receive redacted payloads (CONFIDENTIAL│
+│    citations stripped server-side).                                    │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.3 Supabase Authentication & Session Verification Evaluation
+- **Current Setup**: Supabase project is configured in Mumbai (`ap-south-1`).
+- **Can it support secure authentication?**: **YES**.
+  - Supabase provides full Auth capabilities (`gotrue` engine).
+  - The standalone Express backend already has `@supabase/supabase-js` installed.
+  - The backend can securely verify incoming Supabase Auth JWTs using `supabaseClient.auth.getUser(bearerToken)`.
+  - This verifies cryptographic JWT signatures with zero risk of client spoofing.
+  - In local offline environments (`STORAGE_BACKEND=file`), a cryptographically signed HMAC token (`kt_sec_<userId>.<timestamp>.<hmac>`) signed with server-side `SESSION_SECRET` provides identical verification parity.
+- **Service Role Key Isolation**:
+  - `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY` resides strictly on Render.
+  - Frontend only interacts with the Express backend, never directly with Supabase.
+  - Database RLS remains fully enabled (denying all direct public access).
 
 ---
 
-## 3. Audit of the Three Round 3 Requirements
+## 4. Audit of the Three Round 3 Requirements
 
 ### Requirement A: GitHub Integration
 | Dimension | Audit Finding | Code Evidence |
@@ -135,15 +170,16 @@ KnoTrail is architected as a **decoupled, multi-cloud knowledge handover platfor
 | **Evidence & Citations** | Citations will store `commitSha`, PR/Issue number, file path, and line coordinates. Clickable links will point to `https://github.com/{owner}/{repo}/commit/{commitSha}`. | `EvidenceCitation` interface already defines `commitSha?: string` |
 | **Rate Limits & Security** | Unauthenticated API: 60 req/hr per IP. Authenticated: 5,000 req/hr. Tokens must NEVER be stored in frontend state or public bundles. Must be kept strictly server-side. | Backend proxy route `/api/sources/github/connect` required |
 
-### Requirement B: Role-Based Security
-| Dimension | Audit Finding | Code Evidence |
+### Requirement B: Role-Based Security (Revised)
+| Dimension | Audit Finding | Revised Architecture |
 | :--- | :--- | :--- |
-| **Current Auth System** | **Zero-Auth / Anonymous Workspaces**. Uses random workspace IDs (`ws_anon_<timestamp>_<hex>`). No login, no passwords, no user accounts. | `src/context/ProjectContext.tsx#L128-L138` |
-| **Clearance Tiers** | `clearanceTier: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL'` already exists in `EvidenceCitation` and is tested in `evidenceVerification.test.mjs`, but is not enforced on views or API mutations. | `src/lib/types.ts#L54` |
-| **Required Roles** | 1. **Manager**: Full access (upload, trigger AI, resolve conflicts, edit/approve/reject, certify handover, view all clearance tiers).<br>2. **Developer**: Collaborative access (upload, trigger AI, view `PUBLIC` and `INTERNAL` clearance, review findings; cannot certify handover or resolve architectural conflicts).<br>3. **External**: Read-only restricted view (views certified handovers and approved findings with `PUBLIC` clearance only; `CONFIDENTIAL` citations redacted). | Aligns with Hackathon prompt for Round 3 |
-| **Zero-Auth Demo Preservation** | **Interactive Role Switcher**. In demo / anonymous mode, evaluators can freely switch roles via an interactive top-bar switcher (`Manager` \| `Developer` \| `External`) to inspect and test the permission boundaries without being blocked by an authentication wall. | Aligns with ADR-006 & Incognito Invariant |
-| **API Authorization** | Backend middleware `roleAuthMiddleware` to validate role permissions passed via request header `X-KnoTrail-Role` or session token. Blocks unauthorized mutations (e.g. non-Manager certifying handover). | `backend/middleware/` |
-| **Component Restrictions** | Frontend conditionally disables/hides "Certify Handover", "Delete Source", and "Resolve Conflict" buttons for Developer/External, and redacts confidential citations for External. | `ReviewView.tsx`, `HandoverView.tsx`, `EvidenceView.tsx` |
+| **Auth System** | Dual-space: Anonymous demo (`ws_anon_*`) vs Protected (`ws_proj_*`). | Anonymous workspaces allow instant testing. Protected workspaces require server-verified tokens. |
+| **Trusted Membership Storage** | Not implemented currently. | Server-side `workspace_members` table storing `(workspace_id, user_id, email, role)`. |
+| **Authorization Check** | Initially proposed client headers (rejected). | Server-side Express `roleAuthMiddleware` querying trusted membership records for `(workspaceId, userId)`. |
+| **Manager Role** | Full administrative authority. | Can upload/delete sources, run AI, resolve conflicts, edit/approve/reject, certify handovers, manage share links, view `CONFIDENTIAL`. |
+| **Developer Role** | Operational collaboration. | Can upload sources, run AI, edit/approve findings, view `PUBLIC` and `INTERNAL`. Blocked from certifying handovers or resolving architectural conflicts (HTTP 403). |
+| **External Role** | Read-only restricted view. | Can view certified handovers and approved findings with `PUBLIC` clearance only. Blocked from review/upload actions (HTTP 403). `CONFIDENTIAL` citations redacted server-side. |
+| **Cross-Workspace Protection** | Missing in previous setup. | Middleware verifies caller is a member of the requested `workspaceId`. Cross-workspace requests rejected with HTTP 403 Forbidden. |
 
 ### Requirement C: Continuous Knowledge Updates
 | Dimension | Audit Finding | Code Evidence |
@@ -158,32 +194,30 @@ KnoTrail is architected as a **decoupled, multi-cloud knowledge handover platfor
 
 ---
 
-## 4. Technical Risks & Vulnerability Inventory
+## 5. Security Risks & Threat Modeling
 
-| Risk ID | Category | Description | Severity | Mitigation Strategy |
+| Threat ID | Threat Category | Attack Vector | Impact | Revised Mitigation |
 | :--- | :--- | :--- | :--- | :--- |
-| **RSK-01** | Security / Auth | Introducing mandatory login would break the zero-auth public demo and fail hackathon evaluation in Incognito mode. | **CRITICAL** | Preserve zero-auth demo with interactive Role Switcher; enforce real role-based permission policies on API routes and UI views without requiring an account. |
-| **RSK-02** | External API | Unauthenticated GitHub API calls are rate-limited to 60 requests/hour per IP, risking HTTP 403 errors during judging. | **HIGH** | Support optional GitHub PAT input, cache repository responses in workspace storage, and provide a pre-seeded mock GitHub repository fallback if rate limits are hit. |
-| **RSK-03** | Secrets | GitHub Personal Access Tokens or API keys might accidentally leak to the client or public bundles. | **HIGH** | All GitHub API requests must be proxied through the standalone Express backend. GitHub tokens must reside in backend memory or server environment variables only. |
-| **RSK-04** | Data Schema | Adding role fields and source versioning might break existing JSONB schemas or tests if not backward-compatible. | **MEDIUM** | Ensure all new fields (`role`, `previousContentHash`, `isOutdatedFinding`) are optional with sensible defaults in domain types and validation helpers. |
-| **RSK-05** | CORS | GitHub webhook deliveries do not include browser CORS headers and might be rejected by `strictCorsMiddleware`. | **MEDIUM** | Mount webhook endpoints with webhook-specific middleware that permits GitHub User-Agent payloads while enforcing HMAC signature validation (`X-Hub-Signature-256`). |
-| **RSK-06** | Test Regressions | Existing 149 automated tests cover strict contracts across 9 phases. Breaking any existing contract will cause test failures. | **HIGH** | Strict regression testing rule: all 149 tests must continue to pass cleanly after every modification wave. |
+| **SEC-01** | Role Impersonation / Header Spoofing | Attacker sends `X-KnoTrail-Role: manager` on API request. | Unauthorized handover certification or source deletion. | **Client headers strictly ignored.** Authorization relies solely on server-verified session token and trusted database membership query. |
+| **SEC-02** | Cross-Workspace Access (BOLA) | User belonging to Workspace A sends request targeting Workspace B. | Data tampering or unauthorized data access. | Middleware checks that `(req.auth.userId, targetWorkspaceId)` exists in `workspace_members`. Returns 403 Forbidden on mismatch. |
+| **SEC-03** | Anonymous to Protected Intrusion | Anonymous demo user calls API targeting `ws_proj_*`. | Tampering with production workspaces. | Anonymous access strictly confined to `ws_anon_*`. Protected workspaces require valid server-verified token. |
+| **SEC-04** | Confidential Data Leakage | External user fetches findings or exports handover. | Exposure of internal credentials, IP, or confidential designs. | Server-side redaction filter strips `CONFIDENTIAL` citations and findings before JSON serialization. |
+| **SEC-05** | GitHub Token Leakage | GitHub PAT exposed in client state or API responses. | Compromise of user's GitHub account. | PATs reside in backend server memory/env only; never returned in client JSON responses. |
+| **SEC-06** | Webhook Forgery | Attacker sends fake GitHub push webhook payload. | Triggers unauthorized source re-syncs. | Validates GitHub `X-Hub-Signature-256` HMAC signature using server secret. |
 
 ---
 
-## 5. Feature Compatibility Matrix
+## 6. Revised Feature Compatibility Matrix
 
-| Feature | Component | Current Implementation Status | Evidence & Code Reference | Required Round 3 Action |
+| Feature | Component | Status | Evidence | Required Round 3 Action |
 | :--- | :--- | :--- | :--- | :--- |
-| **GitHub Integration** | Source Type Schema | **Partially Implemented** | `sourceType: 'github'` exists in `src/lib/types.ts#L43` and `ProjectSource` schema. | Add repository metadata fields (`repoUrl`, `branch`, `commitSha`, `owner`, `repoName`). |
-| **GitHub Integration** | API Client & Connector | **Not Implemented** | Zero GitHub API calls exist. `SourceManagerView.tsx#L413` shows GitHub as a disabled "Upcoming" card. | Build `backend/services/github.ts` to fetch commits, PRs, issues via GitHub REST API. |
-| **GitHub Integration** | Ingestion & Citation Linking | **Partially Implemented** | `EvidenceCitation.commitSha` exists in `src/lib/types.ts#L46`. Document extractor handles text. | Build GitHub activity synthesizer to format commits/PRs into verifiable source documents. |
-| **Role-Based Security** | User Role Schema | **Not Implemented** | Domain models currently lack `UserRole` type (`Manager`, `Developer`, `External`). | Add `UserRole` type to `types.ts` and active role state to `ProjectContext.tsx`. |
-| **Role-Based Security** | Clearance Tiers | **Already Implemented** | `clearanceTier: 'PUBLIC' \| 'INTERNAL' \| 'CONFIDENTIAL'` implemented and tested in `evidenceVerification.test.mjs`. | Enforce clearance tier masking/redaction when in `External` role. |
-| **Role-Based Security** | API Authorization Gate | **Not Implemented** | Backend routes check `workspaceId` validity but do not check caller role permissions. | Implement `roleAuthMiddleware` to guard certification, resolution, and deletion. |
-| **Role-Based Security** | UI Role Switcher | **Not Implemented** | No role switcher exists in the current UI header. | Add interactive Role Switcher in `Header.tsx` allowing instant switching between Manager, Developer, and External. |
-| **Continuous Updates** | Post-Cert Invalidation | **Already Implemented** | `computeProjectDataSnapshotHash` flags `isOutdated: true` when project data mutates after certification. | Retain as baseline; expand to granular per-finding invalidation. |
-| **Continuous Updates** | Temporal Supersession | **Already Implemented** | `verifier.ts` flags older conflicting claims as `POSSIBLY_OUTDATED`. | Connect to document version changes. |
-| **Continuous Updates** | Source Diff & Impact Scanner | **Not Implemented** | No logic scans findings citing a modified source to detect quote displacement. | Build `src/server/updates/impactScanner.ts` to detect displaced quotes upon source update. |
-| **Continuous Updates** | Re-review & Version Bump | **Partially Implemented** | `buildHandoverDocument` supports versioning (`v1.0` -> `v1.1`), but requires manual re-certification. | Automate re-review flagging (`NEEDS_CORRECTION`) and version incrementation workflow. |
-| **Continuous Updates** | Sync & Webhook Receiver | **Not Implemented** | No sync endpoint or webhook handler exists in `backend/routes/`. | Add `POST /api/sources/:id/sync` and `POST /api/sources/github/webhook`. |
+| **Role-Based Security** | Membership Storage | **Not Implemented** | Only `workspaces` table exists; no membership table. | Add `workspace_members` table and migration. |
+| **Role-Based Security** | Token Verification Middleware | **Not Implemented** | Backend routes only validate `isValidWorkspaceId`. | Implement `backend/middleware/auth.ts` verifying Bearer tokens. |
+| **Role-Based Security** | Role Authorization Middleware | **Not Implemented** | No role check on routes. | Implement `backend/middleware/roleAuth.ts` enforcing Manager / Developer / External rules. |
+| **Role-Based Security** | Clearance Redaction Engine | **Partially Implemented** | `clearanceTier` exists in domain types and verifier. | Build server-side redaction utility filtering `CONFIDENTIAL` for External role. |
+| **Role-Based Security** | Demo Perspective Switcher | **Not Implemented** | Header has no switcher. | Add visual switcher in `Header.tsx` explicitly labeled as "Demo Simulation Mode". |
+| **GitHub Integration** | API Client & Connector | **Not Implemented** | Zero GitHub API calls exist. | Build `backend/services/github.ts` using GitHub REST API v3. |
+| **GitHub Integration** | Commit/PR Citation Linking | **Partially Implemented** | `EvidenceCitation.commitSha` exists in `types.ts`. | Synthesize activity documents; generate direct GitHub URLs. |
+| **Continuous Updates** | Source Version Tracking | **Partially Implemented** | Post-cert hash exists. | Add `version` and `previousContentHash` to `ProjectSource`. |
+| **Continuous Updates** | Impact Scanner | **Not Implemented** | No quote drift scanner. | Build `src/server/updates/impactScanner.ts`. |
+| **Continuous Updates** | On-Demand Sync & Webhook | **Not Implemented** | No sync/webhook routes. | Add `/api/sources/:id/sync` and `/api/sources/github/webhook`. |

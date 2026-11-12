@@ -1,8 +1,8 @@
-# KnoTrail Round 3 Implementation Roadmap
+# KnoTrail Round 3 Implementation Roadmap (Revised Security Architecture)
 
 > **Milestone**: CodersInPune Hackathon 2026 — Final Round 3 Build  
 > **Team**: Deploy_or_Die (Samyak Gedam & Sanshrey Sanagar)  
-> **Date**: 2026-11-12  
+> **Date**: 2026-11-12 (Security Revision 2.0)  
 > **Status**: APPROVED for Planning (Phase 0 Complete)
 
 ---
@@ -10,18 +10,20 @@
 ## Roadmap Overview
 
 Round 3 delivers the three major platform enhancements showcased to hackathon judges:
-1. **Role-Based Security**: Manager, Developer, and External access tiers with in-session role switching, API authorization gates, and confidential data redaction while preserving the zero-auth public demo.
+1. **Server-Verified Role-Based Security**: Manager, Developer, and External access tiers governed by server-side membership records and Express authorization middleware, with strict confidential data redaction, cross-workspace access prevention, and an interactive Demo Perspective Switcher for zero-login evaluation.
 2. **GitHub Integration**: Connect GitHub repositories (public or authenticated via PAT), parse commits, pull requests, and issues into verifiable source evidence, and link findings directly to GitHub commit SHAs.
 3. **Continuous Knowledge Updates**: Automated source change detection, impact scanning for affected findings, outdated invalidation, and mandatory human review before re-certifying updated handover versions.
 4. **Integration, Security & Production Verification**: End-to-end integration, performance profiling, secret isolation, CORS audit, and full automated test suite execution (targeting 170+ passing tests).
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                   PHASE 1: ROLE-BASED SECURITY                         │
-│  - UserRole domain schema (Manager, Developer, External)               │
-│  - Header Interactive Role Switcher for zero-auth evaluation           │
-│  - Backend roleAuthMiddleware on sensitive mutations                   │
-│  - Clearance tier redaction for External perspective                   │
+│             PHASE 1: SERVER-VERIFIED ROLE-BASED SECURITY               │
+│  - Database table: workspace_members (workspace_id, user_id, role)     │
+│  - Express authMiddleware: verifies Supabase / HMAC session tokens     │
+│  - Express roleAuthMiddleware: checks trusted membership & permissions │
+│  - Dual-Space: Demo (ws_anon_*) vs Protected (ws_proj_*) isolation     │
+│  - Server-side redactor: strips CONFIDENTIAL citations for External    │
+│  - Header Demo Perspective Switcher (clearly marked as simulation)     │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼
@@ -47,7 +49,7 @@ Round 3 delivers the three major platform enhancements showcased to hackathon ju
 ┌────────────────────────────────────────────────────────────────────────┐
 │           PHASE 4: INTEGRATION, SECURITY & PRODUCTION TEST             │
 │  - End-to-end cross-feature workflow verification                      │
-│  - Security & secret leakage audit                                     │
+│  - Security & secret leakage audit (verifying no token leaks)          │
 │  - Gravitas verification contract execution (170+ tests PASS)          │
 │  - Dual production builds: Next.js frontend + standalone Express       │
 └────────────────────────────────────────────────────────────────────────┘
@@ -57,39 +59,56 @@ Round 3 delivers the three major platform enhancements showcased to hackathon ju
 
 ## Phase Details
 
-### Phase 1: Role-Based Security
+### Phase 1: Server-Verified Role-Based Security
 
-**Goal**: Deliver role-based security across Manager, Developer, and External access tiers, with an interactive role switcher for zero-auth demo accessibility, API-level authorization gates, and automatic redaction of confidential findings.
+**Goal**: Deliver genuine, server-verified role-based security across Manager, Developer, and External access tiers. Authoritative roles and workspace memberships are stored in trusted server-side database records. Zero reliance on client-supplied headers. Strict Express middleware guards every protected API route, prevents cross-workspace data tampering, segregates anonymous demo workspaces from protected workspaces, and redacts confidential findings from External users.
 
 - **Dependencies**: None (First Round 3 Phase).
 - **Files Likely to be Modified**:
-  - `src/lib/types.ts`: Define `UserRole` (`'MANAGER' | 'DEVELOPER' | 'EXTERNAL'`), update `ProjectData` and `EvidenceCitation`.
-  - `src/context/ProjectContext.tsx`: Add `currentUserRole`, `setCurrentUserRole`, role persistence in `localStorage`, and role headers in API requests.
-  - `src/lib/api-client.ts`: Send `X-KnoTrail-Role` header with all mutation requests.
-  - `backend/middleware/roleAuth.ts` (NEW): Middleware enforcing required role levels per endpoint.
-  - `backend/routes/handovers.ts`: Guard `POST /api/handovers/certify` (Manager only) and redact exports for External.
-  - `backend/routes/conflicts.ts`: Guard `POST /api/conflicts/:id/resolve` (Manager only).
-  - `backend/routes/sources.ts`: Guard deletion and upload (Manager/Developer only).
-  - `backend/routes/findings.ts`: Guard approval and rejection (Manager/Developer only).
-  - `src/components/layout/Header.tsx`: Add interactive Role Switcher dropdown/toggle pill.
-  - `src/components/views/ReviewView.tsx`: Disable review actions for External with informational banner.
-  - `src/components/views/HandoverView.tsx`: Disable "Certify Handover" button for Developer and External.
-  - `src/components/views/EvidenceView.tsx`: Mask `CONFIDENTIAL` citations for External.
+  - `src/lib/types.ts`: Define `UserRole` (`'MANAGER' | 'DEVELOPER' | 'EXTERNAL'`), `WorkspaceMemberRecord`, and `AuthSessionState`.
+  - `src/server/db/schema.sql` & `supabase/migrations/20261112000001_knotrail_workspace_members.sql` (NEW):
+    - Create `workspace_members` table (`workspace_id`, `user_id`, `email`, `role`, `created_at`, `updated_at`).
+    - Enable RLS on `workspace_members` (deny anon/authenticated; grant service_role).
+  - `src/server/db/storage.ts`: Add `StorageRepository` methods: `getWorkspaceMember(wsId, userId)`, `addWorkspaceMember(wsId, member)`, `listWorkspaceMembers(wsId)`.
+  - `src/server/db/supabaseStorage.ts`: Implement Supabase database queries for `workspace_members`.
+  - `backend/middleware/auth.ts` (NEW): Verifies Bearer session tokens via Supabase Auth (`supabase.auth.getUser`) or server-signed HMAC tokens in offline development.
+  - `backend/middleware/roleAuth.ts` (NEW): Resolves authoritative role from trusted server records for `(workspaceId, userId)`. Rejects client-supplied role headers. Enforces permission boundaries per route.
+  - `src/server/security/redactor.ts` (NEW): Server-side utility that redacts `clearanceTier: 'CONFIDENTIAL'` findings, citations, and sensitive emails for External users.
+  - `backend/routes/handovers.ts`: Guard certification and share revocation (`MANAGER` only). Apply redaction to `GET /api/handovers/export/:format` for `EXTERNAL`.
+  - `backend/routes/conflicts.ts`: Guard conflict resolution (`MANAGER` only).
+  - `backend/routes/sources.ts`: Guard upload and deletion (`MANAGER` or `DEVELOPER` only).
+  - `backend/routes/findings.ts`: Guard approval and rejection (`MANAGER` or `DEVELOPER` only).
+  - `src/components/layout/Header.tsx`: Add Demo Perspective Switcher (labeled `"Demo Simulation Mode — Not an Authentication Boundary"` in `ws_anon_*` workspaces).
+  - `src/components/views/ReviewView.tsx`: Disable action controls for `EXTERNAL` users with informational banner.
+  - `src/components/views/HandoverView.tsx`: Disable "Certify Handover" button for `DEVELOPER` and `EXTERNAL`.
+  - `src/components/views/EvidenceView.tsx`: Render masked citations for `EXTERNAL`.
 - **Database Changes**:
-  - None required for core tables. Optional `role` property supported in JSONB `workspaces.project_data`.
+  - New table: `workspace_members` with foreign key `workspace_id REFERENCES workspaces(id) ON DELETE CASCADE`.
+  - Primary key: `(workspace_id, user_id)`.
+  - Index: `idx_workspace_members_user ON workspace_members(user_id)`.
 - **New APIs**:
-  - `GET /api/auth/role` (Returns current workspace role permissions).
+  - `GET /api/workspaces/:id/members`: Lists workspace members (Manager only).
+  - `POST /api/workspaces/:id/members`: Invites/adds a member with a role (Manager only).
+  - `GET /api/auth/session`: Returns current authenticated user and resolved role for the workspace.
 - **Security Considerations**:
-  - Prevent privilege escalation via request manipulation.
-  - Ensure redacted handover exports do not leak confidential findings in JSON metadata.
-- **Automated Test Requirements**:
-  - `src/__tests__/roleSecurity.test.mjs` (NEW): Test role permission enforcement, API 403 Forbidden responses, redaction logic, and role persistence.
+  - **Zero Trust in Client Headers**: `X-KnoTrail-Role` is strictly forbidden as an authorization mechanism.
+  - **Cross-Workspace Protection**: Users cannot access or mutate workspaces they are not members of (HTTP 403 Forbidden).
+  - **Demo Space Segregation**: Unauthenticated users are strictly confined to `ws_anon_*` workspaces. Requests targeting `ws_proj_*` without valid tokens receive HTTP 401 Unauthorized.
+  - **Confidential Redaction**: `CONFIDENTIAL` citations and findings are stripped server-side before sending JSON to External users.
+  - **No Service Role Leakage**: `SUPABASE_SECRET_KEY` remains strictly backend-only.
+- **Automated Test Requirements (`src/__tests__/roleSecurity.test.mjs`)**:
+  1. *Role Spoofing Rejection*: A client sending an arbitrary role header or claiming to be Manager must be rejected.
+  2. *Cross-Workspace Access Denial*: User A from Workspace 1 attempting to read or modify Workspace 2 receives HTTP 403 Forbidden.
+  3. *Anonymous Boundary*: Unauthenticated requests attempting to access protected workspaces (`ws_proj_*`) receive HTTP 401/403.
+  4. *Unauthorized Action Blocking*: A Developer attempting `POST /api/handovers/certify` or `POST /api/conflicts/:id/resolve` receives HTTP 403 Forbidden.
+  5. *Confidential Data Leakage Prevention*: External user calling `GET /api/workspaces` or exporting handovers receives redacted output with zero `CONFIDENTIAL` citations.
+  6. *Manager Authority*: Valid Manager can execute all actions cleanly.
+  7. *Public Share Link Independence*: Public share links (`/share/[token]`) continue working without login.
 - **Acceptance Criteria**:
-  1. Switching to `External` hides/disables review buttons and blocks `POST /api/handovers/certify` with HTTP 403.
-  2. Findings marked `clearanceTier: 'CONFIDENTIAL'` are masked with `[REDACTED]` when viewed in External role.
-  3. `Developer` can edit and approve findings, but cannot certify handovers or resolve architectural conflicts.
-  4. `Manager` retains full access across all operations.
-  5. Incognito evaluators can toggle roles freely without login.
+  1. All 7 security test scenarios pass with zero failures.
+  2. Protected workspaces reject unauthorized requests at the Express middleware layer before route handlers run.
+  3. External users cannot see confidential evidence or bypass export filters.
+  4. Incognito evaluators can test the demo workspace immediately.
 
 ---
 
@@ -116,8 +135,8 @@ Round 3 delivers the three major platform enhancements showcased to hackathon ju
 - **Security Considerations**:
   - Rate-limit handling (handle 403 with friendly fallback message).
   - GitHub PATs stored in backend memory during sync; never returned in client JSON responses.
-- **Automated Test Requirements**:
-  - `src/__tests__/githubIntegration.test.mjs` (NEW): Mock GitHub API responses, test commit/PR parsing, citation link generation, and rate-limit fallbacks.
+- **Automated Test Requirements (`src/__tests__/githubIntegration.test.mjs`)**:
+  - Mock GitHub API responses, test commit/PR parsing, citation link generation, and rate-limit fallbacks.
 - **Acceptance Criteria**:
   1. Providing a public GitHub repository (e.g. `facebook/react` or team repository) fetches recent commits and PRs.
   2. Synthesized GitHub source document appears in Source Manager with record count and commit icon.
@@ -148,8 +167,8 @@ Round 3 delivers the three major platform enhancements showcased to hackathon ju
 - **Security Considerations**:
   - Validate GitHub webhook `X-Hub-Signature-256` HMAC signature.
   - Cooldown timers on sync endpoints to prevent Denial-of-Service / rate-limit exhaustion.
-- **Automated Test Requirements**:
-  - `src/__tests__/continuousUpdates.test.mjs` (NEW): Test source modification detection, impact scanner quote verification, finding invalidation, review gate blocking, and version incrementation (`v1.0` -> `v1.1`).
+- **Automated Test Requirements (`src/__tests__/continuousUpdates.test.mjs`)**:
+  - Test source modification detection, impact scanner quote verification, finding invalidation, review gate blocking, and version incrementation (`v1.0` -> `v1.1`).
 - **Acceptance Criteria**:
   1. Modifying a source document and re-syncing flags all findings with displaced/missing quotes as `claimStatus: 'POSSIBLY_OUTDATED'`.
   2. Handover status changes to `isOutdated: true` with explicit drift explanation.
@@ -168,14 +187,14 @@ Round 3 delivers the three major platform enhancements showcased to hackathon ju
   - `render.yaml`: Ensure any new environment variables (`GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET`) are documented.
   - `docs/DEPLOYMENT.md`: Update runbook with Round 3 deployment steps.
 - **Automated Test Requirements**:
-  - Full test run executing all test suites: `npm test` targeting **170+ tests passing** with 0 failures.
+  - Full test run executing all test suites: `npm test` targeting **175+ tests passing** with 0 failures.
   - Standalone Express backend build: `npm run backend:build` compiling cleanly to `dist/backend/server.js`.
   - Next.js frontend build: `npm run frontend:build` compiling cleanly with 0 errors across all routes.
 - **Security Considerations**:
   - Zero database credentials or API keys exposed in frontend bundles or API responses.
   - Strict CORS policy verified.
 - **Acceptance Criteria**:
-  1. All 149 previous tests + 25+ new Round 3 tests pass cleanly (100% pass rate).
+  1. All 149 previous tests + 26+ new Round 3 tests pass cleanly (100% pass rate).
   2. Production builds for backend and frontend compile with zero warnings or errors.
   3. Complete 8-step user journey verified end-to-end.
   4. Public share links and demo workflows remain fully operational.
@@ -190,7 +209,7 @@ For Round 3, the contract will be upgraded to verify:
 1. **Command**: `npm test && npm run backend:build && npm run frontend:build`
 2. **Exit Code**: `0`
 3. **Targeted Verdict**: `PASS`
-4. **Targeted Test Count**: 170+ automated tests across 12 test suites (all 9 previous suites + 3 new Round 3 suites: `roleSecurity`, `githubIntegration`, `continuousUpdates`).
+4. **Targeted Test Count**: 175+ automated tests across 12 test suites (all 9 previous suites + 3 new Round 3 suites: `roleSecurity`, `githubIntegration`, `continuousUpdates`).
 5. **Production Bundles**:
    - Backend: `dist/backend/server.js` (under 250 KB).
    - Frontend: Next.js static and dynamic routes compiled with zero errors.

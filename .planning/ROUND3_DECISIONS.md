@@ -2,41 +2,78 @@
 
 > **Milestone**: CodersInPune Hackathon 2026 — Round 3 Final Build  
 > **Team**: Deploy_or_Die (Samyak Gedam & Sanshrey Sanagar)  
-> **Date**: 2026-11-12  
+> **Date**: 2026-11-12 (Revised Security Architecture)  
 > **Status**: APPROVED for Planning
 
 ---
 
-## ADR-013: Hybrid Role-Based Security with Zero-Auth Public Demo Preservation
+## ADR-013: Server-Verified Role-Based Security with Dual-Space Isolation & Trusted Server Memberships
 
 ### Context
-Round 3 requires implementing Role-Based Access Control (RBAC) supporting three distinct tiers:
+Round 3 requires implementing Role-Based Access Control (RBAC) across three distinct tiers:
 1. **Manager**: Full administrative control (upload, trigger AI, resolve conflicts, edit/approve/reject, certify handovers, manage shares).
 2. **Developer**: Collaborative operational access (upload, trigger AI, inspect findings, propose edits, review; cannot certify handovers or resolve architectural conflicts).
 3. **External**: Read-only restricted view (views certified handovers and approved findings with `PUBLIC` clearance only; `CONFIDENTIAL` citations redacted; cannot review or modify data).
 
-Simultaneously, ADR-006 and the Core Incognito Invariant strictly mandate that hackathon judges and external evaluators must be able to experience the complete platform in an Incognito browser window without encountering a login, signup, or registration wall.
+An initial proposal considered a client-supplied `X-KnoTrail-Role` header. This was rejected because client-controlled headers are vulnerable to spoofing, privilege escalation, and Broken Object Level Authorization (BOLA).
+
+Simultaneously, ADR-006 and the Core Incognito Invariant mandate that hackathon judges must be able to experience KnoTrail in an Incognito browser window without encountering a mandatory login wall.
 
 ### Decision
-Implement a **Dual-Mode Role Security Architecture**:
-1. **Interactive Session Role Switcher**:
-   - In demo and anonymous workspaces, the platform displays an interactive Role Switcher in the top navigation header:  
-     `[Manager (Admin)] | [Developer] | [External Viewer]`
-   - Switching roles immediately updates client context (`currentUserRole`) and passes the active role via request headers (`X-KnoTrail-Role: manager|developer|external`).
-   - Judges can toggle roles with a single click to instantly evaluate how permissions, view restrictions, and confidential data redaction work live.
-2. **Backend API Permission Enforcement**:
-   - Introduce `roleAuthMiddleware` on the standalone Express backend.
-   - Enforces strict role gates:
-     - `POST /api/handovers/certify` -> Requires `Manager`. Returns HTTP 403 Forbidden otherwise.
-     - `DELETE /api/handovers/share/:token` -> Requires `Manager`.
-     - `POST /api/conflicts/:id/resolve` -> Requires `Manager`.
-     - `POST /api/sources`, `POST /api/sources/upload`, `DELETE /api/sources/:id` -> Requires `Manager` or `Developer`.
-     - `PATCH /api/findings/:id/approve` -> Requires `Manager` or `Developer`.
-     - `GET /api/handovers/export/:format` -> When requested by `External`, redacts `CONFIDENTIAL` findings and sensitive stakeholder emails.
+Implement a **Dual-Space Server-Verified Security Architecture**:
+
+#### 1. Dual-Space Segregation
+- **Space 1: Anonymous Demo Workspaces (`ws_anon_*`)**:
+  - Unauthenticated access permitted exclusively for workspaces with the `ws_anon_` prefix.
+  - Completely isolated from protected workspaces.
+  - In demo workspaces, a visual **Demo Perspective Switcher** exists in the header, allowing judges to observe how UI views adapt across Manager, Developer, and External roles.
+  - The UI explicitly marks this as a **"Demo Simulation Mode"** and clarifies that it is an interactive preview, not an authenticated security boundary.
+  - Anonymous requests cannot access or mutate protected workspaces.
+- **Space 2: Protected Workspaces (`ws_proj_*`)**:
+  - Requires server-verified authentication via `Authorization: Bearer <token>`.
+  - The backend verifies cryptographic session token signatures via Supabase Auth (`supabaseClient.auth.getUser(token)`) or server-signed HMAC tokens in offline development.
+  - Anonymous requests attempting to access protected workspaces are rejected with HTTP 401 Unauthorized / 403 Forbidden.
+
+#### 2. Trusted Server-Side Membership Records
+- Workspace membership and authoritative roles are stored in a trusted server-side table:
+  ```sql
+  CREATE TABLE IF NOT EXISTS workspace_members (
+      workspace_id VARCHAR(64) NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      user_id VARCHAR(64) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      role VARCHAR(20) NOT NULL CHECK (role IN ('MANAGER', 'DEVELOPER', 'EXTERNAL')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (workspace_id, user_id)
+  );
+  ```
+- Stored identically in `DurableFileRepository` via `.data/memberships/{workspaceId}.json`.
+- **Zero Trust in Client Headers**: Client-supplied role headers (such as `X-KnoTrail-Role`) are strictly ignored. The caller's role is resolved exclusively by querying the database for `(workspaceId, verifiedUserId)`.
+
+#### 3. Express Authorization Middleware (`roleAuthMiddleware`)
+- Every protected route is guarded by server-side middleware:
+  - Verifies workspace membership: ensures the authenticated user is a registered member of the target `workspaceId`. Rejects cross-workspace access attempts with HTTP 403 Forbidden.
+  - Verifies role permissions:
+    - `POST /api/handovers/certify` -> Requires `MANAGER`. Returns HTTP 403 Forbidden if called by Developer or External.
+    - `DELETE /api/handovers/share/:token` -> Requires `MANAGER`.
+    - `POST /api/conflicts/:id/resolve` -> Requires `MANAGER`.
+    - `POST /api/sources`, `POST /api/sources/upload`, `DELETE /api/sources/:id` -> Requires `MANAGER` or `DEVELOPER`.
+    - `PATCH /api/findings/:id/approve` -> Requires `MANAGER` or `DEVELOPER`.
+    - `PATCH /api/findings/:id/reject` -> Requires `MANAGER` or `DEVELOPER`.
+
+#### 4. Server-Side Confidential Data Redaction
+- When a user with the `EXTERNAL` role calls read endpoints (`GET /api/workspaces`, `GET /api/findings`, `GET /api/handovers/export/:format`):
+  - Findings with `clearanceTier: 'CONFIDENTIAL'` are automatically stripped or masked server-side (`[REDACTED - INTERNAL ONLY]`).
+  - Sensitive stakeholder email addresses and internal reviewer notes are excluded from JSON payloads.
+  - Raw confidential evidence citations are never transmitted to External clients.
+
+#### 5. Preservation of Public Handover Sharing
+- Public share links (`/share/[token]`) continue to function without authentication using their existing SHA-256 hash lookup in `handover_shares`.
+- Shared handovers only contain approved, certified findings and do not expose workspace administration endpoints.
 
 ### Consequences
-- **Positive**: Evaluators can thoroughly test all three role perspectives without authentication friction. Real API-level and UI-level security boundaries are strictly enforced.
-- **Negative**: Role switching in demo mode is client-driven; production enterprise deployment will eventually require binding roles to authenticated user identities.
+- **Positive**: Eliminates role spoofing and cross-workspace access vulnerabilities. Protects confidential data at the API level. Preserves zero-login demo testing for hackathon evaluators.
+- **Negative**: Requires maintaining the `workspace_members` table and session verification middleware.
 
 ---
 
