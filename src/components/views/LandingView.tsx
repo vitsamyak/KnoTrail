@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 
 export function LandingView() {
   const { setActiveView } = useProject();
-  const [samyakImgFailed, setSamyakImgFailed] = useState(false);
-  const [sanshreyImgFailed, setSanshreyImgFailed] = useState(false);
 
   return (
     <main className="min-h-screen w-full flex items-center justify-center px-3 sm:px-space-md py-space-md bg-background text-on-surface antialiased">
@@ -417,162 +415,7 @@ export function LandingView() {
           </div>
         </section>
 
-        {/* 5. MEET THE TEAM / CONTRIBUTORS SECTION */}
-        <section className="w-full px-gutter">
-          <div className="text-center max-w-2xl mx-auto mb-space-lg">
-            <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">
-              Team Deploy_or_Die
-            </span>
-            <h2 className="font-headline-lg text-2xl sm:text-3xl text-on-surface tracking-tight font-bold mt-1">
-              Meet the Team Behind KnoTrail
-            </h2>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1 leading-relaxed">
-              Built with teamwork, curiosity and a shared goal of making project knowledge easier to manage.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
-            {/* Member 1: Samyak Gedam */}
-            <div className="bg-surface-container-lowest p-6 sm:p-7 rounded-2xl border border-outline-variant/30 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full group">
-              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5">
-                {/* Real Photograph with Fixed Square Container */}
-                <div className="relative shrink-0 w-28 h-28 aspect-square">
-                  <div className="w-28 h-28 aspect-square rounded-full bg-surface-container-low border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-sm ring-4 ring-primary/10">
-                    {!samyakImgFailed ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src="/team/samyak.jpeg"
-                        alt="Samyak Gedam"
-                        className="w-full h-full object-cover"
-                        style={{
-                          objectPosition: 'center 15%',
-                          transform: 'scale(1.5)',
-                          transformOrigin: 'center 36%',
-                        }}
-                        onError={() => setSamyakImgFailed(true)}
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-primary select-none">
-                        <span className="text-2xl font-bold tracking-tight">SG</span>
-                        <span className="text-[10px] text-outline font-medium">Samyak</span>
-                      </div>
-                    )}
-                  </div>
-                  <div
-                    className="absolute bottom-0.5 right-0.5 w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-xs border-2 border-surface-container-lowest pointer-events-none"
-                    title="Team Leader"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">stars</span>
-                  </div>
-                </div>
-
-                {/* Info Container */}
-                <div className="flex flex-col flex-1 min-w-0 text-center sm:text-left">
-                  <div className="mb-1">
-                    <span className="inline-flex text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">
-                      Team Leader
-                    </span>
-                  </div>
-
-                  <h3 className="font-headline-sm text-xl font-bold text-on-surface leading-tight">
-                    Samyak Gedam
-                  </h3>
-
-                  <p className="font-label-md text-xs sm:text-sm font-semibold text-primary mt-1">
-                    Product Lead &amp; Full-Stack Development
-                  </p>
-
-                  <p className="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-2 leading-relaxed">
-                    Building responsive interfaces, design systems, and frontend architecture across all 8 screens of KnoTrail.
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom Email Action */}
-              <div className="mt-auto pt-4 border-t border-outline-variant/20 flex items-center justify-center sm:justify-start">
-                <a
-                  href="mailto:samyakgedam69@gmail.com"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/30 hover:border-primary/40 transition-all duration-150 group/btn"
-                  title="Send email to Samyak Gedam"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-primary group-hover/btn:scale-110 transition-transform">
-                    mail
-                  </span>
-                  <span className="font-mono text-xs">samyakgedam69@gmail.com</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Member 2: Sanshrey Sanagar */}
-            <div className="bg-surface-container-lowest p-6 sm:p-7 rounded-2xl border border-outline-variant/30 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full group">
-              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5">
-                {/* Real Photograph with Fixed Square Container */}
-                <div className="relative shrink-0 w-28 h-28 aspect-square">
-                  <div className="w-28 h-28 aspect-square rounded-full bg-surface-container-low border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-sm ring-4 ring-primary/10">
-                    {!sanshreyImgFailed ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src="/team/sanshrey.png"
-                        alt="Sanshrey Sanagar"
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 62%' }}
-                        onError={() => setSanshreyImgFailed(true)}
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-primary select-none">
-                        <span className="text-2xl font-bold tracking-tight">SS</span>
-                        <span className="text-[10px] text-outline font-medium">Sanshrey</span>
-                      </div>
-                    )}
-                  </div>
-                  <div
-                    className="absolute bottom-0.5 right-0.5 w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-xs border-2 border-surface-container-lowest pointer-events-none"
-                    title="Core Engineer"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">code</span>
-                  </div>
-                </div>
-
-                {/* Info Container */}
-                <div className="flex flex-col flex-1 min-w-0 text-center sm:text-left">
-                  <div className="mb-1">
-                    <span className="inline-flex text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-surface-container text-outline font-mono">
-                      Core Engineer
-                    </span>
-                  </div>
-
-                  <h3 className="font-headline-sm text-xl font-bold text-on-surface leading-tight">
-                    Sanshrey Sanagar
-                  </h3>
-
-                  <p className="font-label-md text-xs sm:text-sm font-semibold text-primary mt-1">
-                    Backend Engineering &amp; Cloud Database
-                  </p>
-
-                  <p className="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-2 leading-relaxed">
-                    Building the standalone Express backend, PostgreSQL schemas on Supabase, and Render deployment pipelines.
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom Email Action */}
-              <div className="mt-auto pt-4 border-t border-outline-variant/20 flex items-center justify-center sm:justify-start">
-                <a
-                  href="mailto:sanshrey7273@gmail.com"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/30 hover:border-primary/40 transition-all duration-150 group/btn"
-                  title="Send email to Sanshrey Sanagar"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-primary group-hover/btn:scale-110 transition-transform">
-                    mail
-                  </span>
-                  <span className="font-mono text-xs">sanshrey7273@gmail.com</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. FINAL CALL-TO-ACTION */}
+        {/* 5. FINAL CALL-TO-ACTION */}
         <section className="w-full px-gutter">
           <div className="bg-surface-container-low rounded-3xl p-6 sm:p-space-2xl border border-outline-variant/30 text-center max-w-4xl mx-auto flex flex-col items-center shadow-xs">
             <div className="w-12 h-12 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center mb-space-sm shadow-xs">
