@@ -104,10 +104,10 @@ export function AnalysisView() {
             <span className="text-primary font-semibold">AI Analysis</span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-            AI Project Analysis &amp; Reconstruction
+            AI Project Analysis
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Automated synthesis of architectural decisions, operational responsibilities, and risks anchored to source evidence.
+            KnoTrail reads your documents to find important decisions, pending tasks, risks, and responsibilities, backed by original quotes.
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export function AnalysisView() {
             ) : (
               <>
                 <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-                <span>Extract Knowledge with AI</span>
+                <span>Find Knowledge with AI</span>
               </>
             )}
           </button>
@@ -145,7 +145,7 @@ export function AnalysisView() {
             ) : (
               <>
                 <span className="material-symbols-outlined text-[18px] text-primary">fact_check</span>
-                <span>Verify Claims & Detect Conflicts</span>
+                <span>Check Quotes &amp; Find Conflicts</span>
               </>
             )}
           </button>
@@ -174,15 +174,15 @@ export function AnalysisView() {
             <div className="flex flex-col text-xs">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-on-surface text-sm">
-                  Gemini AI Engine: Environment Key Setup
+                  Google Gemini AI Setup
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase bg-surface-container text-outline">
-                  Zero Fake AI Invariant
+                  Real AI Analysis
                 </span>
               </div>
               <p className="text-on-surface-variant mt-0.5 leading-relaxed">
-                To run live AI knowledge extraction with Google Gemini 2.5 Flash on your uploaded documents, provide a <code className="bg-surface-container px-1.5 py-0.5 rounded font-mono text-primary font-semibold">GEMINI_API_KEY</code>.
-                KnoTrail guarantees zero hallucinated or canned findings.
+                To analyze your documents with Google Gemini AI, add your <code className="bg-surface-container px-1.5 py-0.5 rounded font-mono text-primary font-semibold">GEMINI_API_KEY</code>.
+                KnoTrail only uses real information from your files and never makes up facts.
               </p>
             </div>
           </div>
@@ -229,7 +229,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
         <KnowledgeTrailLoader
           variant="section"
           message="Analysing project knowledge..."
-          submessage={analysisStatusMessage || 'Reconstructing decisions, tasks, risks, and dependencies anchored to source evidence...'}
+          submessage={analysisStatusMessage || 'Reading documents to find decisions, tasks, risks, and responsibilities...'}
           progress={analysisProgress}
           step={1}
         />
@@ -240,7 +240,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
         <KnowledgeTrailLoader
           variant="section"
           message="Verifying supporting evidence..."
-          submessage="Cross-referencing quotations against source text and checking for contradictory claims..."
+          submessage="Checking quotes against original documents and finding information that does not match..."
           step={2}
         />
       )}
@@ -269,7 +269,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
         <div className="bg-error-container/20 border border-error/30 rounded-xl p-space-md text-xs text-error flex items-start gap-2.5 animate-in fade-in">
           <span className="material-symbols-outlined text-[18px] text-error shrink-0 mt-0.5">error</span>
           <div className="flex-1">
-            <strong className="block font-semibold">AI Extraction Notice:</strong>
+            <strong className="block font-semibold">AI Analysis Notice:</strong>
             <p className="mt-0.5 leading-relaxed">{analysisError}</p>
           </div>
         </div>
@@ -281,7 +281,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
           <div className="flex items-start gap-2.5">
             <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">check_circle</span>
             <div className="flex-1">
-              <strong className="block font-semibold text-primary">Knowledge Reconstructed Successfully</strong>
+              <strong className="block font-semibold text-primary">Information Found Successfully</strong>
               <p className="mt-0.5 text-on-surface-variant leading-relaxed">{analysisSuccessMsg}</p>
             </div>
           </div>

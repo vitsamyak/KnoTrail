@@ -152,3 +152,4 @@ A Git pre-commit hook is installed at `.git/hooks/pre-commit`.
 - Notify each other before merging PRs that modify deployment manifests (`render.yaml`), schema migrations, or package dependencies (`package.json`).
 - If you notice incoming commits on `origin/main` from Sanshrey (`git fetch origin && git log HEAD..origin/main --oneline`), pull or merge them before starting local multi-file refactoring.
 - Keep test suites green: ensure `npm test` passes 100% (all 149 tests) and `npm run build` compiles cleanly prior to pushing.
+

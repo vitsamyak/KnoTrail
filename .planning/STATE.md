@@ -1,10 +1,10 @@
 ---
 gsd_state_version: "1.0"
-current_phase: Phase I - Separate Backend on Render and Frontend on Vercel & Responsive Optimization
-current_phase_name: Standalone Express API Service, Decoupled Vercel Next.js Client & Responsive Optimization
+current_phase: Round 3 Final Preparation - Content Simplification & Landing Page Showcase
+current_phase_name: Round 3 Preparation, Team Profiles & Full-Site Plain English Simplification
 status: complete
-stopped_at: "Completed Phase I (Separate Backend on Render and Frontend on Vercel) and full-stack responsive optimization across mobile, tablet, and desktop under GSD and Gravitas. Extracted standalone Node.js Express backend service under backend/ with full 23-endpoint parity, strict CORS middleware (CORS_ORIGINS), dual health probes (/health/live, /health/ready), centralized frontend API client (src/lib/api-client.ts), multipart upload preservation, Render blueprint (render.yaml), full deployment runbook (docs/DEPLOYMENT.md), and disabled old Next.js API route handlers. Implemented slide-over mobile drawer in Sidebar with touch-friendly navigation, responsive AppShell padding, responsive Header with hamburger button and safe popovers, fluid hero typography, horizontal swipeable category tabs with no-scrollbar across Workspace, Analysis, and Handover views, responsive modals with 90vh scroll bounds, and responsive wrapping for all action button bars. All 149 automated tests pass across 9 test suites. Both backend (esbuild) and frontend (Next.js) compile cleanly with 0 errors."
-last_updated: "2026-11-12T14:45:00.000Z"
+stopped_at: "Completed Round 3 Final Preparation for CodersInPune Hackathon 2026. Added 'What's New in KnoTrail?' showcasing 3 planned Round 3 improvements (GitHub Integration, Role-Based Access, Continuous Knowledge Updates), added 'Meet the Team Behind KnoTrail' featuring Samyak Gedam and Sanshrey Sanagar with custom portrait placeholders and direct email links, restructured landing page order (Hero -> How It Works -> Round 3 Improvements -> Why KnoTrail? -> Meet the Team -> Final CTA), and comprehensively simplified English across all 8 application screens, modals, loaders, empty states, and shared public dossier. All 149 automated tests pass. Both backend and frontend production builds compile cleanly with zero errors."
+last_updated: "2026-11-12T15:15:00.000Z"
 last_activity: 2026-11-12
 state_head: main
 progress:
@@ -22,12 +22,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-09)
 
 **Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, and comprehensive 12-section delivery packages.  
-**Current focus:** Phase I and Responsive Optimization Complete. 149/149 tests passing. Backend and Frontend production builds PASS.
+**Current focus:** Round 3 Final Preparation Complete. Landing page showcases 3 Round 3 improvements and team section. Plain English simplified across all 8 screens. 149/149 tests passing. Backend and Frontend production builds PASS.
 
 ## Current Position
 
-Phase: Phase I - Separate Backend on Render and Frontend on Vercel & Responsive Optimization  
-Status: Tests PASS (149/149) | Builds PASS (Backend & Frontend) | Responsive Verified (8/8 Screens + /share/[token])  
+Phase: Round 3 Final Preparation - Content Simplification & Landing Page Showcase  
+Status: Tests PASS (149/149) | Builds PASS (Backend & Frontend) | Simplified Plain English Verified  
 Last activity: 2026-11-12
 
 Progress: [██████████] 100%

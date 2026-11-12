@@ -59,7 +59,7 @@ export default async function SharedHandoverPage({
           </Link>
           <span className="text-xs bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-semibold flex items-center gap-1">
             <span className="material-symbols-outlined text-[15px]">verified</span>
-            <span>Public Read-Only Dossier</span>
+            <span>Public Handover Document</span>
           </span>
         </header>
 
@@ -112,7 +112,7 @@ export default async function SharedHandoverPage({
         <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-2">
           <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">summarize</span>
-            <span>Executive Transition Summary</span>
+            <span>Project Summary</span>
           </h2>
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
             {handover.executiveSummary}

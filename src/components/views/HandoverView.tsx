@@ -229,21 +229,21 @@ export function HandoverView() {
           </div>
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container text-outline font-mono text-xs uppercase tracking-wider mb-space-sm border border-outline-variant/30">
-            <span>Audit Protocol 4.1 Gate Enforced</span>
+            <span>Review Required Before Handover</span>
           </div>
 
           <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight">
-            Handover Dossier Locked
+            Handover Document Locked
           </h1>
 
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mt-2 leading-relaxed">
-            In accordance with KnoTrail Governance, a handover package cannot be previewed, certified, or exported until all findings are human-reviewed and any conflicting evidence is resolved.
+            To make sure handovers are accurate, this document is locked until your team reviews all information and resolves any conflicting points.
           </p>
 
           {/* Blocking Diagnostics Card */}
           <div className="w-full bg-surface-container-low rounded-xl p-space-md border border-outline-variant/30 my-space-lg text-left text-xs space-y-2">
             <div className="font-semibold text-on-surface flex items-center justify-between pb-1 border-b border-outline-variant/20">
-              <span>Gate Diagnostic Summary</span>
+              <span>Review Summary</span>
               <span className="font-mono text-primary font-bold">
                 {stats.approvedCount}/{stats.totalFindings} Reviewed
               </span>
@@ -258,7 +258,7 @@ export function HandoverView() {
                 >
                   {stats.unresolvedConflictsCount > 0 ? 'error' : 'check_circle'}
                 </span>
-                <span>Unresolved Contradictions / Conflicts:</span>
+                <span>Conflicting Information:</span>
               </span>
               <span
                 className={`font-semibold px-2 py-0.5 rounded-full ${
@@ -280,7 +280,7 @@ export function HandoverView() {
                 >
                   {stats.unreviewedCount > 0 ? 'pending' : 'check_circle'}
                 </span>
-                <span>Unreviewed Findings:</span>
+                <span>Items Pending Review:</span>
               </span>
               <span
                 className={`font-semibold px-2 py-0.5 rounded-full ${
@@ -305,7 +305,7 @@ export function HandoverView() {
               className="inline-flex items-center gap-2 px-space-lg py-space-sm bg-primary hover:bg-primary-container text-on-primary rounded-lg font-headline-sm text-headline-sm shadow-md transition-all active:scale-95"
             >
               <span className="material-symbols-outlined text-[18px]">rule</span>
-              <span>Go to Review Center to Resolve Blockers</span>
+              <span>Go to Review Center to Finish Review</span>
             </button>
             <button
               onClick={() => setActiveView('evidence')}

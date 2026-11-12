@@ -91,7 +91,7 @@ export function SourceManagerView() {
         name: newSourceName.trim(),
         type: newSourceType,
         content: newSourceContent.trim(),
-        description: newSourceDesc.trim() || 'Custom operational handover document ingested during session.',
+        description: newSourceDesc.trim() || 'Handover notes added to this project.',
       });
       setIsPasting(false);
       setShowPasteModal(false);
@@ -130,7 +130,7 @@ export function SourceManagerView() {
             Project Documents &amp; Sources
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Upload PDF, Markdown, and text project documentation. Extracted text is grounded with exact line and page numbers.
+            Upload PDF, Markdown, and text files. KnoTrail reads them and tracks the exact lines and page numbers.
           </p>
         </div>
 

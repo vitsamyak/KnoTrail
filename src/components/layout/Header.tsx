@@ -240,7 +240,7 @@ export function Header() {
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm('Reset workspace to clean empty state?')) {
+                    if (confirm('Reset workspace and clear current project data?')) {
                       resetDemoData();
                       setShowProfileMenu(false);
                     }

@@ -97,7 +97,7 @@ export function WorkspaceView() {
                   <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
                   <div className="flex items-center gap-1.5 text-on-surface-variant">
                     <span className="material-symbols-outlined text-[18px]">group</span>
-                    <span>{project.stakeholders.length} Registered Stakeholders</span>
+                    <span>{project.stakeholders.length} Team Members</span>
                   </div>
                   <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
                   <div className="flex items-center gap-1.5 text-on-surface-variant">
@@ -141,10 +141,10 @@ export function WorkspaceView() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                 <div className="flex flex-col">
                   <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">
-                    Project Team &amp; Stewards
+                    Project Team
                   </span>
                   <span className="font-body-sm text-body-sm text-on-surface-variant">
-                    Team members responsible for this project and knowledge transition
+                    People responsible for this project and handover
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-outline">

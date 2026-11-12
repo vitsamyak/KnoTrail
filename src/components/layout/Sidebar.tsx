@@ -139,7 +139,7 @@ export function Sidebar() {
             ></div>
           </div>
           <div className="flex items-center justify-between font-label-sm text-label-sm text-outline mt-0.5">
-            <span>Certification</span>
+            <span>Review Progress</span>
             <span className="font-semibold text-on-surface">{stats.certificationProgressPercent}%</span>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function Sidebar() {
           </div>
           <button
             onClick={() => {
-              if (confirm('Reset workspace to clean empty state?')) {
+              if (confirm('Reset workspace and clear current project data?')) {
                 resetDemoData();
                 if (isMobile) setIsMobileNavOpen(false);
               }

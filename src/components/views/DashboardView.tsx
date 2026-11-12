@@ -279,7 +279,7 @@ export function DashboardView() {
                   <span className="font-semibold text-on-surface">{stats.totalSources} document(s)</span>
                 </div>
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-on-surface-variant">Decisions Reconstructed:</span>
+                  <span className="text-on-surface-variant">Important Decisions:</span>
                   <span className="font-semibold text-on-surface">{stats.decisionsCount}</span>
                 </div>
                 <div className="flex items-center justify-between py-1">
@@ -335,7 +335,7 @@ export function DashboardView() {
               {/* Finding List */}
               {project.findings.length === 0 ? (
                 <div className="p-space-xl text-center text-xs text-outline bg-surface-container-low rounded-lg">
-                  No findings extracted yet. Run AI Analysis on your uploaded sources.
+                  No findings yet. Run AI Analysis on your uploaded documents.
                 </div>
               ) : (
                 <div className="space-y-space-sm">
@@ -399,7 +399,7 @@ export function DashboardView() {
 
             <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center justify-between text-xs text-outline">
               <span>Last analysed: {project.lastAnalysed}</span>
-              <span className="text-primary font-medium">Grounded in verified sources</span>
+              <span className="text-primary font-medium">Backed by original documents</span>
             </div>
           </div>
         </div>
@@ -448,7 +448,7 @@ export function DashboardView() {
             description
           </span>
           <p className="font-label-md text-label-md text-on-surface font-semibold">Handover Report</p>
-          <p className="text-xs text-on-surface-variant mt-0.5">View and export approved handover dossier</p>
+          <p className="text-xs text-on-surface-variant mt-0.5">View and export approved handover document</p>
         </button>
       </div>
     </div>

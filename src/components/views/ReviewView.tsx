@@ -109,7 +109,7 @@ export function ReviewView() {
     e.preventDefault();
     if (!rejectModalFinding) return;
     if (!rejectReason.trim()) {
-      setRejectError('A documented rejection reason is required for the audit trail.');
+      setRejectError('Please enter a short reason for rejecting this item.');
       return;
     }
     setIsSubmittingReject(true);
@@ -170,7 +170,7 @@ export function ReviewView() {
     e.preventDefault();
     if (!approveModalFinding) return;
     if (!approveJustification.trim() || approveJustification.trim().length < 5) {
-      setApproveJustificationError('Justification must be at least 5 characters explaining how this claim was verified.');
+      setApproveJustificationError('Please explain how you checked this item (at least 5 characters).');
       return;
     }
     setIsSubmittingApproval(true);
@@ -261,10 +261,10 @@ export function ReviewView() {
             <span className="text-primary font-semibold">Review Center</span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-            Human Review &amp; Knowledge Sign-Off
+            Review and Approve Information
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Validate AI-reconstructed statements, resolve conflicting architectural evidence, and certify handover integrity.
+            Check information found by AI, resolve differences between documents, and approve the project handover.
           </p>
         </div>
 
@@ -278,7 +278,7 @@ export function ReviewView() {
               {signerName}
             </span>
             <span className="font-body-sm text-body-sm text-outline leading-tight">
-              Human Reviewer
+              Reviewer
             </span>
           </div>
         </div>
@@ -293,14 +293,14 @@ export function ReviewView() {
           <div className="flex flex-col">
             <div className="flex items-center gap-space-xs">
               <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                Strict Human Oversight Mandate
+                Human Review Required
               </span>
               <span className="bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
                 Mandatory Sign-off
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-              AI proposes candidate statements; human reviewers retain complete decision authority. No ungrounded, rejected, or conflicting claim can be included in the handover dossier.
+              The AI finds information, but you have the final say. Only reviewed and approved items are included in the final handover document.
             </p>
           </div>
         </div>
@@ -308,7 +308,7 @@ export function ReviewView() {
         {/* Real-time Approval Progress & Certification Action */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between md:justify-end gap-3 shrink-0 self-stretch md:self-center w-full md:w-auto">
           <div className="flex items-center justify-between sm:flex-col sm:items-end">
-            <span className="text-xs text-outline font-medium">Certification Level</span>
+            <span className="text-xs text-outline font-medium">Review Progress</span>
             <span className="text-xl font-bold text-on-surface">{stats.certificationProgressPercent}%</span>
           </div>
           <button

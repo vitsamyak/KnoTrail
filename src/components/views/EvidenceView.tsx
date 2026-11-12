@@ -64,10 +64,10 @@ export function EvidenceView() {
             <span className="text-primary font-semibold">Evidence Explorer</span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
-            Evidence Explorer &amp; Source Grounding
+            Evidence Explorer
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Every reconstructed claim is linked to immutable source coordinates: file line ranges, commit SHAs, and author records.
+            See the exact quotes, page numbers, and line ranges from your original documents that back up each piece of information.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export function EvidenceView() {
         <KnowledgeTrailLoader
           variant="section"
           message="Verifying supporting evidence..."
-          submessage="Matching quotations against primary document texts and auditing coordinate integrity..."
+          submessage="Checking quotes and line numbers against original documents..."
           step={2}
         />
       )}

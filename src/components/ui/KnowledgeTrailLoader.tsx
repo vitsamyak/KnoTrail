@@ -13,10 +13,10 @@ export interface KnowledgeTrailLoaderProps {
 }
 
 const STEPS = [
-  { id: 1, label: 'Reconstruct', icon: 'dataset' },
-  { id: 2, label: 'Verify', icon: 'fact_check' },
+  { id: 1, label: 'Upload Sources', icon: 'upload_file' },
+  { id: 2, label: 'Analyse', icon: 'auto_awesome' },
   { id: 3, label: 'Review', icon: 'rule' },
-  { id: 4, label: 'Handover', icon: 'verified' },
+  { id: 4, label: 'Handover', icon: 'description' },
 ];
 
 export function KnowledgeTrailLoader({
