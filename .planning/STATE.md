@@ -1,22 +1,12 @@
 ---
 gsd_state_version: "1.0"
-<<<<<<< HEAD
-current_phase: Phase I - Separate Backend on Render and Frontend on Vercel
-current_phase_name: Standalone Express API Service & Decoupled Vercel Next.js Client
+current_phase: Phase I - Separate Backend on Render and Frontend on Vercel & Responsive Optimization
+current_phase_name: Standalone Express API Service, Decoupled Vercel Next.js Client & Responsive Optimization
 status: complete
-stopped_at: "Completed Phase I (Separate Backend on Render and Frontend on Vercel) under GSD and Gravitas. Extracted standalone Node.js Express backend service under backend/ with full 23-endpoint parity, strict CORS middleware (CORS_ORIGINS), dual health probes (/health/live, /health/ready), centralized frontend API client (src/lib/api-client.ts), multipart upload preservation, Render blueprint (render.yaml), full deployment runbook (docs/DEPLOYMENT.md), and disabled old Next.js API route handlers. All 149 automated tests pass across 9 test suites. Both backend (esbuild) and frontend (Next.js) compile cleanly with 0 errors."
-last_updated: "2026-11-10T08:35:00.000Z"
-last_activity: 2026-11-10
-state_head: deployment/render-vercel
-=======
-current_phase: Responsive Optimization
-current_phase_name: Complete Website Responsive Optimization across Mobile, Tablet, and Desktop
-status: complete
-stopped_at: Completed full-stack responsive optimization across mobile (320px-430px), tablet (768px-1023px), laptop (1024px-1439px), and large desktop screens without redesigning desktop layouts or modifying backend/database contracts. Implemented slide-over mobile drawer in Sidebar with touch-friendly navigation, responsive AppShell padding, responsive Header with hamburger button and safe popovers, fluid hero typography, horizontal swipeable category tabs with no-scrollbar across Workspace, Analysis, and Handover views, responsive modals with 90vh scroll bounds, and responsive wrapping for all action button bars. All 109 automated tests pass (100% pass rate across 7 test suites). Next.js production build succeeds with 0 errors across 23 routes.
-last_updated: "2026-11-10T12:43:00.000Z"
-last_activity: 2026-11-10
-state_head: 9fe231b
->>>>>>> 0fd7f1a (Responsiveness)
+stopped_at: "Completed Phase I (Separate Backend on Render and Frontend on Vercel) and full-stack responsive optimization across mobile, tablet, and desktop under GSD and Gravitas. Extracted standalone Node.js Express backend service under backend/ with full 23-endpoint parity, strict CORS middleware (CORS_ORIGINS), dual health probes (/health/live, /health/ready), centralized frontend API client (src/lib/api-client.ts), multipart upload preservation, Render blueprint (render.yaml), full deployment runbook (docs/DEPLOYMENT.md), and disabled old Next.js API route handlers. Implemented slide-over mobile drawer in Sidebar with touch-friendly navigation, responsive AppShell padding, responsive Header with hamburger button and safe popovers, fluid hero typography, horizontal swipeable category tabs with no-scrollbar across Workspace, Analysis, and Handover views, responsive modals with 90vh scroll bounds, and responsive wrapping for all action button bars. All 149 automated tests pass across 9 test suites. Both backend (esbuild) and frontend (Next.js) compile cleanly with 0 errors."
+last_updated: "2026-11-12T14:45:00.000Z"
+last_activity: 2026-11-12
+state_head: main
 progress:
   total_phases: 9
   completed_phases: 9
@@ -32,42 +22,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-09)
 
 **Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, and comprehensive 12-section delivery packages.  
-<<<<<<< HEAD
-**Current focus:** Phase I Complete. 149/149 tests passing. Backend and Frontend production builds PASS.
+**Current focus:** Phase I and Responsive Optimization Complete. 149/149 tests passing. Backend and Frontend production builds PASS.
 
 ## Current Position
 
-Phase: Phase I - Separate Backend on Render and Frontend on Vercel  
-Status: Tests PASS (149/149) | Builds PASS (Backend & Frontend)  
-=======
-**Current focus:** Full Responsive Optimization Complete. 109/109 tests passing. Production build PASS. Dev server 200 OK.
-
-## Current Position
-
-Phase: Complete Website Responsive Optimization  
-Status: Tests PASS (109/109) | Production Build PASS (23 routes) | Dev Server 200 OK  
->>>>>>> 0fd7f1a (Responsiveness)
-Last activity: 2026-11-10
+Phase: Phase I - Separate Backend on Render and Frontend on Vercel & Responsive Optimization  
+Status: Tests PASS (149/149) | Builds PASS (Backend & Frontend) | Responsive Verified (8/8 Screens + /share/[token])  
+Last activity: 2026-11-12
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-<<<<<<< HEAD
 - Architecture: Decoupled multi-cloud topology (Frontend on Vercel, Backend on Render in Singapore, PostgreSQL & Storage on Supabase Mumbai)
-- Total screens completed: 8 of 8 (with honest empty states on all screens + /share/[token] public viewer)
-- Total API endpoints implemented: 23 active REST routes (`/api/...` in standalone Express backend, matching 100% of previous contracts)
-- Handover Document Schema: 12 formal sections (Cover/Meta, Exec Summary, Overview, Decisions, Tasks, Responsibilities, Risks, Dependencies, Questions, Next Actions, Evidence Inventory, Review History)
-- Handover Invalidation Protocol: Automatic drift detection via SHA-256 finding/source fingerprint hash; flags `isOutdated: true` upon post-certification data mutations
-- Multi-Format Export Parity: 100% parity across Markdown (with TOC & citations), typed JSON schema, and A4 printable PDF view
-- Public Share Links: High-entropy cryptographic tokens (`kt_share_<uuid>`), read-only public access without login, on-demand revocation, stored strictly as SHA-256 hashes
-- Cloud Storage: Private Supabase Storage bucket (`knotrail-source-files`), workspace-scoped paths (`<workspaceId>/<sourceId>.<ext>`), orphan cleanup on write failure
-- Concurrency Handling: PostgreSQL optimistic concurrency control via integer `version` column and `save_workspace_state` stored procedure
-- Health Probes: `GET /health/live` (process liveness, 200 OK) and `GET /health/ready` (deep readiness with Supabase probe, safe 503 on dependency failure)
-- CORS Policy: Strict CORS middleware with `CORS_ORIGINS` whitelist, preflight OPTIONS handling, and zero wildcards in production
-- Automated test suite: 149 of 149 tests passing across 9 test suites:
-=======
 - Total screens responsive & verified: 8 of 8 + /share/[token] public viewer
   - Landing Page (`LandingView.tsx`)
   - Main Dashboard (`DashboardView.tsx`)
@@ -78,27 +46,29 @@ Progress: [██████████] 100%
   - Human Review Center (`ReviewView.tsx`)
   - Handover Dossier (`HandoverView.tsx`)
   - Public Shared Dossier (`/share/[token]`)
-- Total API endpoints implemented: 23 active REST routes (`/api/...`)
-- Automated test suite: 109 of 109 tests passing across 7 test suites:
->>>>>>> 0fd7f1a (Responsiveness)
+- Total API endpoints implemented: 23 active REST routes (`/api/...` in standalone Express backend, matching 100% of previous contracts)
+- Handover Document Schema: 12 formal sections (Cover/Meta, Exec Summary, Overview, Decisions, Tasks, Responsibilities, Risks, Dependencies, Questions, Next Actions, Evidence Inventory, Review History)
+- Handover Invalidation Protocol: Automatic drift detection via SHA-256 finding/source fingerprint hash; flags `isOutdated: true` upon post-certification data mutations
+- Multi-Format Export Parity: 100% parity across Markdown (with TOC & citations), typed JSON schema, and A4 printable PDF view
+- Public Share Links: High-entropy cryptographic tokens (`kt_share_<uuid>`), read-only public access without login, on-demand revocation, stored strictly as SHA-256 hashes
+- Cloud Storage: Private Supabase Storage bucket (`knotrail-source-files`), workspace-scoped paths (`<workspaceId>/<sourceId>.<ext>`), orphan cleanup on write failure
+- Concurrency Handling: PostgreSQL optimistic concurrency control via integer `version` column and `save_workspace_state` stored procedure
+- Health Probes: `GET /health/live` (process liveness, 200 OK) and `GET /health/ready` (deep readiness with Supabase probe, safe 503 on dependency failure)
+- CORS Policy: Strict CORS middleware with `CORS_ORIGINS` whitelist, preflight OPTIONS handling, and zero wildcards in production
+- Automated test suite: 149 of 149 tests passing across 9 test suites:
   - Phase A (Handover Integrity): 8 tests
   - Phase B (Persistence): 9 tests
   - Phase C (Source Ingestion): 13 tests
   - Phase D (AI Extraction): 15 tests
   - Phase E (Evidence Verification): 23 tests
   - Phase F (Human Approval): 16 tests
-<<<<<<< HEAD
   - Phase G (Handover Generation & Delivery): 21 tests
   - Phase H (Supabase Backend & Cloud Storage): 18 tests
   - Phase I (Standalone Express Backend & Decoupled Frontend API): 21 tests
   - Reconciliation: Node test runner reports 149 total tests; all pass.
 - Backend Production Build: `npm run backend:build` compiles to `dist/backend/server.js` (190 KB) in under 20ms
 - Frontend Production Build: `npm run frontend:build` compiles cleanly with 0 errors across all routes (`/`, `/_not-found`, `/share/[token]`)
-=======
-  - Phase G (Handover Generation & Delivery): 22 tests
-- Next.js production build: PASS (0 TypeScript errors, 23 routes compiled)
-- Dev server status: PASS (HTTP 200 OK)
->>>>>>> 0fd7f1a (Responsiveness)
+- Render Build Resolution: Configured `npm ci --include=dev && npm run backend:build` in `render.yaml` to ensure `@types/express` and `@types/multer` are retained during production builds where `NODE_ENV=production`. Simulated under production environment: verified 238 packages installed, type checks passed, and bundle emitted with zero errors.
 
 **By Screen / Workflow Stage:**
 
