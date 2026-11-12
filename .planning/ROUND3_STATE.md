@@ -12,7 +12,7 @@ round3_progress:
   completed_phases: 1
   active_phase: "Phase 2: GitHub Integration (Ready to Plan/Execute)"
   baseline_tests_passing: 149
-  current_tests_passing: 160
+  current_tests_passing: 161
   targeted_tests_passing: 175
 ---
 
@@ -30,7 +30,7 @@ round3_progress:
 - **Database**: Supabase PostgreSQL (Mumbai `ap-south-1`) with JSONB aggregate state, OCC, `workspace_members` table, and RLS enabled
 - **Object Storage**: Private Supabase Storage bucket (`knotrail-source-files`)
 - **AI Extraction**: Google GenAI SDK (`@google/genai` v3.0.0, Gemini 2.5 Flash) with Zero Fake AI Invariant
-- **Test Suite**: 160 / 160 automated tests passing across 10 test suites (0 failures)
+- **Test Suite**: 161 / 161 automated tests passing across 10 test suites (0 failures)
 - **Build Status**:
   - `npm run backend:build`: PASS (11ms)
   - `npm run frontend:build`: PASS (0 errors across static & dynamic routes)
@@ -53,4 +53,4 @@ round3_progress:
    - `src/components/layout/Header.tsx`: Interactive Demo Perspective Switcher pill `[Demo: Manager | Developer | External]` labeled as simulation preview.
    - `src/components/views/ReviewView.tsx` & `src/components/views/HandoverView.tsx`: Mutation controls (Certify, Resolve Conflict, Approve, Reject, Edit, Share) adapt cleanly to current user role.
 7. **Automated Security Test Suite**:
-   - `src/__tests__/roleSecurity.test.mjs`: 10 comprehensive security test scenarios passing with 100% success rate.
+   - `src/__tests__/roleSecurity.test.mjs`: 11 comprehensive security test scenarios passing with 100% success rate.

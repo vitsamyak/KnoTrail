@@ -10,8 +10,8 @@
     "Server-side redaction utility (src/server/security/redactor.ts) filtering CONFIDENTIAL citations and stripping reviewer notes for External users",
     "Preservation of zero-auth public demo accessibility in Incognito mode with visual Demo Perspective Switcher",
     "Interactive UI role adaptation in Header, ReviewView, and HandoverView",
-    "Comprehensive automated security test suite in src/__tests__/roleSecurity.test.mjs covering all 10 security scenarios",
-    "All 149 existing tests continue passing without regression (160 total tests passing)",
+    "Comprehensive automated security test suite in src/__tests__/roleSecurity.test.mjs covering all 11 security scenarios",
+    "All 149 existing tests continue passing without regression (161 total tests passing)",
     "Clean production builds for both Express backend and Next.js frontend"
   ],
   "non_goals": [
@@ -39,7 +39,7 @@
     "type": "executable_evidence",
     "command": "npm test && npm run backend:build && npm run frontend:build",
     "exit_code": 0,
-    "result": "160 of 160 automated tests passed across all 10 test suites (Phase 1 Role Security: 10 tests, Phase D: 15 tests, Phase I: 20 tests, Phase E: 23 tests, Phase F: 16 tests, Persistence: 9 tests, Phase C: 13 tests, Phase H Supabase: 18 tests, Handover Generation/Integrity: 36 tests). Standalone Express backend compiles to dist/backend/server.js (207.1 KB) in 11ms. Frontend compiles to Next.js production bundle with 0 errors across all routes. All 10 security scenarios verified: role header spoofing blocked (403), expired tokens rejected (401), forged signatures rejected (401), cross-workspace access denied (403), anonymous access to protected workspaces blocked (401), developer certification blocked (403), developer conflict resolution blocked (403), member invitation restricted to managers (201/403), confidential citations redacted for external role, and public share links securely verified without leaking credentials.",
+    "result": "161 of 161 automated tests passed across all 10 test suites (Phase 1 Role Security: 11 tests, Phase D: 15 tests, Phase I: 20 tests, Phase E: 23 tests, Phase F: 16 tests, Persistence: 9 tests, Phase C: 13 tests, Phase H Supabase: 18 tests, Handover Generation/Integrity: 36 tests). Standalone Express backend compiles to dist/backend/server.js (207.1 KB) in 11ms. Frontend compiles to Next.js production bundle with 0 errors across all routes. All 11 security scenarios verified: role header spoofing blocked (403), expired tokens rejected (401), forged signatures rejected (401), cross-workspace access denied (403), anonymous access to protected workspaces blocked (401), developer certification blocked (403), developer conflict resolution blocked (403), member invitation restricted to managers (201/403), confidential citations redacted for external role, public share links securely verified without leaking credentials, and workspace claim security (unauthenticated claim 401, initial claim 200/Manager, duplicate claim 409).",
     "verdict": "PASS"
   }
 }

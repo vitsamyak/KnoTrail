@@ -53,3 +53,4 @@ BEGIN
         GRANT ALL ON TABLE workspace_members TO service_role;
     END IF;
 END $$;
+

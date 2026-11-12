@@ -124,3 +124,4 @@ export function redactHandoverDocument(doc: HandoverDocument): HandoverDocument 
 
   return d;
 }
+

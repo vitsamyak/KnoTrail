@@ -179,3 +179,4 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     res.status(401).json({ error: err.message || 'Authentication failed.' });
   }
 }
+

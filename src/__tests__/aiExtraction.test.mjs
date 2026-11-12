@@ -664,11 +664,16 @@ test('Phase D: Real AI Knowledge Extraction Test Suite', async (t) => {
     // Genuine live API call when key is configured
     console.log('    ℹ EXECUTING: GEMINI_API_KEY detected. Running live test with gemini-2.5-flash...');
     try {
-      const findings = await extractWithGemini(
-        'TestDoc.txt',
-        'We decided to switch database port to 5433 to avoid port collision. Lead Engineer will update firewall.',
-        { model: 'gemini-2.5-flash' }
-      );
+      const findings = await Promise.race([
+        extractWithGemini(
+          'TestDoc.txt',
+          'We decided to switch database port to 5433 to avoid port collision. Lead Engineer will update firewall.',
+          { model: 'gemini-2.5-flash' }
+        ),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Live Gemini API network request timed out (15s)')), 15000)
+        ),
+      ]);
 
       assert.ok(Array.isArray(findings), 'Live API must return an array of findings');
       assert.ok(findings.length > 0, 'Live API must extract findings from clear input text');
@@ -680,9 +685,10 @@ test('Phase D: Real AI Knowledge Extraction Test Suite', async (t) => {
         err?.message?.includes('high demand') ||
         err?.message?.includes('Spikes in demand') ||
         err?.message?.includes('RESOURCE_EXHAUSTED') ||
-        err?.message?.includes('UNAVAILABLE')
+        err?.message?.includes('UNAVAILABLE') ||
+        err?.message?.includes('timed out')
       ) {
-        console.log(`    ℹ Live Gemini API transient load spike (${err.status || 503}). Test handled gracefully.`);
+        console.log(`    ℹ Live Gemini API transient latency/load spike (${err.message}). Test handled gracefully.`);
         return;
       }
       throw err;

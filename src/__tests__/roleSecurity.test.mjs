@@ -326,4 +326,42 @@ test('▶ Phase 1: Server-Verified Role-Based Security & Access Control Suite', 
     assert.doesNotMatch(JSON.stringify(publicData), /postgres:\/\/prod-db/, 'Public share must never leak confidential credentials');
     assert.match(JSON.stringify(publicData), /REDACTED/, 'Confidential citations must be redacted in public share');
   });
+
+  // 11. Workspace Claim Security
+  await t.test('11. Workspace claim security: unauthenticated claim returns 401, initial claim assigns Manager, duplicate claim returns 409', async () => {
+    const claimWsId = 'ws_anon_claim_' + Date.now();
+    await storage.createWorkspace(claimWsId); // Create unprotected anonymous workspace
+
+    // 1. Unauthenticated claim attempt -> 401
+    const unauthRes = await fetch(`${baseUrl}/api/workspaces/${claimWsId}/claim`, {
+      method: 'POST',
+    });
+    assert.equal(unauthRes.status, 401);
+
+    // 2. Authenticated initial claim -> 200 (Sets protected and assigns caller as Manager)
+    const claimRes = await fetch(`${baseUrl}/api/workspaces/${claimWsId}/claim`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${managerToken}`,
+      },
+    });
+    assert.equal(claimRes.status, 200);
+    const claimData = await claimRes.json();
+    assert.equal(claimData.status, 'claimed');
+    assert.equal(claimData.isProtected, true);
+    assert.equal(claimData.member.role, 'MANAGER');
+    assert.equal(claimData.member.userId, managerUser.id);
+
+    // 3. Duplicate claim attempt by another user -> 409 Conflict
+    const dupRes = await fetch(`${baseUrl}/api/workspaces/${claimWsId}/claim`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${developerToken}`,
+      },
+    });
+    assert.equal(dupRes.status, 409);
+    const dupData = await dupRes.json();
+    assert.match(dupData.error, /already claimed and protected/);
+  });
 });
+
