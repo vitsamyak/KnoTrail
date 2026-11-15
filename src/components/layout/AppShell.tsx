@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Page Content Container with Consistent Horizontal & Vertical Padding */}
         <main
           key={activeView}
-          className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 transition-opacity duration-150 animate-in fade-in"
+          className="flex-1 w-full max-w-7xl 2xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 transition-opacity duration-150 animate-in fade-in"
         >
           {children}
         </main>

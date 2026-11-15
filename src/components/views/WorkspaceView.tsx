@@ -31,11 +31,11 @@ export function WorkspaceView() {
   });
 
   return (
-    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+    <div className="flex flex-col w-full gap-4 sm:gap-4.5 animate-in fade-in duration-150">
       {/* ─────────────────────────────────────────────────────────────────────────
           1. UNIFIED PAGE HEADER (Consistent across all states)
       ───────────────────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-3.5 border-b border-outline-variant/30">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
             <span>Workspace</span>
@@ -81,13 +81,13 @@ export function WorkspaceView() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────────────
-          2. EMPTY STATE / PROJECT STARTER (Structured, Full-Width Layout)
+          2. EMPTY STATE / PROJECT STARTER (Structured, High-Density Layout)
       ───────────────────────────────────────────────────────────────────────── */}
       {!isProjectCreated ? (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-4.5">
           {/* Quick Stats Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface rounded-xl p-4 border border-outline-variant/40 flex items-center justify-between">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="bg-surface rounded-xl p-3.5 sm:p-4 border border-outline-variant/40 flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-semibold text-secondary uppercase tracking-wider">Active Projects</span>
                 <div className="text-xl font-bold text-on-surface mt-0.5">0</div>
@@ -98,7 +98,7 @@ export function WorkspaceView() {
               </div>
             </div>
 
-            <div className="bg-surface rounded-xl p-4 border border-outline-variant/40 flex items-center justify-between">
+            <div className="bg-surface rounded-xl p-3.5 sm:p-4 border border-outline-variant/40 flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-semibold text-secondary uppercase tracking-wider">Available Sources</span>
                 <div className="text-xl font-bold text-on-surface mt-0.5">{stats.totalSources}</div>
@@ -109,7 +109,7 @@ export function WorkspaceView() {
               </div>
             </div>
 
-            <div className="bg-surface rounded-xl p-4 border border-outline-variant/40 flex items-center justify-between">
+            <div className="bg-surface rounded-xl p-3.5 sm:p-4 border border-outline-variant/40 flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-semibold text-secondary uppercase tracking-wider">Handover Readiness</span>
                 <div className="text-xl font-bold text-on-surface mt-0.5">Pending</div>
@@ -121,21 +121,38 @@ export function WorkspaceView() {
             </div>
           </div>
 
-          {/* Project Starter Options Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Project Starter Options Grid (Rich Information Density) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Option 1: Create Custom Project */}
-            <div className="bg-surface rounded-xl p-5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors">
+            <div className="bg-surface rounded-xl p-4 sm:p-4.5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-2xs">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                  <span className="material-symbols-outlined text-[22px]">create_new_folder</span>
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+                  <span className="material-symbols-outlined text-[20px]">create_new_folder</span>
                 </div>
                 <h3 className="text-sm font-bold text-on-surface mb-1">
                   Start From Scratch
                 </h3>
-                <p className="text-xs text-secondary leading-relaxed mb-4">
-                  Define your project name, exit target date, team lead, and handover goals to begin tracking operational context.
+                <p className="text-xs text-secondary leading-relaxed mb-3">
+                  Define custom project parameters, lead engineer, target exit date, and scope boundaries.
                 </p>
+
+                {/* Feature checklist */}
+                <ul className="space-y-1.5 mb-4 text-xs text-secondary">
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Custom exit target date &amp; milestones</span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Lead engineer &amp; outgoing team roster</span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Scoped knowledge handover goals</span>
+                  </li>
+                </ul>
               </div>
+
               <button
                 onClick={() => {
                   if (currentUserRole === 'EXTERNAL') return;
@@ -150,18 +167,35 @@ export function WorkspaceView() {
             </div>
 
             {/* Option 2: Load Demo Project */}
-            <div className="bg-surface rounded-xl p-5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors">
+            <div className="bg-surface rounded-xl p-4 sm:p-4.5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-2xs">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center mb-3">
-                  <span className="material-symbols-outlined text-[22px]">dataset</span>
+                <div className="w-9 h-9 rounded-lg bg-surface-container-low text-primary flex items-center justify-center mb-2.5">
+                  <span className="material-symbols-outlined text-[20px]">dataset</span>
                 </div>
                 <h3 className="text-sm font-bold text-on-surface mb-1">
                   Load Pre-Seeded Demo Project
                 </h3>
-                <p className="text-xs text-secondary leading-relaxed mb-4">
-                  Instantly populate the workspace with the official KnoTrail Core project containing 14 verified findings, decisions, and tasks.
+                <p className="text-xs text-secondary leading-relaxed mb-3">
+                  Instantly populate the workspace with the official KnoTrail Core project containing 14 verified findings.
                 </p>
+
+                {/* Feature checklist */}
+                <ul className="space-y-1.5 mb-4 text-xs text-secondary">
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>14 ground-truth findings &amp; decisions</span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Pre-configured governance audit trail</span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Instant hackathon evaluator setup</span>
+                  </li>
+                </ul>
               </div>
+
               <button
                 onClick={() => resetDemoData()}
                 className="w-full inline-flex items-center justify-center gap-1.5 h-9 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg text-xs font-medium border border-outline-variant/40 transition-colors"
@@ -172,18 +206,35 @@ export function WorkspaceView() {
             </div>
 
             {/* Option 3: Ingest Documents */}
-            <div className="bg-surface rounded-xl p-5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors">
+            <div className="bg-surface rounded-xl p-4 sm:p-4.5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-2xs">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center mb-3">
-                  <span className="material-symbols-outlined text-[22px]">hub</span>
+                <div className="w-9 h-9 rounded-lg bg-surface-container-low text-primary flex items-center justify-center mb-2.5">
+                  <span className="material-symbols-outlined text-[20px]">hub</span>
                 </div>
                 <h3 className="text-sm font-bold text-on-surface mb-1">
                   Connect GitHub &amp; Documents
                 </h3>
-                <p className="text-xs text-secondary leading-relaxed mb-4">
+                <p className="text-xs text-secondary leading-relaxed mb-3">
                   Ingest commits, pull requests, issues, and PDF/Markdown files directly into your workspace repository.
                 </p>
+
+                {/* Feature checklist */}
+                <ul className="space-y-1.5 mb-4 text-xs text-secondary">
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Real-time webhook &amp; commit sync</span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>PDF, Markdown, &amp; notes parsers</span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-primary shrink-0">check_circle</span>
+                    <span>Automated evidence drift detection</span>
+                  </li>
+                </ul>
               </div>
+
               <button
                 onClick={() => setActiveView('sources')}
                 className="w-full inline-flex items-center justify-center gap-1.5 h-9 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg text-xs font-medium border border-outline-variant/40 transition-colors"
@@ -195,11 +246,11 @@ export function WorkspaceView() {
           </div>
 
           {/* Handover Workflow Guidance Card */}
-          <div className="bg-surface rounded-xl p-5 border border-outline-variant/40">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-secondary font-mono mb-3">
+          <div className="bg-surface rounded-xl p-4 sm:p-4.5 border border-outline-variant/40 shadow-2xs">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-secondary font-mono mb-2.5">
               KnoTrail Operational Handover Cycle
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs">
               <div className="p-3 rounded-lg bg-surface-container-low/40 border border-outline-variant/20">
                 <span className="font-bold text-primary block mb-0.5">1. Setup Project</span>
                 <span className="text-secondary leading-snug">Configure target exit date and project leads.</span>
@@ -223,9 +274,9 @@ export function WorkspaceView() {
         /* ─────────────────────────────────────────────────────────────────────────
             3. ACTIVE PROJECT VIEW (Full Details, Stakeholders & Findings)
         ───────────────────────────────────────────────────────────────────────── */
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-4.5">
           {/* Master Project Card */}
-          <section className="bg-surface rounded-xl p-5 sm:p-6 border border-outline-variant/40 shadow-xs">
+          <section className="bg-surface rounded-xl p-4 sm:p-5 border border-outline-variant/40 shadow-xs">
             <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5">
               <div className="flex flex-col gap-2 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
@@ -292,7 +343,7 @@ export function WorkspaceView() {
             </div>
 
             {/* Stakeholders Strip */}
-            <div className="mt-5 pt-4 bg-surface-container-low/40 rounded-xl p-4 border border-outline-variant/30 flex flex-col gap-3">
+            <div className="mt-4 bg-surface-container-low/40 rounded-xl p-3 sm:p-3.5 border border-outline-variant/30 flex flex-col gap-2.5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] uppercase tracking-wider text-secondary font-semibold font-mono">
@@ -366,7 +417,7 @@ export function WorkspaceView() {
           </section>
 
           {/* Findings Explorer Section */}
-          <section className="bg-surface rounded-xl p-5 sm:p-6 border border-outline-variant/40 shadow-xs flex flex-col gap-4">
+          <section className="bg-surface rounded-xl p-4 sm:p-4.5 border border-outline-variant/40 shadow-xs flex flex-col gap-3.5">
             {/* Tabs & Search */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-outline-variant/30 pb-3">
               {/* Category Tabs */}

@@ -252,9 +252,9 @@ export function ReviewView() {
   };
 
   return (
-    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+    <div className="flex flex-col w-full gap-4 sm:gap-4.5 animate-in fade-in duration-150">
       {/* Standardized Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-3.5 border-b border-outline-variant/30">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
             <span>Workspace</span>

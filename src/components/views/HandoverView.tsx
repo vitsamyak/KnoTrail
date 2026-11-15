@@ -460,9 +460,9 @@ export function HandoverView() {
   const reReviewCount = stats.needsReReviewCount ?? (project.findings || []).filter((f) => f.needsReReview).length;
 
   return (
-    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-200 pb-12">
+    <div className="flex flex-col w-full gap-4 sm:gap-4.5 animate-in fade-in duration-200 pb-10">
       {/* PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-outline-variant/30">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 sm:pb-3.5 border-b border-outline-variant/30">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono text-secondary mb-1">
             <span>WORKSPACE</span>

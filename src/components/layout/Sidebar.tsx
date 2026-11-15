@@ -118,9 +118,9 @@ export function Sidebar() {
       </div>
 
       {/* 2. Organized Navigation Groups */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-4 no-scrollbar">
         {navGroups.map((group) => (
-          <div key={group.heading} className="space-y-1">
+          <div key={group.heading} className="space-y-0.5">
             <div className="px-2.5 pb-1 text-[10px] font-bold text-secondary uppercase tracking-wider font-mono">
               {group.heading}
             </div>
@@ -133,7 +133,7 @@ export function Sidebar() {
                     setActiveView(item.id);
                     if (isMobile) setIsMobileNavOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-colors text-left group ${
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left group ${
                     isActive
                       ? 'bg-primary text-on-primary font-medium shadow-2xs'
                       : 'text-on-surface hover:text-primary hover:bg-surface-container font-medium'
@@ -169,6 +169,251 @@ export function Sidebar() {
             })}
           </div>
         ))}
+
+        {/* ─── HANDOVER WORKFLOW PIPELINE (Eliminates dead vertical space) ─── */}
+        <div className="pt-2 border-t border-outline-variant/20">
+          <div className="px-2 pb-1.5 flex items-center justify-between text-[10px] font-bold text-secondary uppercase tracking-wider font-mono">
+            <span>Handover Pipeline</span>
+            <span className="text-[9px] text-primary font-semibold font-mono">
+              {stats.certificationProgressPercent}%
+            </span>
+          </div>
+
+          <div className="bg-surface-container-low/40 rounded-xl p-1.5 border border-outline-variant/30 space-y-1">
+            {/* Step 1: Ingest Sources */}
+            <button
+              onClick={() => {
+                setActiveView('sources');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-1.5 rounded-lg text-left hover:bg-surface-container transition-colors group"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
+                    stats.totalSources > 0
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-surface-container text-secondary border border-outline-variant/40'
+                  }`}
+                >
+                  {stats.totalSources > 0 ? (
+                    <span className="material-symbols-outlined text-[12px]">check</span>
+                  ) : (
+                    '1'
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[11px] font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
+                    Ingest Sources
+                  </span>
+                  <span className="text-[10px] text-secondary truncate">
+                    {stats.totalSources > 0 ? `${stats.totalSources} connected` : 'Attach git / files'}
+                  </span>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[13px] text-secondary group-hover:text-primary shrink-0">
+                chevron_right
+              </span>
+            </button>
+
+            {/* Step 2: Ground Claims */}
+            <button
+              onClick={() => {
+                setActiveView('evidence');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-1.5 rounded-lg text-left hover:bg-surface-container transition-colors group"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
+                    stats.totalFindings > 0
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-surface-container text-secondary border border-outline-variant/40'
+                  }`}
+                >
+                  {stats.totalFindings > 0 ? (
+                    <span className="material-symbols-outlined text-[12px]">check</span>
+                  ) : (
+                    '2'
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[11px] font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
+                    Ground Claims
+                  </span>
+                  <span className="text-[10px] text-secondary truncate">
+                    {stats.totalFindings > 0 ? `${stats.totalFindings} findings` : 'Extract evidence'}
+                  </span>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[13px] text-secondary group-hover:text-primary shrink-0">
+                chevron_right
+              </span>
+            </button>
+
+            {/* Step 3: Manager Review */}
+            <button
+              onClick={() => {
+                setActiveView('review');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-1.5 rounded-lg text-left hover:bg-surface-container transition-colors group"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
+                    stats.certificationProgressPercent === 100
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : stats.approvedCount > 0
+                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                      : 'bg-surface-container text-secondary border border-outline-variant/40'
+                  }`}
+                >
+                  {stats.certificationProgressPercent === 100 ? (
+                    <span className="material-symbols-outlined text-[12px]">check</span>
+                  ) : (
+                    '3'
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[11px] font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
+                    Manager Review
+                  </span>
+                  <span className="text-[10px] text-secondary truncate">
+                    {stats.approvedCount}/{stats.totalFindings || 0} approved
+                  </span>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[13px] text-secondary group-hover:text-primary shrink-0">
+                chevron_right
+              </span>
+            </button>
+
+            {/* Step 4: Deliver Dossier */}
+            <button
+              onClick={() => {
+                setActiveView('handover');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-1.5 rounded-lg text-left hover:bg-surface-container transition-colors group"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
+                    project.handoverCertified
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-surface-container text-secondary border border-outline-variant/40'
+                  }`}
+                >
+                  {project.handoverCertified ? (
+                    <span className="material-symbols-outlined text-[12px]">verified</span>
+                  ) : (
+                    '4'
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[11px] font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
+                    Deliver Dossier
+                  </span>
+                  <span className="text-[10px] text-secondary truncate">
+                    {project.handoverCertified ? 'Certified' : stats.isHandoverBlocked ? 'Requires review' : 'Ready'}
+                  </span>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[13px] text-secondary group-hover:text-primary shrink-0">
+                chevron_right
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* ─── OPERATIONAL TELEMETRY MINI-GRID (Fills dead vertical space) ─── */}
+        <div className="pt-2 border-t border-outline-variant/20">
+          <div className="px-2 pb-1.5 flex items-center justify-between text-[10px] font-bold text-secondary uppercase tracking-wider font-mono">
+            <span>Operational State</span>
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-surface-container text-secondary font-mono border border-outline-variant/40">
+              {project.code || 'CIP-26'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              onClick={() => {
+                setActiveView('analysis');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="p-2 bg-surface-container-low/40 hover:bg-surface-container rounded-lg border border-outline-variant/30 text-left transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-secondary font-medium">Decisions</span>
+                <span className="material-symbols-outlined text-[13px] text-primary">gavel</span>
+              </div>
+              <div className="text-sm font-bold text-on-surface mt-0.5 group-hover:text-primary transition-colors font-mono">
+                {stats.decisionsCount}
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveView('workspace');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="p-2 bg-surface-container-low/40 hover:bg-surface-container rounded-lg border border-outline-variant/30 text-left transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-secondary font-medium">Tasks</span>
+                <span className="material-symbols-outlined text-[13px] text-primary">checklist</span>
+              </div>
+              <div className="text-sm font-bold text-on-surface mt-0.5 group-hover:text-primary transition-colors font-mono">
+                {stats.tasksCount}
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveView('sources');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="p-2 bg-surface-container-low/40 hover:bg-surface-container rounded-lg border border-outline-variant/30 text-left transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-secondary font-medium">Sources</span>
+                <span className="material-symbols-outlined text-[13px] text-primary">dataset</span>
+              </div>
+              <div className="text-sm font-bold text-on-surface mt-0.5 group-hover:text-primary transition-colors font-mono">
+                {stats.totalSources}
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveView('review');
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="p-2 bg-surface-container-low/40 hover:bg-surface-container rounded-lg border border-outline-variant/30 text-left transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-secondary font-medium">Risks</span>
+                <span className="material-symbols-outlined text-[13px] text-amber-700">warning</span>
+              </div>
+              <div className="text-sm font-bold text-on-surface mt-0.5 group-hover:text-primary transition-colors font-mono">
+                {stats.risksCount}
+              </div>
+            </button>
+          </div>
+
+          {/* Quick Target Exit Date Indicator */}
+          {project.targetExitDate && (
+            <div className="mt-1.5 px-2 py-1 rounded-lg bg-surface-container-low/30 border border-outline-variant/20 flex items-center justify-between text-[10px] text-secondary">
+              <span className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-[12px] text-primary">event</span>
+                <span>Exit:</span>
+              </span>
+              <span className="font-mono font-medium text-on-surface">{project.targetExitDate}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 3. Bottom Status Section: Workspace Health & Access Information */}

@@ -18,11 +18,11 @@ export function DashboardView() {
   const hasSources = project.sources.length > 0;
 
   return (
-    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+    <div className="flex flex-col w-full gap-4 sm:gap-4.5 animate-in fade-in duration-150">
       {/* ─────────────────────────────────────────────────────────────────────────
           1. UNIFIED PAGE HEADER
       ───────────────────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-3.5 border-b border-outline-variant/30">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
             <span>Workspace</span>
@@ -80,14 +80,14 @@ export function DashboardView() {
       {/* ─────────────────────────────────────────────────────────────────────────
           2. FOUR SUMMARY METRIC TILES
       ───────────────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
         {/* Card 1: Connected Sources */}
         <div
           onClick={() => setActiveView('sources')}
-          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-3.5 sm:p-4 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Connected Sources
               </span>
@@ -105,7 +105,7 @@ export function DashboardView() {
                 : `${stats.totalSources} document(s) available for analysis`}
             </p>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
+          <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
             <span>Manage sources</span>
             <span className="material-symbols-outlined text-[15px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
@@ -116,10 +116,10 @@ export function DashboardView() {
         {/* Card 2: Important Decisions */}
         <div
           onClick={() => setActiveView('analysis')}
-          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-3.5 sm:p-4 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Important Decisions
               </span>
@@ -137,7 +137,7 @@ export function DashboardView() {
                 : `${stats.decisionsCount} decision(s) with reasoning`}
             </p>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
+          <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
             <span>View decisions</span>
             <span className="material-symbols-outlined text-[15px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
@@ -148,10 +148,10 @@ export function DashboardView() {
         {/* Card 3: Pending Tasks */}
         <div
           onClick={() => setActiveView('workspace')}
-          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-3.5 sm:p-4 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Pending Tasks
               </span>
@@ -169,7 +169,7 @@ export function DashboardView() {
                 : `${stats.tasksCount} operational task(s) tracked`}
             </p>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
+          <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
             <span>View tasks</span>
             <span className="material-symbols-outlined text-[15px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
@@ -180,10 +180,10 @@ export function DashboardView() {
         {/* Card 4: Human Review Progress */}
         <div
           onClick={() => setActiveView('review')}
-          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-3.5 sm:p-4 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Review Progress
               </span>
@@ -207,7 +207,7 @@ export function DashboardView() {
                 : 'No items to review yet'}
             </p>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
+          <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-outline-variant/30 text-xs text-primary font-medium">
             <span>Review Center</span>
             <span className="material-symbols-outlined text-[15px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
@@ -253,9 +253,9 @@ export function DashboardView() {
           4. MID SECTION: HANDOVER STATUS & RECENT FINDINGS
       ───────────────────────────────────────────────────────────────────────── */}
       {(hasFindings || hasSources) && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Left: Handover Status Card */}
-          <div className="lg:col-span-5 bg-surface rounded-xl p-5 sm:p-6 flex flex-col justify-between shadow-2xs border border-outline-variant/40">
+          <div className="lg:col-span-5 bg-surface rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-2xs border border-outline-variant/40">
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] uppercase tracking-wider text-secondary font-semibold font-mono">
@@ -318,9 +318,9 @@ export function DashboardView() {
           </div>
 
           {/* Right: Recent Knowledge Findings Feed */}
-          <div className="lg:col-span-7 bg-surface rounded-xl p-5 sm:p-6 shadow-2xs border border-outline-variant/40 flex flex-col justify-between">
+          <div className="lg:col-span-7 bg-surface rounded-xl p-4 sm:p-5 shadow-2xs border border-outline-variant/40 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-on-surface">
                     Recent Knowledge Findings
@@ -414,12 +414,12 @@ export function DashboardView() {
       {/* ─────────────────────────────────────────────────────────────────────────
           5. QUICK NAVIGATION TILES
       ───────────────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <button
           onClick={() => setActiveView('workspace')}
-          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
+          className="p-3.5 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[18px] text-primary mb-1.5 block group-hover:scale-105 transition-transform">
             folder_open
           </span>
           <p className="text-xs font-bold text-on-surface">Projects Workspace</p>
@@ -428,9 +428,9 @@ export function DashboardView() {
 
         <button
           onClick={() => setActiveView('sources')}
-          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
+          className="p-3.5 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[18px] text-primary mb-1.5 block group-hover:scale-105 transition-transform">
             dataset
           </span>
           <p className="text-xs font-bold text-on-surface">Sources &amp; GitHub</p>
@@ -439,9 +439,9 @@ export function DashboardView() {
 
         <button
           onClick={() => setActiveView('review')}
-          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
+          className="p-3.5 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[18px] text-primary mb-1.5 block group-hover:scale-105 transition-transform">
             rule
           </span>
           <p className="text-xs font-bold text-on-surface">Review Center</p>
@@ -450,9 +450,9 @@ export function DashboardView() {
 
         <button
           onClick={() => setActiveView('handover')}
-          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
+          className="p-3.5 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[18px] text-primary mb-1.5 block group-hover:scale-105 transition-transform">
             description
           </span>
           <p className="text-xs font-bold text-on-surface">Handover Dossier</p>
