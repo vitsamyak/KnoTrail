@@ -16,6 +16,7 @@ const DEMO_ACCOUNTS: Array<{
   email: string;
   password: string;
   badge: string;
+  shortBadge: string;
   badgeColor: string;
   description: string;
   icon: string;
@@ -26,6 +27,7 @@ const DEMO_ACCOUNTS: Array<{
     email: 'manager@knotrail.demo',
     password: 'KnoTrail2026!Manager',
     badge: 'Full Governance',
+    shortBadge: 'Full Control',
     badgeColor: 'bg-primary/10 text-primary border-primary/30',
     description: 'Approve & reject findings, certify handovers, resolve conflicts, manage members.',
     icon: 'admin_panel_settings',
@@ -36,6 +38,7 @@ const DEMO_ACCOUNTS: Array<{
     email: 'developer@knotrail.demo',
     password: 'KnoTrail2026!Dev',
     badge: 'Operational Access',
+    shortBadge: 'Contributor',
     badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40',
     description: 'Upload documents, sync GitHub, edit finding details, retry update jobs. No approval powers.',
     icon: 'code',
@@ -46,6 +49,7 @@ const DEMO_ACCOUNTS: Array<{
     email: 'external@knotrail.demo',
     password: 'KnoTrail2026!Ext',
     badge: 'Auditor (Read-Only)',
+    shortBadge: 'Auditor',
     badgeColor: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40',
     description: 'Auditor permissions: read-only access with confidential source contents and paths redacted.',
     icon: 'visibility',
@@ -134,30 +138,30 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-surface rounded-xl shadow-2xl border border-outline-variant/50 p-6 flex flex-col gap-4 overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/50 p-6 flex flex-col gap-4 overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between pb-1">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px]">verified_user</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[22px]">admin_panel_settings</span>
             </div>
             <div>
               <h2
                 id="login-modal-title"
-                className="text-sm font-semibold text-on-surface tracking-tight"
+                className="text-sm font-bold text-on-surface tracking-tight"
               >
                 Sign In to KnoTrail
               </h2>
-              <p className="text-[11px] text-secondary mt-0.5">
-                Server-verified authentication for protected workspaces &amp; RBAC evaluation
+              <p className="text-[11px] text-secondary mt-0.5 leading-snug">
+                Select a role to test server-verified RBAC boundaries
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-secondary hover:text-on-surface p-1 rounded-lg transition-colors"
+            className="text-secondary hover:text-on-surface hover:bg-surface-container p-1 rounded-lg transition-colors"
             aria-label="Close dialog"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
@@ -165,16 +169,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         </div>
 
         {/* Public Demo Info Banner */}
-        <div className="p-3 bg-surface-container-low/60 border border-outline-variant/30 rounded-lg flex items-start gap-2.5 text-xs text-secondary">
+        <div className="p-3 bg-surface-container-low/70 border border-outline-variant/30 rounded-xl flex items-start gap-2.5 text-xs text-secondary">
           <span className="material-symbols-outlined text-primary text-[17px] shrink-0 mt-0.5">
             info
           </span>
-          <div className="space-y-0.5">
-            <p className="font-semibold text-on-surface text-xs">Frictionless Zero-Login Demo Available</p>
-            <p className="text-secondary leading-relaxed text-[11px]">
-              Judges can explore all views with zero login. To evaluate server-verified RBAC boundaries and token verification, select one of the three role-specific demo accounts below.
-            </p>
-          </div>
+          <p className="text-secondary leading-relaxed text-[11px]">
+            <strong className="text-on-surface font-semibold">Zero-Login Evaluation:</strong> Judges can explore all views with no credentials in Demo mode. To evaluate role-based controls and signed HMAC sessions, choose a demo account below.
+          </p>
         </div>
 
         {/* Role-Specific Demo Account Selector */}
@@ -190,22 +191,25 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                   key={acc.role}
                   type="button"
                   onClick={() => handleSelectDemoRole(acc.role)}
-                  className={`p-2.5 rounded-lg border text-left flex flex-col gap-1 transition-all ${
+                  className={`p-2.5 rounded-xl border text-center flex flex-col items-center gap-1 transition-all ${
                     isSelected
-                      ? 'bg-primary/10 border-primary ring-1 ring-primary/40 shadow-xs'
-                      : 'bg-surface-container-low hover:bg-surface-container border-outline-variant/30'
+                      ? 'bg-primary/10 border-primary ring-2 ring-primary/30 shadow-xs'
+                      : 'bg-surface-container-low hover:bg-surface-container border-outline-variant/30 text-secondary hover:text-on-surface'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-on-surface flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[15px] text-primary">{acc.icon}</span>
-                      <span>{acc.label}</span>
+                  <div className="flex items-center gap-1">
+                    <span className={`material-symbols-outlined text-[16px] ${isSelected ? 'text-primary' : 'text-secondary'}`}>
+                      {acc.icon}
                     </span>
-                    {isSelected && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    )}
+                    <span className={`font-semibold text-xs ${isSelected ? 'text-on-surface' : 'text-on-surface/80'}`}>
+                      {acc.label}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-secondary font-mono truncate">{acc.email}</span>
+                  <span className={`text-[10px] font-mono font-medium px-1.5 py-0.2 rounded ${
+                    isSelected ? 'bg-primary/20 text-primary font-semibold' : 'bg-surface-container text-secondary'
+                  }`}>
+                    {acc.shortBadge}
+                  </span>
                 </button>
               );
             })}
@@ -213,13 +217,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
           {/* Active Role Permissions Card */}
           {activeAccount && (
-            <div className="p-2.5 rounded-lg bg-surface-container-low/70 border border-outline-variant/30 text-xs flex items-start gap-2 mt-0.5">
+            <div className="p-2.5 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 text-xs flex items-start gap-2.5 mt-0.5">
               <span className="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">
                 shield
               </span>
-              <div className="space-y-0.5">
+              <div className="space-y-0.5 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <strong className="text-on-surface text-[11px] font-semibold">{activeAccount.label} Role:</strong>
+                  <span className="text-[11px] font-semibold text-on-surface">{activeAccount.label} Role:</span>
                   <span className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded border font-semibold ${activeAccount.badgeColor}`}>
                     {activeAccount.badge}
                   </span>
@@ -234,7 +238,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
         {/* Error Feedback Alert */}
         {(localError || authError) && (
-          <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-lg flex items-start gap-2 text-xs text-rose-700 dark:text-rose-300">
+          <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start gap-2 text-xs text-rose-700 dark:text-rose-300">
             <span className="material-symbols-outlined text-rose-600 text-[16px] shrink-0 mt-0.5">
               error
             </span>
@@ -243,13 +247,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         )}
 
         {/* Sign In Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-          <div className="flex flex-col gap-1">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-on-surface" htmlFor="login-email">
               Email Address
             </label>
             <div className="relative flex items-center">
-              <span className="material-symbols-outlined absolute left-2.5 text-secondary text-[16px]">
+              <span className="material-symbols-outlined absolute left-3 text-secondary text-[18px] pointer-events-none select-none">
                 mail
               </span>
               <input
@@ -261,21 +265,20 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  // Clear role highlight if user alters email
                   const match = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === e.target.value.toLowerCase().trim());
                   if (match) setSelectedRole(match.role);
                 }}
-                className="w-full bg-surface-container-low text-on-surface pl-8 pr-3 h-9 rounded-lg border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary text-xs transition-colors font-mono"
+                className="w-full bg-surface-container-low/60 text-on-surface pl-10 pr-3.5 h-10 rounded-xl border border-outline-variant/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs transition-colors font-mono"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-on-surface" htmlFor="login-password">
               Password
             </label>
             <div className="relative flex items-center">
-              <span className="material-symbols-outlined absolute left-2.5 text-secondary text-[16px]">
+              <span className="material-symbols-outlined absolute left-3 text-secondary text-[18px] pointer-events-none select-none">
                 lock
               </span>
               <input
@@ -286,15 +289,15 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-surface-container-low text-on-surface pl-8 pr-9 h-9 rounded-lg border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary text-xs transition-colors font-mono"
+                className="w-full bg-surface-container-low/60 text-on-surface pl-10 pr-10 h-10 rounded-xl border border-outline-variant/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs transition-colors font-mono tracking-wide"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2.5 text-secondary hover:text-on-surface focus:outline-none"
+                className="absolute right-2.5 p-1 text-secondary hover:text-on-surface focus:outline-none rounded-md transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                <span className="material-symbols-outlined text-[16px]">
+                <span className="material-symbols-outlined text-[18px]">
                   {showPassword ? 'visibility_off' : 'visibility'}
                 </span>
               </button>
@@ -302,22 +305,22 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-2 pt-1 border-t border-outline-variant/30 mt-1">
+          <div className="flex flex-col gap-2 pt-2 border-t border-outline-variant/30 mt-1">
             <button
               type="submit"
               disabled={isAuthLoading}
-              className="w-full sm:flex-1 h-9 px-4 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-medium text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
+              className="w-full h-10 px-4 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
             >
               {isAuthLoading ? (
                 <>
-                  <span className="material-symbols-outlined text-[15px] animate-spin">
+                  <span className="material-symbols-outlined text-[16px] animate-spin">
                     progress_activity
                   </span>
                   <span>Verifying credentials...</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[15px]">login</span>
+                  <span className="material-symbols-outlined text-[16px]">login</span>
                   <span>Sign In as {activeAccount ? activeAccount.label : 'User'}</span>
                 </>
               )}
@@ -327,9 +330,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
               type="button"
               onClick={onClose}
               disabled={isAuthLoading}
-              className="w-full sm:w-auto h-9 px-3.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-medium text-xs border border-outline-variant/40 transition-colors"
+              className="w-full h-8 px-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-medium text-xs transition-colors flex items-center justify-center gap-1"
             >
-              Continue as Demo
+              <span>Continue as Guest Demo (No Sign In)</span>
             </button>
           </div>
         </form>

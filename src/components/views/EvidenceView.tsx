@@ -18,6 +18,7 @@ export function EvidenceView() {
     isVerifying,
     targetEvidenceNav,
     clearTargetEvidenceNav,
+    searchQuery,
   } = useProject();
 
   const [searchFilter, setSearchFilter] = useState('');
@@ -97,17 +98,18 @@ export function EvidenceView() {
   // Filter findings based on selected status pill and search term
   const filteredFindings = project.findings.filter((finding) => {
     const matchesStatus = evidenceFilter === 'ALL' || finding.status === evidenceFilter;
+    const activeSearch = (searchFilter || searchQuery || '').trim().toLowerCase();
     const matchesSearch =
-      !searchFilter ||
-      finding.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      finding.summary.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      !activeSearch ||
+      finding.title.toLowerCase().includes(activeSearch) ||
+      finding.summary.toLowerCase().includes(activeSearch) ||
       finding.citations.some(
         (c) =>
-          c.file.toLowerCase().includes(searchFilter.toLowerCase()) ||
-          c.author.toLowerCase().includes(searchFilter.toLowerCase()) ||
-          (c.commitSha && c.commitSha.toLowerCase().includes(searchFilter.toLowerCase())) ||
-          (c.prNumber && `pr #${c.prNumber}`.toLowerCase().includes(searchFilter.toLowerCase())) ||
-          (c.issueNumber && `issue #${c.issueNumber}`.toLowerCase().includes(searchFilter.toLowerCase()))
+          c.file.toLowerCase().includes(activeSearch) ||
+          c.author.toLowerCase().includes(activeSearch) ||
+          (c.commitSha && c.commitSha.toLowerCase().includes(activeSearch)) ||
+          (c.prNumber && `pr #${c.prNumber}`.toLowerCase().includes(activeSearch)) ||
+          (c.issueNumber && `issue #${c.issueNumber}`.toLowerCase().includes(activeSearch))
       );
     return matchesStatus && matchesSearch;
   });

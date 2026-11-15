@@ -28,6 +28,7 @@ export function ReviewView() {
     setActiveView,
     setSelectedFinding,
     navigateToEvidence,
+    searchQuery,
   } = useProject();
 
   // Filter States
@@ -95,11 +96,12 @@ export function ReviewView() {
       categoryFilter === 'ALL' ||
       finding.type === categoryFilter ||
       finding.category?.toLowerCase() === categoryFilter.toLowerCase();
+    const activeSearch = (searchTerm || searchQuery || '').trim().toLowerCase();
     const matchesSearch =
-      !searchTerm.trim() ||
-      finding.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      finding.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (finding.owner && finding.owner.toLowerCase().includes(searchTerm.toLowerCase()));
+      !activeSearch ||
+      finding.title.toLowerCase().includes(activeSearch) ||
+      finding.summary.toLowerCase().includes(activeSearch) ||
+      (finding.owner && finding.owner.toLowerCase().includes(activeSearch));
     return matchesStatus && matchesCategory && matchesSearch;
   });
 

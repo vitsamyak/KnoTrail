@@ -14,17 +14,19 @@ export function WorkspaceView() {
     setShowCreateProjectModal,
     currentUserRole,
     resetDemoData,
+    searchQuery,
   } = useProject();
   const [selectedTab, setSelectedTab] = useState<'all' | FindingType>('all');
   const [workspaceSearch, setWorkspaceSearch] = useState('');
 
+  const activeSearch = workspaceSearch || searchQuery;
   const filteredFindings = project.findings.filter((f) => {
     const matchesTab = selectedTab === 'all' || f.type === selectedTab;
     const matchesSearch =
-      !workspaceSearch ||
-      f.title.toLowerCase().includes(workspaceSearch.toLowerCase()) ||
-      f.summary.toLowerCase().includes(workspaceSearch.toLowerCase()) ||
-      f.category.toLowerCase().includes(workspaceSearch.toLowerCase());
+      !activeSearch ||
+      f.title.toLowerCase().includes(activeSearch.toLowerCase()) ||
+      f.summary.toLowerCase().includes(activeSearch.toLowerCase()) ||
+      f.category.toLowerCase().includes(activeSearch.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
