@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:all": "node scripts/dev.mjs",
     "build": "npm run backend:build && npm run frontend:build",
     "start": "next start",
     "lint": "next lint",

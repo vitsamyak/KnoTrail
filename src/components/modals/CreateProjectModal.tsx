@@ -81,19 +81,19 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-4 sm:p-space-xl flex flex-col gap-space-md animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant/50 p-5 sm:p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-150"
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-outline-variant/20 pb-space-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[24px]">create_new_folder</span>
+        <div className="flex items-start justify-between border-b border-outline-variant/30 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[18px]">create_new_folder</span>
             </div>
             <div>
-              <h2 id="create-project-title" className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+              <h2 id="create-project-title" className="text-sm font-semibold text-on-surface">
                 Create New Project
               </h2>
-              <p className="text-xs text-on-surface-variant mt-0.5">
+              <p className="text-xs text-secondary mt-0.5">
                 Set up a clean project workspace to organize documents and generate verified handovers.
               </p>
             </div>
@@ -101,22 +101,22 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="p-1 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors"
+            className="p-1 rounded-lg text-secondary hover:text-on-surface transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="material-symbols-outlined text-[18px]">close</span>
           </button>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-space-sm rounded-lg bg-error-container/20 border border-error/30 text-error text-xs flex items-center gap-2">
+          <div className="p-2.5 rounded-lg bg-error/10 border border-error/30 text-error text-xs flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px]">error</span>
             <span>{error}</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-space-sm text-xs">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-xs">
           <div>
             <label htmlFor="project-name" className="block font-semibold text-on-surface mb-1">
               Project Name <span className="text-error">*</span>
@@ -129,7 +129,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. EduTrack Platform or Billing Migration"
-              className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:bg-surface-container-lowest focus:outline-none transition-colors text-on-surface placeholder:text-outline"
+              className="w-full px-3 h-8 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-on-surface text-xs"
             />
           </div>
 
@@ -143,11 +143,11 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Summary of project purpose, operational scope, and key deliverables..."
-              className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:bg-surface-container-lowest focus:outline-none transition-colors text-on-surface placeholder:text-outline resize-none"
+              className="w-full p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-on-surface text-xs resize-none"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor="project-category" className="block font-semibold text-on-surface mb-1">
                 Domain / Category
@@ -156,7 +156,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
                 id="project-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:bg-surface-container-lowest focus:outline-none transition-colors text-on-surface"
+                className="w-full px-3 h-8 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-on-surface text-xs"
               >
                 <option value="Software Engineering">Software Engineering</option>
                 <option value="Cloud Infrastructure">Cloud Infrastructure</option>
@@ -177,12 +177,12 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
                 value={targetExitDate}
                 onChange={(e) => setTargetExitDate(e.target.value)}
                 placeholder="e.g. End of Month or Q4 2026"
-                className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:bg-surface-container-lowest focus:outline-none transition-colors text-on-surface placeholder:text-outline"
+                className="w-full px-3 h-8 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-on-surface text-xs"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor="lead-name" className="block font-semibold text-on-surface mb-1">
                 Handover Lead Name
@@ -193,7 +193,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
                 value={leadName}
                 onChange={(e) => setLeadName(e.target.value)}
                 placeholder="e.g. Samyak Gedam"
-                className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:bg-surface-container-lowest focus:outline-none transition-colors text-on-surface placeholder:text-outline"
+                className="w-full px-3 h-8 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-on-surface text-xs"
               />
             </div>
 
@@ -207,26 +207,26 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
                 value={leadRole}
                 onChange={(e) => setLeadRole(e.target.value)}
                 placeholder="e.g. Technical Lead"
-                className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:bg-surface-container-lowest focus:outline-none transition-colors text-on-surface placeholder:text-outline"
+                className="w-full px-3 h-8 rounded-lg bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-on-surface text-xs"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-space-xs pt-space-md border-t border-outline-variant/20 mt-space-xs">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/30 mt-1">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold transition-colors"
+              className="px-3.5 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-medium text-xs border border-outline-variant/40 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving || !name.trim()}
-              className="px-5 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-semibold shadow-sm transition-all disabled:opacity-50 flex items-center gap-1.5"
+              className="px-4 h-8 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-medium text-xs shadow-xs transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              {isSaving && <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>}
+              {isSaving && <span className="material-symbols-outlined text-[15px] animate-spin">progress_activity</span>}
               <span>{isSaving ? 'Creating...' : 'Create Project'}</span>
             </button>
           </div>
@@ -235,4 +235,3 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
     </div>
   );
 }
-

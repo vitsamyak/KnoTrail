@@ -89,11 +89,11 @@ export function AnalysisView() {
   });
 
   return (
-    <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
+    <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-4 sm:p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
+        <div className="flex flex-col max-w-2xl">
+          <div className="flex items-center gap-1.5 text-xs text-secondary">
             <span
               onClick={() => setActiveView('workspace')}
               className="hover:text-primary cursor-pointer transition-colors"
@@ -103,30 +103,30 @@ export function AnalysisView() {
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-semibold">AI Analysis</span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
+          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
             AI Project Analysis
           </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            KnoTrail reads your documents to find important decisions, pending tasks, risks, and responsibilities, backed by original quotes.
+          <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
+            KnoTrail synthesizes operational context from uploaded documents to reconstruct decisions, tasks, risks, and responsibilities, backed by immutable citations.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
           <button
             onClick={() => handleRunAiExtraction()}
             disabled={isAnalysing || isSyncing || isVerifying}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 sm:px-space-md py-2 sm:py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all disabled:opacity-60 text-xs sm:text-sm min-h-[40px]"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors disabled:opacity-60"
           >
             {isAnalysing ? (
               <>
-                <KnowledgeTrailLoader variant="inline" message="Analysing project knowledge..." />
+                <KnowledgeTrailLoader variant="inline" message="Analysing..." />
                 <span>Analysing with Gemini...</span>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-                <span>Find Knowledge with AI</span>
+                <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
+                <span>Extract with AI</span>
               </>
             )}
           </button>
@@ -134,18 +134,18 @@ export function AnalysisView() {
           <button
             onClick={() => handleRunVerification()}
             disabled={isAnalysing || isSyncing || isVerifying || project.findings.length === 0}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 sm:px-space-md py-2 sm:py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md shadow-xs transition-all border border-outline-variant/30 disabled:opacity-50 text-xs sm:text-sm min-h-[40px]"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium transition-colors border border-outline-variant/40 disabled:opacity-50"
             title="Verify quotations and scan for cross-document conflicts"
           >
             {isVerifying ? (
               <>
-                <KnowledgeTrailLoader variant="inline" message="Verifying evidence..." />
+                <KnowledgeTrailLoader variant="inline" message="Verifying..." />
                 <span>Verifying Claims...</span>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[18px] text-primary">fact_check</span>
-                <span>Check Quotes &amp; Find Conflicts</span>
+                <span className="material-symbols-outlined text-[17px] text-primary">fact_check</span>
+                <span>Verify Quotes &amp; Conflicts</span>
               </>
             )}
           </button>
@@ -153,36 +153,36 @@ export function AnalysisView() {
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing || isAnalysing || isVerifying}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors disabled:opacity-60 text-xs sm:text-sm min-h-[40px]"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors disabled:opacity-60"
             title="Synchronize workspace with server"
           >
-            <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>
+            <span className={`material-symbols-outlined text-[17px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
               sync
             </span>
-            <span>Sync Workspace</span>
+            <span>Sync</span>
           </button>
         </div>
       </div>
 
       {/* GEMINI CONFIGURATION STATUS & GUIDANCE */}
       {!hasAiApiKey && (
-        <div className="bg-surface-container-low rounded-xl p-space-md border border-outline-variant/40 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+        <div className="bg-surface-container-low/50 rounded-xl p-4 border border-outline-variant/40 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
-              <span className="material-symbols-outlined text-[22px]">key</span>
+            <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-[20px]">key</span>
             </div>
             <div className="flex flex-col text-xs">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-on-surface text-sm">
+                <span className="font-semibold text-on-surface">
                   Google Gemini AI Setup
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase bg-surface-container text-outline">
-                  Real AI Analysis
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase bg-surface-container-low text-secondary border border-outline-variant/30">
+                  Optional Key
                 </span>
               </div>
-              <p className="text-on-surface-variant mt-0.5 leading-relaxed">
-                To analyze your documents with Google Gemini AI, add your <code className="bg-surface-container px-1.5 py-0.5 rounded font-mono text-primary font-semibold">GEMINI_API_KEY</code>.
-                KnoTrail only uses real information from your files and never makes up facts.
+              <p className="text-secondary mt-0.5 leading-relaxed">
+                To run live AI extraction on custom documents, configure <code className="bg-surface-container-low px-1.5 py-0.5 rounded font-mono text-primary font-semibold">GEMINI_API_KEY</code>.
+                KnoTrail only extracts grounded findings with verbatim proof.
               </p>
             </div>
           </div>
@@ -190,13 +190,13 @@ export function AnalysisView() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowConfigHelp(!showConfigHelp)}
-              className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-semibold text-on-surface transition-colors"
+              className="px-3 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container text-xs font-medium text-on-surface transition-colors border border-outline-variant/40"
             >
-              {showConfigHelp ? 'Hide Setup Instructions' : 'View Instructions'}
+              {showConfigHelp ? 'Hide Instructions' : 'View Instructions'}
             </button>
             <button
               onClick={() => checkAiConfig()}
-              className="px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container text-xs font-semibold transition-colors flex items-center gap-1"
+              className="px-3 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary-hover text-xs font-medium transition-colors flex items-center gap-1 shadow-xs"
             >
               <span className="material-symbols-outlined text-[14px]">refresh</span>
               <span>Check Key</span>
@@ -207,19 +207,19 @@ export function AnalysisView() {
 
       {/* Expandable Configuration Help */}
       {showConfigHelp && (
-        <div className="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/30 text-xs text-on-surface-variant space-y-2 animate-in fade-in">
-          <div className="font-semibold text-on-surface flex items-center gap-1.5 text-sm">
-            <span className="material-symbols-outlined text-[18px] text-primary">terminal</span>
+        <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/40 text-xs text-secondary space-y-2 animate-in fade-in">
+          <div className="font-semibold text-on-surface flex items-center gap-1.5 text-xs">
+            <span className="material-symbols-outlined text-[16px] text-primary">terminal</span>
             <span>How to Configure Gemini API Key:</span>
           </div>
           <p>
-            Create or update a <code className="font-mono bg-surface-container px-1 py-0.5 rounded text-primary">.env.local</code> file in the project root:
+            Add the API key to your <code className="font-mono bg-surface-container-low px-1 py-0.5 rounded text-primary">.env.local</code> file in the repository root:
           </p>
-          <pre className="bg-surface-container-high/60 p-3 rounded-lg font-mono text-[11px] text-on-surface overflow-x-auto">
+          <pre className="bg-surface-container-low p-3 rounded-lg font-mono text-[11px] text-on-surface overflow-x-auto border border-outline-variant/30">
 GEMINI_API_KEY=your_gemini_api_key_here
           </pre>
-          <p className="text-[11px] text-outline">
-            Once saved, restart the Next.js development server or click &quot;Check Key&quot;. All extracted findings will cite verbatim quotes from your documents.
+          <p className="text-[11px] text-secondary">
+            Once saved, restart the server or click &quot;Check Key&quot;. All extracted findings cite exact verbatim quotes.
           </p>
         </div>
       )}
@@ -229,7 +229,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
         <KnowledgeTrailLoader
           variant="section"
           message="Analysing project knowledge..."
-          submessage={analysisStatusMessage || 'Reading documents to find decisions, tasks, risks, and responsibilities...'}
+          submessage={analysisStatusMessage || 'Reading documents to extract decisions, tasks, risks, and responsibilities...'}
           progress={analysisProgress}
           step={1}
         />
@@ -240,33 +240,33 @@ GEMINI_API_KEY=your_gemini_api_key_here
         <KnowledgeTrailLoader
           variant="section"
           message="Verifying supporting evidence..."
-          submessage="Checking quotes against original documents and finding information that does not match..."
+          submessage="Cross-verifying quotations against original document lines..."
           step={2}
         />
       )}
 
       {/* VERIFY NOTICE */}
       {verifyNotice && (
-        <div className="bg-primary/10 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
           <div className="flex items-start gap-2.5">
             <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">verified</span>
             <div className="flex-1">
-              <strong className="block font-semibold text-primary">Evidence Verification Update:</strong>
-              <p className="mt-0.5 text-on-surface-variant leading-relaxed">{verifyNotice}</p>
+              <strong className="block font-semibold text-primary">Evidence Verification Complete</strong>
+              <p className="mt-0.5 text-secondary leading-relaxed">{verifyNotice}</p>
             </div>
           </div>
           <button
             onClick={() => setActiveView('evidence')}
-            className="w-full sm:w-auto text-center px-3 py-1.5 bg-primary text-on-primary hover:bg-primary-container rounded-lg text-xs font-semibold whitespace-nowrap transition-colors min-h-[34px] flex items-center justify-center"
+            className="w-full sm:w-auto text-center px-3.5 h-8 bg-primary text-on-primary hover:bg-primary-hover rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center justify-center shadow-xs"
           >
-            Inspect in Evidence Explorer
+            Evidence Explorer
           </button>
         </div>
       )}
 
       {/* ERROR BANNER */}
       {analysisError && (
-        <div className="bg-error-container/20 border border-error/30 rounded-xl p-space-md text-xs text-error flex items-start gap-2.5 animate-in fade-in">
+        <div className="bg-error/10 border border-error/30 rounded-xl p-4 text-xs text-error flex items-start gap-2.5 animate-in fade-in">
           <span className="material-symbols-outlined text-[18px] text-error shrink-0 mt-0.5">error</span>
           <div className="flex-1">
             <strong className="block font-semibold">AI Analysis Notice:</strong>
@@ -277,31 +277,31 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
       {/* SUCCESS NOTIFICATION */}
       {analysisSuccessMsg && (
-        <div className="bg-secondary-container/30 border border-primary/30 rounded-xl p-space-md text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
+        <div className="bg-success/10 border border-success/30 rounded-xl p-4 text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
           <div className="flex items-start gap-2.5">
-            <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">check_circle</span>
+            <span className="material-symbols-outlined text-[18px] text-success shrink-0 mt-0.5">check_circle</span>
             <div className="flex-1">
-              <strong className="block font-semibold text-primary">Information Found Successfully</strong>
-              <p className="mt-0.5 text-on-surface-variant leading-relaxed">{analysisSuccessMsg}</p>
+              <strong className="block font-semibold text-success">Extraction Successful</strong>
+              <p className="mt-0.5 text-secondary leading-relaxed">{analysisSuccessMsg}</p>
             </div>
           </div>
           <button
             onClick={() => setActiveView('review')}
-            className="w-full sm:w-auto text-center px-3 py-1.5 bg-primary text-on-primary hover:bg-primary-container rounded-lg text-xs font-semibold whitespace-nowrap transition-colors min-h-[34px] flex items-center justify-center"
+            className="w-full sm:w-auto text-center px-3.5 h-8 bg-primary text-on-primary hover:bg-primary-hover rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center justify-center shadow-xs"
           >
-            Go to Review Center
+            Review Center
           </button>
         </div>
       )}
 
       {/* INGESTED DOCUMENT SELECTOR FOR ANALYSIS */}
       {eligibleSources.length > 0 && (
-        <div className="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/30 shadow-xs flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/20 pb-2">
+        <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/40 shadow-xs flex flex-col gap-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/30 pb-2">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[18px]">folder_open</span>
+              <span className="material-symbols-outlined text-primary text-[17px]">folder_open</span>
               <span className="text-xs font-semibold text-on-surface uppercase tracking-wider">
-                Select Documents for AI Extraction ({eligibleSources.length} Available)
+                Select Documents for Extraction ({eligibleSources.length} Available)
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs">
@@ -311,10 +311,10 @@ GEMINI_API_KEY=your_gemini_api_key_here
               >
                 Select All
               </button>
-              <span className="text-outline">•</span>
+              <span className="text-secondary">•</span>
               <button
                 onClick={clearSourceSelection}
-                className="text-outline hover:text-on-surface font-medium"
+                className="text-secondary hover:text-on-surface font-medium"
               >
                 Clear
               </button>
@@ -335,10 +335,10 @@ GEMINI_API_KEY=your_gemini_api_key_here
                 <div
                   key={source.id}
                   onClick={() => toggleSourceSelection(source.id)}
-                  className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs cursor-pointer transition-all ${
+                  className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-primary-fixed/20 border-primary/50 shadow-2xs'
-                      : 'bg-surface-container-low border-outline-variant/20 hover:border-outline-variant/50'
+                      ? 'bg-primary/5 border-primary/40 shadow-2xs'
+                      : 'bg-surface-container-low/40 border-outline-variant/30 hover:border-outline-variant/60'
                   }`}
                 >
                   <input
@@ -348,8 +348,8 @@ GEMINI_API_KEY=your_gemini_api_key_here
                     className="rounded text-primary focus:ring-primary h-3.5 w-3.5"
                   />
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="font-semibold text-on-surface truncate">{source.name}</span>
-                    <span className="text-[10px] text-outline font-mono">
+                    <span className="font-semibold text-on-surface truncate text-xs">{source.name}</span>
+                    <span className="text-[10px] text-secondary font-mono">
                       {format.toUpperCase()} • {pagesOrLines}
                     </span>
                   </div>
@@ -361,24 +361,24 @@ GEMINI_API_KEY=your_gemini_api_key_here
       )}
 
       {/* Grounding & Confidence Telemetry Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/30 flex items-center gap-space-sm shadow-xs">
-          <div className="w-10 h-10 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[22px]">verified</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/40 flex items-center gap-3 shadow-xs">
+          <div className="w-9 h-9 rounded-lg bg-success/10 text-success flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px]">verified</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs text-outline uppercase font-semibold">Evidence Grounding</span>
+            <span className="text-[11px] text-secondary uppercase font-semibold">Evidence Grounding</span>
             <span className="text-xl font-bold text-on-surface">{stats.groundedPercent}%</span>
-            <span className="text-[11px] text-primary">{stats.verifiedCount} of {stats.totalFindings} Claims Verified</span>
+            <span className="text-[11px] text-success font-medium">{stats.verifiedCount} of {stats.totalFindings} Claims Verified</span>
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/30 flex items-center gap-space-sm shadow-xs">
-          <div className="w-10 h-10 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[22px]">gavel</span>
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/40 flex items-center gap-3 shadow-xs">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px]">gavel</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs text-outline uppercase font-semibold">Decisions Reconstructed</span>
+            <span className="text-[11px] text-secondary uppercase font-semibold">Decisions Reconstructed</span>
             <span className="text-xl font-bold text-on-surface">
               {stats.decisionsCount}
             </span>
@@ -386,12 +386,12 @@ GEMINI_API_KEY=your_gemini_api_key_here
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/30 flex items-center gap-space-sm shadow-xs">
-          <div className="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[22px]">warning</span>
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/40 flex items-center gap-3 shadow-xs">
+          <div className="w-9 h-9 rounded-lg bg-error/10 text-error flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px]">warning</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs text-outline uppercase font-semibold">Conflicts &amp; Questions</span>
+            <span className="text-[11px] text-secondary uppercase font-semibold">Conflicts &amp; Questions</span>
             <span className="text-xl font-bold text-error">
               {stats.conflictingCount} / {stats.questionsCount}
             </span>
@@ -401,16 +401,16 @@ GEMINI_API_KEY=your_gemini_api_key_here
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-xl border border-outline-variant/30 flex items-center gap-space-sm shadow-xs">
-          <div className="w-10 h-10 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[22px]">find_in_page</span>
+        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/40 flex items-center gap-3 shadow-xs">
+          <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px]">checklist</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs text-outline uppercase font-semibold">Tasks &amp; Next Actions</span>
-            <span className="text-xl font-bold text-tertiary">
+            <span className="text-[11px] text-secondary uppercase font-semibold">Tasks &amp; Actions</span>
+            <span className="text-xl font-bold text-on-surface">
               {stats.tasksCount + stats.nextActionsCount}
             </span>
-            <span className="text-[11px] text-tertiary font-medium">
+            <span className="text-[11px] text-secondary font-medium">
               {stats.unreviewedCount} pending review
             </span>
           </div>
@@ -418,7 +418,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-outline-variant/20 pb-2 overflow-x-auto no-scrollbar -mx-2 px-2">
+      <div className="flex items-center gap-1.5 border-b border-outline-variant/30 pb-2 overflow-x-auto no-scrollbar -mx-2 px-2">
         {[
           { id: 'all', label: 'All Analysis', count: project.findings.length },
           { id: 'decision', label: 'Decisions', count: stats.decisionsCount },
@@ -432,18 +432,18 @@ GEMINI_API_KEY=your_gemini_api_key_here
           <button
             key={tab.id}
             onClick={() => setActiveCategory(tab.id as 'all' | FindingType)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+            className={`h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
               activeCategory === tab.id
                 ? 'bg-primary text-on-primary shadow-xs'
-                : 'text-on-surface-variant hover:bg-surface-container'
+                : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
             }`}
           >
             <span>{tab.label}</span>
             <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                 activeCategory === tab.id
-                  ? 'bg-primary-container text-on-primary-container'
-                  : 'bg-surface-container'
+                  ? 'bg-primary-hover text-on-primary'
+                  : 'bg-surface-container-low text-secondary'
               }`}
             >
               {tab.count}
@@ -453,30 +453,30 @@ GEMINI_API_KEY=your_gemini_api_key_here
       </div>
 
       {/* Findings Analysis Cards */}
-      <div className="space-y-space-md">
+      <div className="space-y-4">
         {project.findings.length === 0 ? (
-          <div className="bg-surface-container-lowest rounded-xl p-space-2xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-3">
+          <div className="bg-surface-container-lowest rounded-xl p-8 sm:p-12 border border-outline-variant/40 text-center flex flex-col items-center justify-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-[28px]">auto_awesome</span>
             </div>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">No analysis available.</h4>
-            <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
-              Upload project documents and run AI analysis to discover important project information.
+            <h4 className="text-sm font-semibold text-on-surface">No findings extracted yet</h4>
+            <p className="text-xs text-secondary max-w-md leading-relaxed">
+              Upload project documents and run AI analysis to extract decisions, operational tasks, and risks.
             </p>
             {eligibleSources.length > 0 ? (
               <button
                 onClick={() => handleRunAiExtraction()}
                 disabled={isAnalysing}
-                className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+                className="mt-1 inline-flex items-center gap-1.5 px-3.5 h-8 rounded-lg bg-primary text-on-primary text-xs font-medium hover:bg-primary-hover transition-colors shadow-xs"
               >
                 {isAnalysing ? (
                   <>
                     <KnowledgeTrailLoader variant="inline" message="Analysing..." />
-                    <span>Analysing with Gemini...</span>
+                    <span>Analysing...</span>
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                    <span className="material-symbols-outlined text-[15px]">auto_awesome</span>
                     <span>Extract Knowledge with AI</span>
                   </>
                 )}
@@ -484,16 +484,16 @@ GEMINI_API_KEY=your_gemini_api_key_here
             ) : (
               <button
                 onClick={() => setActiveView('sources')}
-                className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all"
+                className="mt-1 inline-flex items-center gap-1.5 px-3.5 h-8 rounded-lg bg-primary text-on-primary text-xs font-medium hover:bg-primary-hover transition-colors shadow-xs"
               >
-                <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                <span className="material-symbols-outlined text-[15px]">upload_file</span>
                 <span>Upload Documents</span>
               </button>
             )}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-surface-container-lowest rounded-xl p-space-xl border border-outline-variant/30 text-center text-xs text-outline">
-            <span className="material-symbols-outlined text-[32px] text-outline mb-1 block">
+          <div className="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant/40 text-center text-xs text-secondary">
+            <span className="material-symbols-outlined text-[28px] text-secondary mb-1 block">
               search_off
             </span>
             <span>No findings found in category &quot;{activeCategory}&quot;.</span>
@@ -502,34 +502,34 @@ GEMINI_API_KEY=your_gemini_api_key_here
           filtered.map((finding) => (
             <div
               key={finding.id}
-              className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-outline-variant/30 flex flex-col gap-space-sm"
+              className="bg-surface-container-lowest rounded-xl p-5 shadow-xs border border-outline-variant/40 flex flex-col gap-3"
             >
               {/* Top row */}
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                    className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${
                       finding.status === 'VERIFIED'
-                        ? 'bg-secondary-container text-on-secondary-container'
+                        ? 'bg-success/10 text-success border-success/20'
                         : finding.status === 'CONFLICTING'
-                        ? 'bg-error-container text-on-error-container'
+                        ? 'bg-error/10 text-error border-error/20'
                         : finding.status === 'UNCERTAIN'
-                        ? 'bg-tertiary-fixed text-on-tertiary-fixed'
-                        : 'bg-surface-container text-outline'
+                        ? 'bg-warning/10 text-warning border-warning/20'
+                        : 'bg-surface-container-low text-secondary border-outline-variant/40'
                     }`}
                   >
                     {finding.status}
                   </span>
-                  <span className="text-xs text-outline font-mono">[{finding.category}]</span>
-                  <span className="text-xs text-outline">•</span>
-                  <span className="text-xs text-outline">Owner: {finding.owner}</span>
+                  <span className="text-xs text-secondary font-mono">{finding.category}</span>
+                  <span className="text-secondary">•</span>
+                  <span className="text-xs text-secondary">Owner: {finding.owner}</span>
                   {!finding.approved && !finding.rejected && (
-                    <span className="text-[10px] bg-tertiary-fixed/60 text-on-tertiary-fixed px-1.5 py-0.2 rounded font-semibold uppercase">
+                    <span className="text-[10px] bg-warning/10 text-warning border border-warning/20 px-2 py-0.2 rounded font-semibold uppercase">
                       Pending Review
                     </span>
                   )}
                   {finding.approved && (
-                    <span className="text-[10px] bg-secondary-container text-on-secondary-container px-1.5 py-0.2 rounded font-semibold uppercase flex items-center gap-0.5">
+                    <span className="text-[10px] bg-success/10 text-success border border-success/20 px-2 py-0.2 rounded font-semibold uppercase flex items-center gap-0.5">
                       <span className="material-symbols-outlined text-[12px]">check</span>
                       <span>Approved</span>
                     </span>
@@ -537,8 +537,8 @@ GEMINI_API_KEY=your_gemini_api_key_here
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-xs font-medium text-primary bg-primary-fixed/40 px-2.5 py-0.5 rounded-full">
-                    <span className="material-symbols-outlined text-[14px]">psychology</span>
+                  <div className="flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
+                    <span className="material-symbols-outlined text-[13px]">psychology</span>
                     <span>Confidence: {finding.confidence}%</span>
                   </div>
                 </div>
@@ -546,20 +546,20 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
               {/* Finding Title & Summary */}
               <div className="flex flex-col">
-                <h3 className="font-headline-sm text-headline-sm text-on-surface">{finding.title}</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-1 leading-relaxed">
+                <h3 className="text-sm font-semibold text-on-surface">{finding.title}</h3>
+                <p className="text-xs text-secondary mt-1 leading-relaxed">
                   {finding.summary}
                 </p>
               </div>
 
               {/* Detailed Rationale & Impact Grid */}
               {(finding.reasoning || finding.impact) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm bg-surface-container-low/60 p-space-md rounded-lg border border-outline-variant/20 text-xs">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-surface-container-low/40 p-3 rounded-lg border border-outline-variant/30 text-xs">
                   <div>
                     <span className="font-semibold text-secondary uppercase tracking-wider block mb-0.5 text-[10px]">
-                      Architectural Reasoning &amp; Context
+                      Architectural Reasoning
                     </span>
-                    <p className="text-on-surface-variant leading-relaxed">
+                    <p className="text-secondary leading-relaxed">
                       {finding.reasoning || 'Derived from source evidence.'}
                     </p>
                   </div>
@@ -567,7 +567,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
                     <span className="font-semibold text-secondary uppercase tracking-wider block mb-0.5 text-[10px]">
                       Operational Impact
                     </span>
-                    <p className="text-on-surface-variant leading-relaxed">
+                    <p className="text-secondary leading-relaxed">
                       {finding.impact || 'Ensures operational reliability.'}
                     </p>
                   </div>
@@ -576,20 +576,20 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
               {/* Validation / Reviewer Notes Warning if UNCERTAIN or CONFLICTING */}
               {finding.reviewerNotes && finding.status !== 'VERIFIED' && (
-                <div className="p-2 rounded bg-tertiary-fixed/20 border border-tertiary-fixed/30 text-[11px] text-tertiary-fixed-dim">
+                <div className="p-2.5 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning">
                   <strong>Verification Note: </strong>
                   <span>{finding.reviewerNotes}</span>
                 </div>
               )}
 
               {/* Citations Preview Strip */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-space-xs border-t border-outline-variant/20 text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-outline-variant/30 text-xs">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-outline font-medium">Supporting Evidence:</span>
+                  <span className="text-secondary font-medium">Supporting Evidence:</span>
                   {finding.citations.map((c) => (
                     <span
                       key={c.id}
-                      className="font-mono text-[11px] bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30 text-on-surface flex items-center gap-1"
+                      className="font-mono text-[11px] bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/40 text-on-surface flex items-center gap-1"
                     >
                       <span className="material-symbols-outlined text-[12px] text-primary">link</span>
                       <span>
@@ -605,7 +605,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
                       setSelectedFinding(finding);
                       setActiveView('evidence');
                     }}
-                    className="px-3 py-1 bg-surface-container hover:bg-surface-container-high rounded text-xs font-semibold text-on-surface transition-colors"
+                    className="px-2.5 h-7 bg-surface-container-low hover:bg-surface-container rounded-md text-xs font-medium text-on-surface transition-colors border border-outline-variant/30"
                   >
                     Inspect Evidence
                   </button>
@@ -614,7 +614,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
                       setSelectedFinding(finding);
                       setActiveView('review');
                     }}
-                    className="px-3 py-1 bg-primary text-on-primary hover:bg-primary-container rounded text-xs font-semibold transition-colors"
+                    className="px-2.5 h-7 bg-primary text-on-primary hover:bg-primary-hover rounded-md text-xs font-medium transition-colors shadow-xs"
                   >
                     Review Sign-Off
                   </button>

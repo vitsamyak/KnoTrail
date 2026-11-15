@@ -75,7 +75,7 @@ export async function extractWithGemini(
   }
 
   const prompt = buildExtractionPrompt(documentName, text);
-  const modelName = options.model || 'gemini-2.5-flash';
+  const modelName = options.model || process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
   let rawResponseText = '';
 
@@ -90,7 +90,7 @@ export async function extractWithGemini(
   } else {
     // Official GoogleGenAI SDK call with transient retry & fallback
     const ai = new GoogleGenAI({ apiKey: apiKey! });
-    const modelsToTry = [modelName, 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
+    const modelsToTry = [modelName, 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite'];
     const uniqueModels = Array.from(new Set(modelsToTry));
     let lastError: any = null;
     let response: any = null;

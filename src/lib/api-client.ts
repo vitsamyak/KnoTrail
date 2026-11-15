@@ -60,9 +60,11 @@ export function getClientDemoPerspective(): UserRole | null {
 
 /**
  * Returns the normalized backend API base URL.
- * Reads NEXT_PUBLIC_API_BASE_URL (e.g. "https://knotrail-api.onrender.com").
- * In local browser development, falls back to "http://localhost:4000" if unset.
- * Trailing slashes are strictly stripped.
+ * Priority order:
+ * 1. Explicit NEXT_PUBLIC_API_BASE_URL environment variable (Render backend, e.g. "https://knotrail-backend.onrender.com")
+ * 2. Local browser development on localhost / 127.0.0.1 (defaults to "http://localhost:4000")
+ * 3. Local Node.js test environment (defaults to "http://localhost:4000")
+ * 4. Production deployments without NEXT_PUBLIC_API_BASE_URL return "" and raise an explicit configuration error.
  */
 export function getApiBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -70,11 +72,19 @@ export function getApiBaseUrl(): string {
     return envUrl.trim().replace(/\/+$/, '');
   }
 
+  // Local development check in browser
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://localhost:4000';
     }
+    // In production browser environments (e.g. deployed on Vercel), do NOT silently fall back to localhost
+    return '';
+  }
+
+  // Local development / testing in Node.js runtime
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://localhost:4000';
   }
 
   return '';
@@ -104,6 +114,12 @@ async function request<T>(
   timeoutMs: number = 30000
 ): Promise<T> {
   const baseUrl = getApiBaseUrl();
+  if (!baseUrl) {
+    throw new ApiClientError(
+      'KnoTrail backend API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL in your deployment environment (e.g. Vercel Dashboard) pointing to your active Render backend service.',
+      0
+    );
+  }
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${baseUrl}${normalizedEndpoint}`;
 
@@ -179,11 +195,12 @@ async function request<T>(
     }
 
     // Network / CORS failure
-    throw new ApiClientError(
-      `Cannot connect to KnoTrail backend API (${url}). Ensure the Render API service is running and CORS_ORIGINS permits this origin.`,
-      0,
-      { originalError: error.message }
-    );
+    const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+    const diagnostic = isLocal
+      ? `Cannot connect to KnoTrail backend API (${url}). If running locally, ensure the backend API server is running on port 4000 (run "npm run backend:dev" or "npm run backend:start").`
+      : `Cannot connect to KnoTrail backend API (${url}). Ensure the Render backend service is active and CORS_ORIGINS permits this origin.`;
+
+    throw new ApiClientError(diagnostic, 0, { originalError: error.message });
   }
 }
 

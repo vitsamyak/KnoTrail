@@ -118,24 +118,34 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     }
 
     // 3. Target Workspace Binding & Manager Role Assignment
-    const storage = getStorage();
     let targetWorkspaceId = workspaceId && isValidWorkspaceId(workspaceId) ? workspaceId : 'ws_proj_demo';
+    let memberRole: UserRole = 'MANAGER';
 
-    // Ensure workspace exists
-    let project = await storage.getWorkspace(targetWorkspaceId);
-    if (!project) {
-      project = await storage.createWorkspace(targetWorkspaceId);
+    try {
+      const storage = getStorage();
+
+      // Ensure workspace exists
+      let project = await storage.getWorkspace(targetWorkspaceId);
+      if (!project) {
+        project = await storage.createWorkspace(targetWorkspaceId);
+      }
+
+      // Mark workspace protected and assign owner
+      await storage.setWorkspaceProtected(targetWorkspaceId, true, authenticatedUserId);
+
+      // Register user as MANAGER in authoritative database/storage record
+      const member = await storage.addWorkspaceMember(targetWorkspaceId, {
+        userId: authenticatedUserId,
+        email: authenticatedEmail || normalizedEmail,
+        role: 'MANAGER',
+      });
+      if (member?.role) {
+        memberRole = member.role;
+      }
+    } catch (storageErr: any) {
+      console.warn('[Auth Service] Workspace binding warning (remote database sync skipped or failed):', storageErr?.message || storageErr);
+      // Fallback: The signed HMAC session token still authenticates the user as MANAGER
     }
-
-    // Mark workspace protected and assign owner
-    await storage.setWorkspaceProtected(targetWorkspaceId, true, authenticatedUserId);
-
-    // Register user as MANAGER in authoritative database/storage record
-    const member = await storage.addWorkspaceMember(targetWorkspaceId, {
-      userId: authenticatedUserId,
-      email: authenticatedEmail || normalizedEmail,
-      role: 'MANAGER',
-    });
 
     res.status(200).json({
       status: 'authenticated',
@@ -144,12 +154,12 @@ authRouter.post('/login', async (req: Request, res: Response) => {
       user: {
         userId: authenticatedUserId,
         email: authenticatedEmail || normalizedEmail,
-        role: 'MANAGER' as UserRole,
+        role: memberRole,
       },
       workspace: {
         id: targetWorkspaceId,
         isProtected: true,
-        memberRole: member.role,
+        memberRole,
       },
     });
   } catch (error: any) {

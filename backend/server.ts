@@ -10,6 +10,15 @@ const server = app.listen(PORT, HOST, () => {
   console.log(`[KnoTrail Backend] Storage backend: ${process.env.STORAGE_BACKEND || 'file'}`);
 });
 
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`[KnoTrail Backend] Fatal: Port ${PORT} is already in use.`);
+  } else {
+    console.error('[KnoTrail Backend] Fatal server startup error:', err.message);
+  }
+  process.exit(1);
+});
+
 // Graceful shutdown handling
 function shutdown(signal: string) {
   console.log(`[KnoTrail Backend] Received ${signal}. Closing server gracefully...`);

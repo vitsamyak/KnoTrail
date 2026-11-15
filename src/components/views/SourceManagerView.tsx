@@ -55,7 +55,6 @@ export function SourceManagerView() {
 
   const handleFilesSelected = (files: File[]) => {
     setUploadResults([]);
-    // Limit to max 5 files
     const combined = [...selectedFiles, ...files].slice(0, MAX_FILES_PER_BATCH);
     setSelectedFiles(combined);
   };
@@ -75,7 +74,6 @@ export function SourceManagerView() {
     setUploadResults(res.results || []);
 
     if (res.success) {
-      // Clear selected files on successful processing
       setSelectedFiles([]);
     }
   };
@@ -109,14 +107,13 @@ export function SourceManagerView() {
   });
 
   const uploadedCount = project.sources.filter((s) => s.isUploaded).length;
-  const notesCount = project.sources.filter((s) => !s.isUploaded || s.type === 'notes').length;
 
   return (
-    <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200">
+    <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-outline-variant/30">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
+        <div className="flex flex-col max-w-2xl">
+          <div className="flex items-center gap-1.5 text-xs text-secondary">
             <span
               onClick={() => setActiveView('workspace')}
               className="hover:text-primary cursor-pointer transition-colors"
@@ -126,42 +123,42 @@ export function SourceManagerView() {
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-semibold">Sources</span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
+          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
             Project Documents &amp; Sources
           </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-            Upload PDF, Markdown, and text files. KnoTrail reads them and tracks the exact lines and page numbers.
+          <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
+            Ingest PDF, Markdown, and text specifications. KnoTrail indexes line ranges and page coordinates to anchor all findings to immutable evidence.
           </p>
         </div>
 
         {/* Action Group */}
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
           <button
             onClick={() => {
               setSelectedFiles([]);
               setUploadResults([]);
               setShowUploadModal(true);
             }}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-all text-xs min-h-[38px]"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">upload_file</span>
+            <span className="material-symbols-outlined text-[17px]">upload_file</span>
             <span>Upload Documents</span>
           </button>
 
           <button
             onClick={() => setShowPasteModal(true)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all text-xs min-h-[38px]"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">edit_note</span>
+            <span className="material-symbols-outlined text-[17px]">edit_note</span>
             <span>Paste Notes</span>
           </button>
 
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-all disabled:opacity-60 text-xs min-h-[38px]"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors disabled:opacity-60"
           >
-            <span className={`material-symbols-outlined text-[18px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
+            <span className={`material-symbols-outlined text-[17px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
               sync
             </span>
             <span>{isSyncing ? 'Syncing...' : 'Sync Workspace'}</span>
@@ -170,129 +167,129 @@ export function SourceManagerView() {
       </div>
 
       {/* Filter Tabs & Privacy Guarantee */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm bg-surface-container-low rounded-xl p-space-md border border-outline-variant/30">
-        <div className="flex items-center gap-1 bg-surface-container p-1 rounded-lg border border-outline-variant/30 text-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/30">
+        <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg border border-outline-variant/30 text-xs">
           <button
             onClick={() => setSourceFilter('ALL')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all ${
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
               sourceFilter === 'ALL'
-                ? 'bg-surface-container-lowest text-primary shadow-xs'
-                : 'text-outline hover:text-on-surface'
+                ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold'
+                : 'text-secondary hover:text-on-surface'
             }`}
           >
             All Sources ({project.sources.length})
           </button>
           <button
             onClick={() => setSourceFilter('UPLOADED')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all ${
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
               sourceFilter === 'UPLOADED'
-                ? 'bg-surface-container-lowest text-primary shadow-xs'
-                : 'text-outline hover:text-on-surface'
+                ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold'
+                : 'text-secondary hover:text-on-surface'
             }`}
           >
             Uploaded Documents ({uploadedCount})
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-outline">
+        <div className="flex items-center gap-2 text-xs text-secondary">
           <span className="material-symbols-outlined text-[16px] text-primary">verified_user</span>
-          <span>Zero-Auth Invariant: Uploaded files isolated in private session workspace.</span>
+          <span>Zero-Auth Guarantee: Uploaded files remain isolated within your session workspace.</span>
         </div>
       </div>
 
       {/* Active Sources Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredSources.map((source) => (
           <div
             key={source.id}
-            className={`bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border flex flex-col justify-between hover:shadow-md transition-all group ${
+            className={`bg-surface-container-lowest rounded-xl p-5 shadow-xs border flex flex-col justify-between hover:border-outline-variant/70 transition-all group ${
               source.isUploaded
-                ? 'border-primary/40 bg-gradient-to-b from-surface-container-lowest to-surface-container-low/40'
-                : 'border-outline-variant/30'
+                ? 'border-primary/30'
+                : 'border-outline-variant/40'
             }`}
           >
             <div>
               {/* Card Top: Icon, Type, Status */}
-              <div className="flex items-center justify-between mb-space-sm">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                       source.isUploaded
-                        ? 'bg-primary-container text-on-primary-container'
-                        : 'bg-surface-container-low text-primary group-hover:bg-primary-fixed'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-surface-container-low text-primary group-hover:bg-primary/10'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[20px]">{source.icon}</span>
+                    <span className="material-symbols-outlined text-[18px]">{source.icon}</span>
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold font-mono">
+                      <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-secondary">
                         {source.documentData?.fileFormat ? source.documentData.fileFormat.toUpperCase() : source.type}
                       </span>
                       {source.isUploaded && (
-                        <span className="px-1.5 py-0.2 bg-secondary-container text-on-secondary-container rounded text-[10px] font-semibold">
+                        <span className="px-1.5 py-0.2 bg-primary/10 text-primary rounded text-[9px] font-semibold uppercase tracking-wider">
                           Uploaded
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] text-outline">{source.lastSync}</span>
+                    <span className="text-[11px] text-secondary font-mono">{source.lastSync}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-surface-container-low px-2 py-0.5 rounded-full border border-outline-variant/20">
+                <div className="flex items-center gap-1.5 bg-surface-container-low px-2 py-0.5 rounded-full border border-outline-variant/30">
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
                       source.status === 'error'
                         ? 'bg-error'
                         : source.documentData?.isScannedPdf
-                        ? 'bg-tertiary'
+                        ? 'bg-warning'
                         : 'bg-primary animate-pulse'
                     }`}
                   ></span>
-                  <span className="text-[11px] font-semibold text-primary capitalize">
+                  <span className="text-[10px] font-medium text-primary capitalize">
                     {source.documentData?.isScannedPdf ? 'Scanned PDF' : source.status}
                   </span>
                 </div>
               </div>
 
               {/* Source Name & Description */}
-              <h3 className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors truncate" title={source.name}>
+              <h3 className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate" title={source.name}>
                 {source.name}
               </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed line-clamp-2">
+              <p className="text-xs text-secondary mt-1 leading-relaxed line-clamp-2">
                 {source.description}
               </p>
             </div>
 
             {/* Card Bottom: Records count & Actions */}
-            <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center justify-between text-xs">
-              <span className="text-outline font-medium">
+            <div className="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between text-xs">
+              <span className="text-secondary font-mono text-[11px]">
                 {source.documentData?.pageCount
                   ? `${source.documentData.pageCount} pages (${source.documentData.fileSizeFormatted})`
                   : source.documentData?.lineCount
                   ? `${source.documentData.lineCount} lines (${source.documentData.fileSizeFormatted})`
-                  : `${source.recordCount.toLocaleString()} records indexed`}
+                  : `${source.recordCount.toLocaleString()} records`}
               </span>
 
               <div className="flex items-center gap-2">
                 {source.documentData?.extractedText && (
                   <button
                     onClick={() => setInspectSource(source)}
-                    className="text-primary hover:underline font-semibold flex items-center gap-1"
+                    className="text-primary hover:underline font-medium text-[11px] flex items-center gap-0.5"
                     title="Inspect Extracted Content"
                   >
                     <span>Inspect</span>
-                    <span className="material-symbols-outlined text-[14px]">visibility</span>
+                    <span className="material-symbols-outlined text-[13px]">visibility</span>
                   </button>
                 )}
 
                 {source.isUploaded && (
                   <button
                     onClick={() => setDeleteConfirmSource(source)}
-                    className="text-error/80 hover:text-error hover:underline font-medium flex items-center gap-0.5"
-                    title="Remove Uploaded Document"
+                    className="text-error/70 hover:text-error hover:underline font-medium text-[11px] flex items-center gap-0.5"
+                    title="Remove Document"
                   >
-                    <span className="material-symbols-outlined text-[14px]">delete</span>
+                    <span className="material-symbols-outlined text-[13px]">delete</span>
                   </button>
                 )}
               </div>
@@ -303,13 +300,13 @@ export function SourceManagerView() {
 
       {/* Empty State */}
       {filteredSources.length === 0 && (
-        <div className="bg-surface-container-lowest p-space-2xl rounded-xl border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-3">
+        <div className="bg-surface-container-lowest p-8 sm:p-12 rounded-xl border border-outline-variant/40 text-center flex flex-col items-center justify-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px]">upload_file</span>
           </div>
-          <h4 className="font-headline-sm text-headline-sm text-on-surface">No project documents uploaded yet.</h4>
-          <p className="text-xs text-on-surface-variant max-w-md leading-relaxed">
-            Upload your team&apos;s architecture documents, runbooks, or specifications in PDF, Markdown (.md), or plain text (.txt) format to begin extracting decisions, tasks, and risks.
+          <h4 className="text-sm font-semibold text-on-surface">No documents uploaded yet</h4>
+          <p className="text-xs text-secondary max-w-md leading-relaxed">
+            Upload your team&apos;s architecture documents, runbooks, or specifications in PDF, Markdown (.md), or plain text (.txt) format.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
             <button
@@ -318,9 +315,9 @@ export function SourceManagerView() {
                 setUploadResults([]);
                 setShowUploadModal(true);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 h-8 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
               <span>Upload PDF</span>
             </button>
             <button
@@ -329,126 +326,115 @@ export function SourceManagerView() {
                 setUploadResults([]);
                 setShowUploadModal(true);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-outline-variant/30 transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">description</span>
-              <span>Upload TXT</span>
-            </button>
-            <button
-              onClick={() => {
-                setSelectedFiles([]);
-                setUploadResults([]);
-                setShowUploadModal(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-outline-variant/30 transition-all"
-            >
-              <span className="material-symbols-outlined text-[16px]">markdown</span>
+              <span className="material-symbols-outlined text-[15px]">markdown</span>
               <span>Upload Markdown</span>
             </button>
             <button
               onClick={() => setShowPasteModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-outline-variant/30 transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">edit_note</span>
-              <span>Add Project Notes</span>
+              <span className="material-symbols-outlined text-[15px]">edit_note</span>
+              <span>Add Notes</span>
             </button>
           </div>
         </div>
       )}
 
       {/* SUPPORTED & UPCOMING CONNECTORS */}
-      <div className="bg-surface-container-lowest rounded-xl p-space-lg border border-outline-variant/30 shadow-xs flex flex-col gap-space-md">
+      <div className="bg-surface-container-lowest rounded-xl p-5 sm:p-6 border border-outline-variant/40 shadow-xs flex flex-col gap-3.5">
         <div>
-          <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-            Integrations &amp; File Formats
+          <h3 className="text-sm font-semibold text-on-surface">
+            Supported Formats &amp; Connectors
           </h3>
-          <p className="text-xs text-on-surface-variant mt-0.5">
-            Operational formats are processed locally on server. Cloud connectors are in active development.
+          <p className="text-xs text-secondary mt-0.5">
+            Document extraction operates locally on the backend server with deterministic source anchoring.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Active 1: PDF */}
-          <div className="p-space-sm bg-surface-container-low/70 rounded-lg border border-primary/30 flex items-center justify-between">
+          <div className="p-3 bg-surface-container-low/40 rounded-lg border border-primary/20 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-primary text-[22px]">picture_as_pdf</span>
+              <span className="material-symbols-outlined text-primary text-[20px]">picture_as_pdf</span>
               <div>
-                <p className="font-label-md text-label-md text-on-surface font-semibold">PDF Documents</p>
-                <p className="text-[11px] text-outline">.pdf (Page coordinates tracked)</p>
+                <p className="text-xs font-semibold text-on-surface">PDF Documents</p>
+                <p className="text-[11px] text-secondary">.pdf (Page coordinates tracked)</p>
               </div>
             </div>
-            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+            <span className="text-[9px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
 
           {/* Active 2: Markdown */}
-          <div className="p-space-sm bg-surface-container-low/70 rounded-lg border border-primary/30 flex items-center justify-between">
+          <div className="p-3 bg-surface-container-low/40 rounded-lg border border-primary/20 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-primary text-[22px]">markdown</span>
+              <span className="material-symbols-outlined text-primary text-[20px]">markdown</span>
               <div>
-                <p className="font-label-md text-label-md text-on-surface font-semibold">Markdown Documents</p>
-                <p className="text-[11px] text-outline">.md, .markdown (Headings preserved)</p>
+                <p className="text-xs font-semibold text-on-surface">Markdown Documents</p>
+                <p className="text-[11px] text-secondary">.md, .markdown (Headings preserved)</p>
               </div>
             </div>
-            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+            <span className="text-[9px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
 
           {/* Active 3: Plain Text */}
-          <div className="p-space-sm bg-surface-container-low/70 rounded-lg border border-primary/30 flex items-center justify-between">
+          <div className="p-3 bg-surface-container-low/40 rounded-lg border border-primary/20 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-primary text-[22px]">description</span>
+              <span className="material-symbols-outlined text-primary text-[20px]">description</span>
               <div>
-                <p className="font-label-md text-label-md text-on-surface font-semibold">Plain Text Notes</p>
-                <p className="text-[11px] text-outline">.txt (Line numbers preserved)</p>
+                <p className="text-xs font-semibold text-on-surface">Plain Text</p>
+                <p className="text-[11px] text-secondary">.txt (Line numbers preserved)</p>
               </div>
             </div>
-            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
+            <span className="text-[9px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
 
           {/* Upcoming 1: GitHub */}
-          <div className="p-space-sm bg-surface-container-low/40 rounded-lg border border-outline-variant/20 flex items-center justify-between opacity-70">
+          <div className="p-3 bg-surface-container-low/30 rounded-lg border border-outline-variant/30 flex items-center justify-between opacity-60">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-outline text-[22px]">commit</span>
+              <span className="material-symbols-outlined text-secondary text-[20px]">commit</span>
               <div>
-                <p className="font-label-md text-label-md text-on-surface font-medium">GitHub Repositories</p>
-                <p className="text-[11px] text-outline">Commits, PRs, diffs</p>
+                <p className="text-xs font-medium text-on-surface">GitHub Repositories</p>
+                <p className="text-[11px] text-secondary">Commits, PRs, diffs</p>
               </div>
             </div>
-            <span className="text-[10px] bg-surface-container text-outline px-2 py-0.5 rounded-full font-medium">
-              Coming Soon
+            <span className="text-[10px] bg-surface-container-low text-secondary border border-outline-variant/40 px-2 py-0.5 rounded-full font-medium">
+              Upcoming
             </span>
           </div>
 
           {/* Upcoming 2: Slack */}
-          <div className="p-space-sm bg-surface-container-low/40 rounded-lg border border-outline-variant/20 flex items-center justify-between opacity-70">
+          <div className="p-3 bg-surface-container-low/30 rounded-lg border border-outline-variant/30 flex items-center justify-between opacity-60">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-outline text-[22px]">forum</span>
+              <span className="material-symbols-outlined text-secondary text-[20px]">forum</span>
               <div>
-                <p className="font-label-md text-label-md text-on-surface font-medium">Slack Discussions</p>
-                <p className="text-[11px] text-outline">Channel threads &amp; alerts</p>
+                <p className="text-xs font-medium text-on-surface">Slack Discussions</p>
+                <p className="text-[11px] text-secondary">Channel threads &amp; decisions</p>
               </div>
             </div>
-            <span className="text-[10px] bg-surface-container text-outline px-2 py-0.5 rounded-full font-medium">
-              Coming Soon
+            <span className="text-[10px] bg-surface-container-low text-secondary border border-outline-variant/40 px-2 py-0.5 rounded-full font-medium">
+              Upcoming
             </span>
           </div>
 
           {/* Upcoming 3: Notion / Linear */}
-          <div className="p-space-sm bg-surface-container-low/40 rounded-lg border border-outline-variant/20 flex items-center justify-between opacity-70">
+          <div className="p-3 bg-surface-container-low/30 rounded-lg border border-outline-variant/30 flex items-center justify-between opacity-60">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-outline text-[22px]">check_box</span>
+              <span className="material-symbols-outlined text-secondary text-[20px]">check_box</span>
               <div>
-                <p className="font-label-md text-label-md text-on-surface font-medium">Notion &amp; Linear</p>
-                <p className="text-[11px] text-outline">Wikis, tasks &amp; epics</p>
+                <p className="text-xs font-medium text-on-surface">Notion &amp; Linear</p>
+                <p className="text-[11px] text-secondary">Wikis, tasks &amp; epics</p>
               </div>
             </div>
-            <span className="text-[10px] bg-surface-container text-outline px-2 py-0.5 rounded-full font-medium">
-              Coming Soon
+            <span className="text-[10px] bg-surface-container-low text-secondary border border-outline-variant/40 px-2 py-0.5 rounded-full font-medium">
+              Upcoming
             </span>
           </div>
         </div>
@@ -456,22 +442,27 @@ export function SourceManagerView() {
 
       {/* MODAL 1: FILE UPLOAD (DRAG & DROP + BROWSE) */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
-            <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface-container-lowest max-w-xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl p-5 sm:p-6 shadow-2xl border border-outline-variant/50 flex flex-col gap-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-[18px]">upload_file</span>
                 </div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface">
-                  Upload Project Documents
-                </h3>
+                <div>
+                  <h3 className="text-sm font-semibold text-on-surface">
+                    Upload Project Documents
+                  </h3>
+                  <p className="text-xs text-secondary mt-0.5">
+                    Select up to 5 documents to extract source-grounded findings.
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setShowUploadModal(false)}
-                className="text-outline hover:text-on-surface p-1 rounded-lg"
+                className="text-secondary hover:text-on-surface p-1 rounded-lg transition-colors"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
@@ -492,10 +483,10 @@ export function SourceManagerView() {
               onDragOver={handleDrag}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-space-xl flex flex-col items-center justify-center gap-2 text-center cursor-pointer transition-all ${
+              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-center cursor-pointer transition-all ${
                 dragActive
-                  ? 'border-primary bg-primary-container/20 scale-[0.99]'
-                  : 'border-outline-variant/60 hover:border-primary/60 bg-surface-container-low/50'
+                  ? 'border-primary bg-primary/5 scale-[0.99]'
+                  : 'border-outline-variant/60 hover:border-primary/50 bg-surface-container-low/30'
               }`}
             >
               <input
@@ -510,15 +501,15 @@ export function SourceManagerView() {
                   }
                 }}
               />
-              <div className="w-12 h-12 rounded-full bg-primary-fixed text-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[24px]">cloud_upload</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                <span className="material-symbols-outlined text-[22px]">cloud_upload</span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="font-label-md text-label-md font-semibold text-on-surface">
+                <span className="text-xs font-semibold text-on-surface">
                   Drag and drop documents here, or <span className="text-primary underline">browse</span>
                 </span>
-                <span className="text-[11px] text-outline">
-                  Supported: PDF (.pdf), Plain Text (.txt), Markdown (.md, .markdown) • Max 10 MB per file • Max 5 files
+                <span className="text-[11px] text-secondary">
+                  PDF (.pdf), Plain Text (.txt), Markdown (.md, .markdown) • Max 10 MB per file
                 </span>
               </div>
             </div>
@@ -526,7 +517,7 @@ export function SourceManagerView() {
             {/* Selected Files List */}
             {selectedFiles.length > 0 && (
               <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-                <span className="font-label-sm text-label-sm font-semibold text-on-surface">
+                <span className="text-xs font-semibold text-on-surface">
                   Ready to process ({selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''}):
                 </span>
                 {selectedFiles.map((file, idx) => {
@@ -539,7 +530,7 @@ export function SourceManagerView() {
                       key={idx}
                       className={`flex items-center justify-between p-2 rounded-lg text-xs border ${
                         hasError
-                          ? 'bg-error-container/20 border-error/40 text-on-surface'
+                          ? 'bg-error/10 border-error/30 text-on-surface'
                           : 'bg-surface-container-low border-outline-variant/30 text-on-surface'
                       }`}
                     >
@@ -548,7 +539,7 @@ export function SourceManagerView() {
                           {file.name.endsWith('.pdf') ? 'picture_as_pdf' : 'description'}
                         </span>
                         <span className="font-medium truncate max-w-xs">{file.name}</span>
-                        <span className="text-outline text-[11px]">({formatBytes(file.size)})</span>
+                        <span className="text-secondary text-[11px]">({formatBytes(file.size)})</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -557,12 +548,12 @@ export function SourceManagerView() {
                             {isTooLarge ? 'Exceeds 10MB' : 'Unsupported format'}
                           </span>
                         ) : (
-                          <span className="text-primary text-[11px] font-semibold">Valid</span>
+                          <span className="text-success text-[11px] font-semibold">Valid</span>
                         )}
                         <button
                           type="button"
                           onClick={() => removeSelectedFile(idx)}
-                          className="text-outline hover:text-error p-0.5"
+                          className="text-secondary hover:text-error p-0.5"
                         >
                           <span className="material-symbols-outlined text-[14px]">close</span>
                         </button>
@@ -576,7 +567,7 @@ export function SourceManagerView() {
             {/* Upload Results Feedback */}
             {uploadResults.length > 0 && (
               <div className="flex flex-col gap-1 text-xs">
-                <span className="font-label-sm text-label-sm font-semibold text-on-surface">
+                <span className="text-xs font-semibold text-on-surface">
                   Processing Results:
                 </span>
                 {uploadResults.map((res, i) => (
@@ -584,14 +575,14 @@ export function SourceManagerView() {
                     key={i}
                     className={`flex items-center justify-between p-2 rounded-lg border ${
                       res.success
-                        ? 'bg-primary-container/20 border-primary/30 text-on-surface'
-                        : 'bg-error-container/20 border-error/40 text-on-surface'
+                        ? 'bg-success/10 border-success/20 text-on-surface'
+                        : 'bg-error/10 border-error/30 text-on-surface'
                     }`}
                   >
                     <span className="font-medium truncate">{res.filename}</span>
                     <span
                       className={`font-semibold text-[11px] flex items-center gap-1 ${
-                        res.success ? 'text-primary' : 'text-error'
+                        res.success ? 'text-success' : 'text-error'
                       }`}
                     >
                       <span className="material-symbols-outlined text-[14px]">
@@ -609,11 +600,11 @@ export function SourceManagerView() {
             )}
 
             {/* Action buttons */}
-            <div className="flex items-center justify-end gap-2 pt-space-xs border-t border-outline-variant/30">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/30">
               <button
                 type="button"
                 onClick={() => setShowUploadModal(false)}
-                className="px-4 py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-medium text-xs"
+                className="px-3.5 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-medium text-xs border border-outline-variant/40"
               >
                 {uploadResults.length > 0 ? 'Done' : 'Cancel'}
               </button>
@@ -622,17 +613,17 @@ export function SourceManagerView() {
                   type="button"
                   onClick={handleUploadSubmit}
                   disabled={isUploading || selectedFiles.some((f) => f.size > MAX_FILE_SIZE_BYTES || !isAllowedFile(f.name))}
-                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm flex items-center gap-2 text-xs disabled:opacity-60"
+                  className="px-4 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary-hover font-medium transition-colors shadow-xs flex items-center gap-1.5 text-xs disabled:opacity-60"
                 >
                   {isUploading ? (
                     <>
-                      <KnowledgeTrailLoader variant="inline" message="Uploading and extracting..." />
-                      <span>Extracting Text & Coordinates...</span>
+                      <KnowledgeTrailLoader variant="inline" message="Processing..." />
+                      <span>Extracting...</span>
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[16px]">upload</span>
-                      <span>Process & Ingest ({selectedFiles.length})</span>
+                      <span className="material-symbols-outlined text-[15px]">upload</span>
+                      <span>Process &amp; Ingest ({selectedFiles.length})</span>
                     </>
                   )}
                 </button>
@@ -644,28 +635,33 @@ export function SourceManagerView() {
 
       {/* MODAL 2: PASTE RAW NOTES */}
       {showPasteModal && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
-            <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface-container-lowest max-w-xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl p-5 sm:p-6 shadow-2xl border border-outline-variant/50 flex flex-col gap-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-[18px]">edit_note</span>
                 </div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface">
-                  Paste Handover Notes
-                </h3>
+                <div>
+                  <h3 className="text-sm font-semibold text-on-surface">
+                    Paste Handover Notes
+                  </h3>
+                  <p className="text-xs text-secondary mt-0.5">
+                    Add raw meeting minutes, architecture notes, or chat discussions.
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setShowPasteModal(false)}
-                className="text-outline hover:text-on-surface p-1 rounded-lg"
+                className="text-secondary hover:text-on-surface p-1 rounded-lg transition-colors"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            <form onSubmit={handlePasteSubmit} className="flex flex-col gap-space-sm text-xs">
+            <form onSubmit={handlePasteSubmit} className="flex flex-col gap-3.5 text-xs">
               <div>
-                <label className="font-label-sm text-on-surface font-semibold block mb-1">
+                <label className="text-xs text-on-surface font-semibold block mb-1">
                   Document Title
                 </label>
                 <input
@@ -674,19 +670,19 @@ export function SourceManagerView() {
                   value={newSourceName}
                   onChange={(e) => setNewSourceName(e.target.value)}
                   placeholder="e.g. SRE-Runbook-Failover.md or Architecture Notes"
-                  className="w-full px-3 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
+                  className="w-full px-3 h-8 bg-surface-container-low rounded-lg border border-outline-variant/40 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-label-sm text-on-surface font-semibold block mb-1">
+                  <label className="text-xs text-on-surface font-semibold block mb-1">
                     Category
                   </label>
                   <select
                     value={newSourceType}
                     onChange={(e) => setNewSourceType(e.target.value as ProjectSource['type'])}
-                    className="w-full px-3 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
+                    className="w-full px-3 h-8 bg-surface-container-low rounded-lg border border-outline-variant/40 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
                   >
                     <option value="notes">Meeting / Handover Notes</option>
                     <option value="docs">Markdown Documentation</option>
@@ -696,7 +692,7 @@ export function SourceManagerView() {
                 </div>
 
                 <div>
-                  <label className="font-label-sm text-on-surface font-semibold block mb-1">
+                  <label className="text-xs text-on-surface font-semibold block mb-1">
                     Summary / Description
                   </label>
                   <input
@@ -704,13 +700,13 @@ export function SourceManagerView() {
                     value={newSourceDesc}
                     onChange={(e) => setNewSourceDesc(e.target.value)}
                     placeholder="Short description of this note"
-                    className="w-full px-3 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
+                    className="w-full px-3 h-8 bg-surface-container-low rounded-lg border border-outline-variant/40 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-label-sm text-on-surface font-semibold block mb-1">
+                <label className="text-xs text-on-surface font-semibold block mb-1">
                   Content / Document Text
                 </label>
                 <textarea
@@ -719,24 +715,24 @@ export function SourceManagerView() {
                   value={newSourceContent}
                   onChange={(e) => setNewSourceContent(e.target.value)}
                   placeholder="Paste Markdown document, PR decision context, or architecture notes here..."
-                  className="w-full px-3 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs resize-none"
+                  className="w-full p-3 bg-surface-container-low rounded-lg border border-outline-variant/40 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs resize-none"
                 ></textarea>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-space-xs border-t border-outline-variant/30 mt-2">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/30 mt-1">
                 <button
                   type="button"
                   onClick={() => setShowPasteModal(false)}
-                  className="px-4 py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-medium"
+                  className="px-3.5 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-medium border border-outline-variant/40"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPasting}
-                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-60"
+                  className="px-4 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary-hover font-medium transition-colors shadow-xs flex items-center gap-1.5 disabled:opacity-60"
                 >
-                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  <span className="material-symbols-outlined text-[15px]">save</span>
                   <span>{isPasting ? 'Saving...' : 'Save Notes'}</span>
                 </button>
               </div>
@@ -747,20 +743,20 @@ export function SourceManagerView() {
 
       {/* MODAL 3: INSPECT EXTRACTED TEXT */}
       {inspectSource && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-2xl w-full max-h-[85vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
-            <div className="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center shrink-0">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface-container-lowest max-w-2xl w-full max-h-[85vh] overflow-y-auto no-scrollbar rounded-xl p-5 sm:p-6 shadow-2xl border border-outline-variant/50 flex flex-col gap-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-[18px]">
                     {inspectSource.documentData?.fileFormat === 'pdf' ? 'picture_as_pdf' : 'description'}
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface truncate max-w-xs sm:max-w-md">
+                  <h3 className="text-sm font-semibold text-on-surface truncate max-w-xs sm:max-w-md">
                     {inspectSource.name}
                   </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-outline font-mono flex-wrap">
+                  <div className="flex items-center gap-2 text-[11px] text-secondary font-mono flex-wrap">
                     <span>Format: {inspectSource.documentData?.fileFormat?.toUpperCase()}</span>
                     <span>•</span>
                     <span>Size: {inspectSource.documentData?.fileSizeFormatted}</span>
@@ -781,26 +777,26 @@ export function SourceManagerView() {
               </div>
               <button
                 onClick={() => setInspectSource(null)}
-                className="text-outline hover:text-on-surface p-1 rounded-lg shrink-0"
+                className="text-secondary hover:text-on-surface p-1 rounded-lg shrink-0 transition-colors"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
             {/* Content Hash & Security Clearance */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 bg-surface-container-low p-2 rounded-lg text-xs font-mono text-outline">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 bg-surface-container-low p-2 rounded-lg text-xs font-mono text-secondary">
               <span className="truncate min-w-0 flex-1 break-all">
                 SHA-256: {inspectSource.documentData?.contentHash || 'N/A'}
               </span>
-              <span className="text-primary font-semibold shrink-0">Genuinely Extracted</span>
+              <span className="text-primary font-semibold shrink-0">Deterministic Ingestion</span>
             </div>
 
             {/* Extracted Text Body */}
-            <div className="flex-1 overflow-y-auto bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30 font-mono text-xs text-on-surface whitespace-pre-wrap leading-relaxed max-h-[50vh]">
+            <div className="flex-1 overflow-y-auto bg-surface-container-low/30 p-3 rounded-lg border border-outline-variant/30 font-mono text-xs text-on-surface whitespace-pre-wrap leading-relaxed max-h-[50vh]">
               {inspectSource.documentData?.extractedText || 'No text content available.'}
             </div>
 
-            <div className="flex items-center justify-between pt-space-xs border-t border-outline-variant/30">
+            <div className="flex items-center justify-between pt-3 border-t border-outline-variant/30">
               <button
                 type="button"
                 onClick={() => {
@@ -808,7 +804,7 @@ export function SourceManagerView() {
                     navigator.clipboard.writeText(inspectSource.documentData.extractedText);
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-medium text-xs flex items-center gap-1"
+                className="px-3 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-medium text-xs flex items-center gap-1 border border-outline-variant/40"
               >
                 <span className="material-symbols-outlined text-[14px]">content_copy</span>
                 <span>Copy Extracted Text</span>
@@ -817,7 +813,7 @@ export function SourceManagerView() {
               <button
                 type="button"
                 onClick={() => setInspectSource(null)}
-                className="px-4 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold text-xs"
+                className="px-3.5 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary-hover font-medium text-xs shadow-xs transition-colors"
               >
                 Close
               </button>
@@ -828,27 +824,27 @@ export function SourceManagerView() {
 
       {/* MODAL 4: CONFIRM DELETE SOURCE */}
       {deleteConfirmSource && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-md w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl p-4 sm:p-space-xl shadow-2xl border border-outline-variant/40 flex flex-col gap-space-md">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface-container-lowest max-w-md w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl p-5 sm:p-6 shadow-2xl border border-outline-variant/50 flex flex-col gap-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[22px]">delete_forever</span>
+              <div className="w-9 h-9 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[20px]">delete_forever</span>
               </div>
               <div className="flex flex-col">
-                <h3 className="font-headline-sm text-headline-sm text-on-surface">
-                  Remove Uploaded Source?
+                <h3 className="text-sm font-semibold text-on-surface">
+                  Remove Document?
                 </h3>
-                <p className="text-xs text-outline mt-0.5">
+                <p className="text-xs text-secondary mt-0.5">
                   Are you sure you want to remove &quot;{deleteConfirmSource.name}&quot; from this workspace?
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-space-xs border-t border-outline-variant/30">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/30">
               <button
                 type="button"
                 onClick={() => setDeleteConfirmSource(null)}
-                className="px-4 py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-medium text-xs"
+                className="px-3.5 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-medium text-xs border border-outline-variant/40"
               >
                 Cancel
               </button>
@@ -859,7 +855,7 @@ export function SourceManagerView() {
                   setDeleteConfirmSource(null);
                   await deleteSource(id);
                 }}
-                className="px-4 py-2 rounded-lg bg-error text-on-error hover:bg-error/90 font-semibold transition-all text-xs"
+                className="px-3.5 h-8 rounded-lg bg-error text-white hover:bg-error/90 font-medium transition-colors text-xs shadow-xs"
               >
                 Confirm Removal
               </button>

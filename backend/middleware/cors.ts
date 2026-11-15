@@ -6,20 +6,28 @@ import type { Request, Response, NextFunction } from 'express';
  */
 export function getAllowedOrigins(): string[] {
   const envOrigins = process.env.CORS_ORIGINS;
-  if (!envOrigins || envOrigins.trim().length === 0) {
-    // Default safe local origins for development
-    return [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-    ];
+  const origins = envOrigins && envOrigins.trim().length > 0
+    ? envOrigins
+        .split(',')
+        .map((origin) => origin.trim().replace(/\/+$/, '')) // strip trailing slashes
+        .filter((origin) => origin.length > 0)
+    : [];
+
+  // Always ensure safe local development origins are permitted
+  const localOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+  ];
+
+  for (const local of localOrigins) {
+    if (!origins.includes(local)) {
+      origins.push(local);
+    }
   }
 
-  return envOrigins
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/+$/, '')) // strip trailing slashes
-    .filter((origin) => origin.length > 0);
+  return origins;
 }
 
 /**
@@ -36,7 +44,7 @@ export function strictCorsMiddleware(req: Request, res: Response, next: NextFunc
   // If no Origin header (e.g. server-to-server, curl, health probes), allow request
   if (!origin) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Workspace-ID');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Workspace-ID, X-Demo-Perspective, Range');
     return next();
   }
 
@@ -46,7 +54,7 @@ export function strictCorsMiddleware(req: Request, res: Response, next: NextFunc
   if (isAllowed) {
     res.setHeader('Access-Control-Allow-Origin', normalizedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Workspace-ID, Range');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Workspace-ID, X-Demo-Perspective, Range');
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition, Content-Type, Content-Length');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
   } else {

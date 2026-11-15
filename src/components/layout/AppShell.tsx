@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="lg:pl-[18rem] pl-0 transition-all">
+      <div className="lg:pl-[17rem] pl-0 transition-all">
         {/* Fixed Top Header */}
         <Header />
 

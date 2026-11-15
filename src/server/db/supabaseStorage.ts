@@ -55,6 +55,10 @@ export class SupabaseStorageRepository implements StorageRepository {
     }
   }
 
+  public getClient(): SupabaseClient {
+    return this.client;
+  }
+
   async getWorkspace(workspaceId: string): Promise<ProjectData | null> {
     if (!isValidWorkspaceId(workspaceId)) return null;
 
@@ -1103,18 +1107,26 @@ export class SupabaseStorageRepository implements StorageRepository {
 
   async isWorkspaceProtected(workspaceId: string): Promise<boolean> {
     if (!isValidWorkspaceId(workspaceId)) return false;
-    const { data, error } = await this.client
-      .from('workspaces')
-      .select('is_protected')
-      .eq('id', workspaceId)
-      .maybeSingle();
-    if (error || !data) {
+    // Fast path: anonymous zero-auth demo workspaces are never protected
+    if (workspaceId.startsWith('ws_anon_')) return false;
+
+    try {
+      const { data, error } = await this.client
+        .from('workspaces')
+        .select('is_protected')
+        .eq('id', workspaceId)
+        .maybeSingle();
+      if (error || !data) {
+        return !workspaceId.startsWith('ws_anon_');
+      }
+      if (data.is_protected !== null && data.is_protected !== undefined) {
+        return Boolean(data.is_protected);
+      }
+      return !workspaceId.startsWith('ws_anon_');
+    } catch (err) {
+      console.warn(`Error querying protection status for workspace ${workspaceId}:`, err);
       return !workspaceId.startsWith('ws_anon_');
     }
-    if (data.is_protected !== null && data.is_protected !== undefined) {
-      return Boolean(data.is_protected);
-    }
-    return !workspaceId.startsWith('ws_anon_');
   }
 
   async setWorkspaceProtected(workspaceId: string, isProtected: boolean, ownerId?: string): Promise<void> {
@@ -1129,21 +1141,26 @@ export class SupabaseStorageRepository implements StorageRepository {
 
   async getWorkspaceMember(workspaceId: string, userId: string): Promise<WorkspaceMemberRecord | null> {
     if (!isValidWorkspaceId(workspaceId) || !userId) return null;
-    const { data, error } = await this.client
-      .from('workspace_members')
-      .select('workspace_id, user_id, email, role, created_at, updated_at')
-      .eq('workspace_id', workspaceId)
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (error || !data) return null;
-    return {
-      workspaceId: data.workspace_id,
-      userId: data.user_id,
-      email: data.email,
-      role: data.role as UserRole,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-    };
+    try {
+      const { data, error } = await this.client
+        .from('workspace_members')
+        .select('workspace_id, user_id, email, role, created_at, updated_at')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (error || !data) return null;
+      return {
+        workspaceId: data.workspace_id,
+        userId: data.user_id,
+        email: data.email,
+        role: data.role as UserRole,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      };
+    } catch (err) {
+      console.warn(`Error querying workspace member for workspace ${workspaceId}:`, err);
+      return null;
+    }
   }
 
   async addWorkspaceMember(
@@ -1178,30 +1195,40 @@ export class SupabaseStorageRepository implements StorageRepository {
 
   async listWorkspaceMembers(workspaceId: string): Promise<WorkspaceMemberRecord[]> {
     if (!isValidWorkspaceId(workspaceId)) return [];
-    const { data, error } = await this.client
-      .from('workspace_members')
-      .select('workspace_id, user_id, email, role, created_at, updated_at')
-      .eq('workspace_id', workspaceId)
-      .order('created_at', { ascending: true });
-    if (error || !data) return [];
-    return data.map((d: any) => ({
-      workspaceId: d.workspace_id,
-      userId: d.user_id,
-      email: d.email,
-      role: d.role as UserRole,
-      createdAt: d.created_at,
-      updatedAt: d.updated_at,
-    }));
+    try {
+      const { data, error } = await this.client
+        .from('workspace_members')
+        .select('workspace_id, user_id, email, role, created_at, updated_at')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: true });
+      if (error || !data) return [];
+      return data.map((d: any) => ({
+        workspaceId: d.workspace_id,
+        userId: d.user_id,
+        email: d.email,
+        role: d.role as UserRole,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at,
+      }));
+    } catch (err) {
+      console.warn(`Error listing workspace members for workspace ${workspaceId}:`, err);
+      return [];
+    }
   }
 
   async removeWorkspaceMember(workspaceId: string, userId: string): Promise<boolean> {
     if (!isValidWorkspaceId(workspaceId) || !userId) return false;
-    const { error } = await this.client
-      .from('workspace_members')
-      .delete()
-      .eq('workspace_id', workspaceId)
-      .eq('user_id', userId);
-    return !error;
+    try {
+      const { error } = await this.client
+        .from('workspace_members')
+        .delete()
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', userId);
+      return !error;
+    } catch (err) {
+      console.warn(`Error removing workspace member for workspace ${workspaceId}:`, err);
+      return false;
+    }
   }
 
   async getGitHubIntegration(workspaceId: string, repoId?: number): Promise<GitHubIntegration | null> {

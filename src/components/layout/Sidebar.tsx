@@ -9,6 +9,7 @@ interface NavItem {
   label: string;
   icon: string;
   badge?: string;
+  badgeVariant?: 'default' | 'success' | 'warning';
 }
 
 export function Sidebar() {
@@ -22,6 +23,8 @@ export function Sidebar() {
     isMobileNavOpen,
     setIsMobileNavOpen,
     currentUser,
+    currentUserRole,
+    demoPerspective,
     isAuthenticated,
     setShowLoginModal,
     logout,
@@ -30,39 +33,40 @@ export function Sidebar() {
   const navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
     { id: 'workspace', label: 'Projects', icon: 'folder_open' },
-    { id: 'sources', label: 'Sources', icon: 'dataset', badge: `${stats.totalSources}` },
+    { id: 'sources', label: 'Sources', icon: 'dataset', badge: stats.totalSources > 0 ? `${stats.totalSources}` : undefined },
     { id: 'analysis', label: 'AI Analysis', icon: 'auto_awesome' },
-    { id: 'evidence', label: 'Evidence Explorer', icon: 'fact_check', badge: `${stats.totalFindings}` },
+    { id: 'evidence', label: 'Evidence Explorer', icon: 'fact_check', badge: stats.totalFindings > 0 ? `${stats.totalFindings}` : undefined },
     { id: 'review', label: 'Review Center', icon: 'rule', badge: `${stats.certificationProgressPercent}%` },
     {
       id: 'handover',
       label: 'Handovers',
-      icon: stats.isHandoverBlocked ? 'lock' : 'sync_alt',
+      icon: stats.isHandoverBlocked ? 'lock' : 'verified',
       badge: stats.isHandoverBlocked ? 'Locked' : (project.handoverCertified ? 'Certified' : 'Ready'),
+      badgeVariant: project.handoverCertified ? 'success' : (stats.isHandoverBlocked ? 'warning' : 'default'),
     },
   ];
 
   const renderNavContent = (isMobile = false) => (
-    <div className="flex flex-col justify-between h-full py-space-lg px-space-md select-none">
-      <div className="flex flex-col gap-space-lg">
+    <div className="flex flex-col justify-between h-full p-3.5 select-none text-on-surface">
+      <div className="flex flex-col gap-5">
         {/* Brand Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-1 pt-1">
           <button
             onClick={() => {
               setActiveView('landing');
               if (isMobile) setIsMobileNavOpen(false);
             }}
-            className="flex items-center gap-space-sm px-space-xs text-left group transition-transform active:scale-95"
-            title="Return to Landing Page"
+            className="flex items-center gap-2.5 text-left group transition-all"
+            title="Return to Product Landing Page"
           >
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:bg-primary-container transition-colors shrink-0">
-              <span className="material-symbols-outlined text-[22px]">route</span>
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-xs group-hover:bg-primary-hover transition-colors shrink-0">
+              <span className="material-symbols-outlined text-[19px]">route</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none group-hover:text-primary transition-colors">
+              <span className="text-sm font-bold text-on-surface tracking-tight leading-tight group-hover:text-primary transition-colors">
                 KnoTrail
               </span>
-              <span className="font-label-sm text-label-sm text-outline mt-0.5 leading-none">
+              <span className="text-[10px] text-outline tracking-normal leading-tight font-medium">
                 Knowledge Handover
               </span>
             </div>
@@ -72,15 +76,18 @@ export function Sidebar() {
             <button
               onClick={() => setIsMobileNavOpen(false)}
               aria-label="Close navigation menu"
-              className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors"
+              className="p-1 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
           )}
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex flex-col gap-space-2xs">
+        <nav className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-semibold text-outline/80 uppercase tracking-wider px-2.5 mb-1">
+            Platform
+          </span>
           {navItems.map((item) => {
             const isActive = activeView === item.id;
             return (
@@ -90,28 +97,32 @@ export function Sidebar() {
                   setActiveView(item.id);
                   if (isMobile) setIsMobileNavOpen(false);
                 }}
-                className={`flex items-center justify-between px-space-md py-2.5 rounded-xl transition-all duration-200 text-left group min-h-[40px] ${
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all text-left group ${
                   isActive
-                    ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                    ? 'bg-active-green text-white font-semibold shadow-xs'
+                    : 'text-on-surface hover:text-primary hover:bg-surface-container-high/50 font-medium'
                 }`}
               >
-                <div className="flex items-center gap-space-sm">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <span
-                    className={`material-symbols-outlined text-[20px] transition-transform ${
-                      isActive ? 'text-on-primary-container scale-105' : 'text-outline group-hover:text-on-surface'
+                    className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${
+                      isActive ? 'text-white' : 'text-outline group-hover:text-primary'
                     }`}
                   >
                     {item.icon}
                   </span>
-                  <span className="font-label-md text-label-md">{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </div>
                 {item.badge && (
                   <span
-                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    className={`text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded-full border shrink-0 ${
                       isActive
-                        ? 'bg-primary text-on-primary'
-                        : 'bg-surface-container text-outline group-hover:text-on-surface'
+                        ? 'bg-white/20 text-white border-white/30'
+                        : item.badgeVariant === 'success'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                        : item.badgeVariant === 'warning'
+                        ? 'bg-amber-50 text-amber-700 border-amber-300'
+                        : 'bg-surface-container-high/80 text-outline border-outline-variant/40'
                     }`}
                   >
                     {item.badge}
@@ -123,103 +134,75 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Bottom Sprint & System Status */}
-      <div className="flex flex-col gap-space-sm px-space-xs mt-6">
-        {/* Active Handover Sprint Progress Card */}
-        <div className="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-2xs border border-outline-variant/30">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">
-              {isProjectCreated ? 'Active Handover' : 'Workspace Ready'}
+      {/* Unified Compact System Status & Access Panel */}
+      <div className="mt-auto pt-3 border-t border-outline-variant/30 flex flex-col gap-2">
+        {/* Workspace Health & Review Progress Card */}
+        <div className="bg-surface-container-lowest/80 rounded-xl p-2.5 border border-outline-variant/40 flex flex-col gap-1.5 shadow-2xs">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-medium text-on-surface min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span className="truncate text-xs font-semibold" title={isProjectCreated ? project.name : 'Workspace Active'}>
+                {isProjectCreated ? project.name : 'Workspace Active'}
+              </span>
+            </div>
+            <span className="font-mono text-[11px] font-bold text-primary shrink-0">
+              {stats.certificationProgressPercent}%
             </span>
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           </div>
-          <span className="font-body-sm text-body-sm text-on-surface font-medium truncate" title={isProjectCreated ? project.name : 'Workspace Ready'}>
-            {isProjectCreated ? project.name : 'Workspace Ready'}
-          </span>
-          <div className="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden">
+
+          <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
             <div
-              className="bg-primary h-full rounded-full transition-all duration-500"
+              className="bg-primary h-full rounded-full transition-all duration-300"
               style={{ width: `${stats.certificationProgressPercent}%` }}
-            ></div>
+            />
           </div>
-          <div className="flex items-center justify-between font-label-sm text-label-sm text-outline mt-0.5">
-            <span>Review Progress</span>
-            <span className="font-semibold text-on-surface">{stats.certificationProgressPercent}%</span>
+
+          <div className="flex items-center justify-between text-[10px] text-outline font-medium">
+            <span>{stats.approvedCount} approved • {stats.unreviewedCount} pending</span>
+            <span className={stats.isHandoverBlocked ? 'text-amber-600' : 'text-emerald-700 font-semibold'}>
+              {stats.isHandoverBlocked ? 'Blocked' : 'Certified'}
+            </span>
           </div>
         </div>
 
-        {/* Authentication & Security Role Card */}
-        <div className="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-2 border border-outline-variant/30">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-[11px] text-outline font-semibold uppercase tracking-wider">
-              {isAuthenticated ? 'Security Session' : 'Access Mode'}
-            </span>
-            <span
-              className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                isAuthenticated
-                  ? 'bg-primary/10 text-primary border border-primary/20'
-                  : 'bg-surface-container-highest text-outline'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-              {isAuthenticated ? 'AUTHENTICATED' : 'ANONYMOUS'}
+        {/* Compact Access Status Row */}
+        <div className="bg-surface-container-lowest/60 rounded-xl px-2.5 py-2 border border-outline-variant/30 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isAuthenticated ? 'bg-emerald-500' : 'bg-primary/70'}`} />
+            <span className="text-[11px] text-on-surface font-medium truncate">
+              {isAuthenticated ? (
+                <>Manager <span className="text-outline text-[10px] font-mono font-normal">(Verified)</span></>
+              ) : (
+                <>Demo Mode <span className="text-outline text-[10px] font-mono">({demoPerspective || 'Manager'})</span></>
+              )}
             </span>
           </div>
-
-          {isAuthenticated && currentUser ? (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                  {currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'M'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold text-on-surface truncate" title={currentUser.email}>
-                    {currentUser.email}
-                  </div>
-                  <div className="text-[10px] text-primary font-mono font-medium flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[12px]">verified</span>
-                    <span>Role: {currentUser.role}</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={async () => {
-                  await logout();
-                  if (isMobile) setIsMobileNavOpen(false);
-                }}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-surface-container hover:bg-error-container/20 text-on-surface hover:text-error rounded-md text-[11px] font-medium transition-colors border border-outline-variant/30"
-              >
-                <span className="material-symbols-outlined text-[14px]">logout</span>
-                <span>Sign Out</span>
-              </button>
-            </div>
+          {isAuthenticated ? (
+            <button
+              onClick={async () => {
+                await logout();
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="text-[11px] text-outline hover:text-error transition-colors font-medium shrink-0 ml-1"
+            >
+              Sign Out
+            </button>
           ) : (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[11px] text-on-surface-variant leading-tight">
-                Operating in Public Demo. Sign in for verified Manager access.
-              </p>
-              <button
-                onClick={() => {
-                  setShowLoginModal(true);
-                  if (isMobile) setIsMobileNavOpen(false);
-                }}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-primary hover:bg-inverse-surface text-on-primary rounded-md text-[11px] font-semibold transition-all shadow-xs"
-              >
-                <span className="material-symbols-outlined text-[14px]">login</span>
-                <span>Sign In as Manager</span>
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                setShowLoginModal(true);
+                if (isMobile) setIsMobileNavOpen(false);
+              }}
+              className="text-[11px] text-primary hover:text-primary-hover font-semibold transition-colors shrink-0 ml-1"
+            >
+              Sign In
+            </button>
           )}
         </div>
 
         {/* Footer Meta & Demo Reset */}
-        <div className="flex items-center justify-between text-outline px-space-xs pt-space-xs">
-          <div className="flex items-center gap-1.5">
-            <span className="font-label-sm text-label-sm">v2.4.0-stable</span>
-            <span className="text-[10px] bg-secondary-container text-on-secondary-container px-1.5 py-0.2 rounded font-mono font-medium">
-              CIP-26
-            </span>
-          </div>
+        <div className="flex items-center justify-between text-[10px] text-outline px-1 pt-1 border-t border-outline-variant/20">
+          <span className="font-mono">v2.4.0 • CIP-26</span>
           <button
             onClick={() => {
               if (confirm('Reset workspace and clear current project data?')) {
@@ -227,10 +210,10 @@ export function Sidebar() {
                 if (isMobile) setIsMobileNavOpen(false);
               }
             }}
-            title="Reset Workspace"
-            className="flex items-center gap-1 text-[11px] text-outline hover:text-primary transition-colors"
+            title="Reset Workspace Data"
+            className="flex items-center gap-0.5 hover:text-error transition-colors font-medium"
           >
-            <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+            <span className="material-symbols-outlined text-[13px]">restart_alt</span>
             <span>Reset</span>
           </button>
         </div>
@@ -240,27 +223,24 @@ export function Sidebar() {
 
   return (
     <>
-      {/* 1. Desktop Floating Navigation Rail (Unchanged for lg+ screens) */}
-      <aside className="hidden lg:flex fixed left-4 top-4 bottom-4 w-64 bg-surface-container-lowest z-30 rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.08),0_4px_10px_-2px_rgba(32,40,34,0.03)] border border-outline-variant/30 flex-col overflow-y-auto no-scrollbar transition-all">
+      {/* 1. Desktop Floating Navigation Rail */}
+      <aside className="hidden lg:flex fixed left-4 top-3.5 bottom-3.5 w-60 bg-surface-container-low z-30 rounded-2xl shadow-[0_4px_24px_-4px_rgba(32,40,34,0.06),0_1px_3px_rgba(32,40,34,0.04)] border border-outline-variant/60 flex-col overflow-y-auto no-scrollbar transition-all">
         {renderNavContent(false)}
       </aside>
 
-      {/* 2. Mobile Responsive Drawer (< lg screens) */}
+      {/* 2. Mobile Responsive Drawer */}
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop overlay */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
             onClick={() => setIsMobileNavOpen(false)}
             aria-hidden="true"
           />
-
-          {/* Slide-over Drawer */}
           <aside
             role="dialog"
             aria-modal="true"
             aria-label="Navigation Drawer"
-            className="relative w-72 max-w-[85vw] h-full bg-surface-container-lowest shadow-2xl overflow-y-auto no-scrollbar animate-in slide-in-from-left duration-200 border-r border-outline-variant/30"
+            className="relative w-64 max-w-[80vw] h-full bg-surface-container-low shadow-2xl overflow-y-auto no-scrollbar animate-in slide-in-from-left duration-200 border-r border-outline-variant/60"
           >
             {renderNavContent(true)}
           </aside>

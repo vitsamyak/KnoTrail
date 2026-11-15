@@ -48,16 +48,21 @@ healthRouter.get('/ready', async (req: Request, res: Response) => {
     return;
   }
 
+  let probeTimer: NodeJS.Timeout | undefined;
   try {
     const client = getServerSupabaseClient();
     
     // Probe database with 4-second timeout to avoid blocking health checks
-    const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
-      setTimeout(() => reject(new Error('Database probe timed out')), 4000)
-    );
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      probeTimer = setTimeout(() => reject(new Error('Database probe timed out')), 4000);
+      if (probeTimer && typeof probeTimer.unref === 'function') {
+        probeTimer.unref();
+      }
+    });
     const queryPromise = client.from('workspaces').select('id').limit(1);
 
     const result = (await Promise.race([queryPromise, timeoutPromise])) as any;
+    if (probeTimer) clearTimeout(probeTimer);
 
     if (result?.error) {
       res.status(503).json({
