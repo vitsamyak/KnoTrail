@@ -246,4 +246,182 @@ test('▶ Round 3: Server-Verified Login & Authentication Test Suite', async (t)
     const bodyText = await loginRes.text();
     assert.ok(!bodyText.includes(DEMO_PASSWORD), 'Login response body must not echo the raw password');
   });
+
+  await t.test('13. GET /api/auth/status exposes demoAccounts array for all 3 roles without passwords', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/status`);
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.ok(Array.isArray(data.demoAccounts), 'demoAccounts must be an array');
+    assert.equal(data.demoAccounts.length, 3);
+    const roles = data.demoAccounts.map((a) => a.role);
+    assert.deepEqual(roles.sort(), ['DEVELOPER', 'EXTERNAL', 'MANAGER'].sort());
+    for (const acc of data.demoAccounts) {
+      assert.ok(acc.email, 'Must have email');
+      assert.ok(acc.name, 'Must have name');
+      assert.ok(acc.description, 'Must have description');
+      assert.equal(acc.password, undefined, 'Must NEVER return password in demoAccounts');
+    }
+  });
+
+  const DEMO_DEV_EMAIL = 'developer@knotrail.demo';
+  const DEMO_DEV_PASSWORD = process.env.DEMO_DEVELOPER_PASSWORD || 'KnoTrail2026!Dev';
+  let devToken = '';
+
+  await t.test('14. POST /api/auth/login with Developer demo credentials returns DEVELOPER role', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: DEMO_DEV_EMAIL,
+        password: DEMO_DEV_PASSWORD,
+        workspaceId: testWorkspaceId,
+      }),
+    });
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.status, 'authenticated');
+    assert.ok(data.token && data.token.startsWith('kt_hmac.'));
+    assert.equal(data.user.email, DEMO_DEV_EMAIL);
+    assert.equal(data.user.role, 'DEVELOPER');
+    assert.equal(data.workspace.memberRole, 'DEVELOPER');
+    devToken = data.token;
+
+    const member = await storage.getWorkspaceMember(testWorkspaceId, data.user.userId);
+    assert.ok(member);
+    assert.equal(member.role, 'DEVELOPER');
+  });
+
+  await t.test('15. Developer CANNOT perform Manager-only actions (403 Forbidden)', async () => {
+    // Attempt to approve a finding as DEVELOPER
+    const approveRes = await fetch(`${baseUrl}/api/findings/fnd_sample_1/approve?workspaceId=${testWorkspaceId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${devToken}`,
+      },
+      body: JSON.stringify({ reviewerNotes: 'Unauthorized approval attempt' }),
+    });
+    assert.equal(approveRes.status, 403, 'Developer must be forbidden from approving findings');
+    const approveBody = await approveRes.json();
+    assert.ok(approveBody.error.includes('MANAGER'));
+
+    // Attempt to certify handover as DEVELOPER
+    const certifyRes = await fetch(`${baseUrl}/api/handovers/certify?workspaceId=${testWorkspaceId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${devToken}`,
+      },
+      body: JSON.stringify({ signerName: 'Developer Attempt' }),
+    });
+    assert.equal(certifyRes.status, 403, 'Developer must be forbidden from certifying handovers');
+    const certifyBody = await certifyRes.json();
+    assert.ok(certifyBody.error.includes('MANAGER'));
+  });
+
+  const DEMO_EXT_EMAIL = 'external@knotrail.demo';
+  const DEMO_EXT_PASSWORD = process.env.DEMO_EXTERNAL_PASSWORD || 'KnoTrail2026!Ext';
+  let extToken = '';
+
+  await t.test('16. POST /api/auth/login with External demo credentials returns EXTERNAL role', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: DEMO_EXT_EMAIL,
+        password: DEMO_EXT_PASSWORD,
+        workspaceId: testWorkspaceId,
+      }),
+    });
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.status, 'authenticated');
+    assert.ok(data.token && data.token.startsWith('kt_hmac.'));
+    assert.equal(data.user.email, DEMO_EXT_EMAIL);
+    assert.equal(data.user.role, 'EXTERNAL');
+    assert.equal(data.workspace.memberRole, 'EXTERNAL');
+    extToken = data.token;
+
+    const member = await storage.getWorkspaceMember(testWorkspaceId, data.user.userId);
+    assert.ok(member);
+    assert.equal(member.role, 'EXTERNAL');
+  });
+
+  await t.test('17. External role CANNOT mutate sources or approve findings (403 Forbidden)', async () => {
+    // Attempt to create source as EXTERNAL
+    const createSourceRes = await fetch(`${baseUrl}/api/sources?workspaceId=${testWorkspaceId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${extToken}`,
+      },
+      body: JSON.stringify({
+        name: 'Unauthorized External Note',
+        type: 'notes',
+        content: 'This should be blocked',
+      }),
+    });
+    assert.equal(createSourceRes.status, 403, 'External user must not create sources');
+
+    // Attempt to approve finding as EXTERNAL
+    const approveRes = await fetch(`${baseUrl}/api/findings/fnd_sample_1/approve?workspaceId=${testWorkspaceId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${extToken}`,
+      },
+    });
+    assert.equal(approveRes.status, 403, 'External user must not approve findings');
+  });
+
+  await t.test('18. External role receives redacted confidential source data and stripped storage paths', async () => {
+    // Pre-populate a confidential source in workspace
+    await storage.addUploadedSource(testWorkspaceId, {
+      id: 'src_conf_1',
+      name: 'internal-secrets.env',
+      type: 'document',
+      status: 'connected',
+      lastSync: 'Just now',
+      recordCount: 1,
+      icon: 'description',
+      description: 'confidential production credentials',
+      privacyLevel: 'LOCAL_READ_ONLY',
+      documentData: {
+        originalFilename: 'secrets.env',
+        storagePath: '/var/data/knotrail/secrets.env',
+        extractedText: 'DB_CONNECTION_STRING=postgres://admin:secret123@db.knotrail.internal/prod',
+        sha256: 'abc123hash',
+      },
+    });
+
+    const res = await fetch(`${baseUrl}/api/sources?workspaceId=${testWorkspaceId}`, {
+      headers: {
+        Authorization: `Bearer ${extToken}`,
+      },
+    });
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.ok(Array.isArray(data.sources));
+    const redactedSource = data.sources.find((s) => s.id === 'src_conf_1');
+    assert.ok(redactedSource, 'Confidential source should be returned in list');
+
+    // Verify storage path is stripped
+    assert.equal(redactedSource.documentData?.storagePath, undefined, 'storagePath must be stripped for External role');
+    // Verify confidential text is redacted
+    assert.ok(!redactedSource.documentData?.extractedText.includes('secret123'), 'Secret credentials must not be revealed');
+    assert.ok(redactedSource.documentData?.extractedText.includes('REDACTED'), 'Extracted text must indicate redaction');
+  });
+
+  await t.test('19. Explore Live Demo Invariant: anonymous workspace initialization is fully frictionless without login', async () => {
+    // Emulates clicking "Explore Live Demo" in LandingView
+    const anonWsId = 'ws_anon_' + Math.random().toString(36).substring(2, 9);
+    const res = await fetch(`${baseUrl}/api/workspaces?workspaceId=${anonWsId}`);
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.workspaceId, anonWsId);
+    assert.ok(data.project);
+    assert.ok(Array.isArray(data.project.findings));
+    assert.ok(Array.isArray(data.project.sources));
+    assert.equal(data.isProtected, false, 'Demo workspace must not be marked protected');
+  });
 });

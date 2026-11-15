@@ -56,6 +56,9 @@ interface ProjectContextType {
   setSelectedCitation: (citation: EvidenceCitation | null) => void;
   selectedFinding: KnowledgeFinding | null;
   setSelectedFinding: (finding: KnowledgeFinding | null) => void;
+  targetEvidenceNav: { findingId: string; citationId?: string; timestamp: number } | null;
+  navigateToEvidence: (findingId: string, citationId?: string) => void;
+  clearTargetEvidenceNav: () => void;
   isSyncing: boolean;
   syncProgress: number;
   syncStatusMessage: string;
@@ -210,6 +213,53 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [evidenceFilter, setEvidenceFilter] = useState<'ALL' | EvidenceStatus>('ALL');
   const [selectedCitation, setSelectedCitation] = useState<EvidenceCitation | null>(null);
   const [selectedFinding, setSelectedFinding] = useState<KnowledgeFinding | null>(null);
+  const [targetEvidenceNav, setTargetEvidenceNav] = useState<{
+    findingId: string;
+    citationId?: string;
+    timestamp: number;
+  } | null>(null);
+
+  const clearTargetEvidenceNav = useCallback(() => {
+    setTargetEvidenceNav(null);
+  }, []);
+
+  const navigateToEvidence = useCallback(
+    (findingId: string, citationId?: string) => {
+      setIsMobileNavOpen(false);
+      const target = {
+        findingId,
+        citationId,
+        timestamp: Date.now(),
+      };
+      setTargetEvidenceNav(target);
+
+      // Locate finding and update selections
+      const matchedFinding = project.findings.find((f) => f.id === findingId);
+      if (matchedFinding) {
+        setSelectedFinding(matchedFinding);
+        if (citationId) {
+          const matchedCitation = (matchedFinding.citations || []).find((c) => c.id === citationId);
+          if (matchedCitation) {
+            setSelectedCitation(matchedCitation);
+          }
+        }
+      }
+
+      // Ensure filter allows seeing the target
+      setEvidenceFilter('ALL');
+
+      // Update URL hash with query string so browser back button returns to previous view
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams();
+        params.set('findingId', findingId);
+        if (citationId) params.set('citationId', citationId);
+        window.location.hash = `evidence?${params.toString()}`;
+      }
+
+      setActiveView('evidence');
+    },
+    [project.findings]
+  );
   
   // Sync simulation states
   const [isSyncing, setIsSyncing] = useState(false);
@@ -401,10 +451,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       });
   }, [persistToLocalCache]);
 
-  // Handle URL hash navigation for direct links (#workspace, #sources, etc.)
+  // Handle URL hash navigation for direct links (#workspace, #sources, #evidence?findingId=..., etc.)
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '') as ActiveView;
+      const rawHash = window.location.hash.replace('#', '');
+      const [viewPart, queryPart] = rawHash.split('?');
       const validViews: ActiveView[] = [
         'landing',
         'dashboard',
@@ -415,8 +466,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         'review',
         'handover',
       ];
-      if (validViews.includes(hash)) {
-        setActiveView(hash);
+      if (validViews.includes(viewPart as ActiveView)) {
+        setActiveView(viewPart as ActiveView);
+        if (viewPart === 'evidence' && queryPart) {
+          const params = new URLSearchParams(queryPart);
+          const findingId = params.get('findingId');
+          const citationId = params.get('citationId') || undefined;
+          if (findingId) {
+            setTargetEvidenceNav({ findingId, citationId, timestamp: Date.now() });
+          }
+        }
       }
     };
 
@@ -425,7 +484,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
 
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
   }, []);
 
   // Update URL hash when activeView changes with subtle transition telemetry
@@ -1323,6 +1386,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         setSelectedCitation,
         selectedFinding,
         setSelectedFinding,
+        targetEvidenceNav,
+        navigateToEvidence,
+        clearTargetEvidenceNav,
         isSyncing,
         syncProgress,
         syncStatusMessage,

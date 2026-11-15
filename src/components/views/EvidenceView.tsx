@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { EvidenceCitation, EvidenceStatus, KnowledgeFinding } from '../../lib/types';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
@@ -16,11 +16,81 @@ export function EvidenceView() {
     setSelectedFinding,
     setActiveView,
     isVerifying,
+    targetEvidenceNav,
+    clearTargetEvidenceNav,
   } = useProject();
 
   const [searchFilter, setSearchFilter] = useState('');
   const [activeInspectorCitation, setActiveInspectorCitation] = useState<EvidenceCitation | null>(null);
   const [copiedCitationId, setCopiedCitationId] = useState<string | null>(null);
+  const [highlightedFindingId, setHighlightedFindingId] = useState<string | null>(null);
+  const [highlightedCitationId, setHighlightedCitationId] = useState<string | null>(null);
+  const [navigationError, setNavigationError] = useState<string | null>(null);
+
+  // Direct Evidence Navigation & Smooth Scroll Handler
+  useEffect(() => {
+    if (!targetEvidenceNav) return;
+
+    const targetFinding = project.findings.find(
+      (f) => f.id === targetEvidenceNav.findingId
+    );
+
+    if (!targetFinding) {
+      setNavigationError(
+        `Could not locate evidence for finding ID "${targetEvidenceNav.findingId}". The finding may have been modified or removed.`
+      );
+      return;
+    }
+
+    setNavigationError(null);
+    setSearchFilter('');
+    setEvidenceFilter('ALL');
+    setSelectedFinding(targetFinding);
+
+    const targetCitation = targetEvidenceNav.citationId
+      ? (targetFinding.citations || []).find((c) => c.id === targetEvidenceNav.citationId)
+      : targetFinding.citations?.[0];
+
+    if (targetCitation) {
+      setHighlightedCitationId(targetCitation.id);
+      setHighlightedFindingId(targetFinding.id);
+    } else {
+      setHighlightedCitationId(null);
+      setHighlightedFindingId(targetFinding.id);
+    }
+
+    const targetElementId = targetCitation
+      ? `citation-${targetCitation.id}`
+      : `finding-${targetFinding.id}`;
+
+    let attempts = 0;
+    let timerId: any = null;
+
+    const attemptScroll = () => {
+      const el =
+        document.getElementById(targetElementId) ||
+        document.getElementById(`finding-${targetFinding.id}`);
+
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Subtle temporary highlight: fade out after 3.2s
+        setTimeout(() => {
+          setHighlightedCitationId((prev) => (prev === targetCitation?.id ? null : prev));
+          setHighlightedFindingId((prev) => (prev === targetFinding.id ? null : prev));
+          clearTargetEvidenceNav();
+        }, 3200);
+      } else if (attempts < 10) {
+        attempts++;
+        timerId = setTimeout(attemptScroll, 100);
+      }
+    };
+
+    timerId = setTimeout(attemptScroll, 80);
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [targetEvidenceNav, project.findings, setEvidenceFilter, setSelectedFinding, clearTargetEvidenceNav]);
 
   const totalCitationsCount = project.findings.reduce((sum, f) => sum + (f.citations?.length || 0), 0);
 
@@ -88,6 +158,28 @@ export function EvidenceView() {
           </button>
         </div>
       </div>
+
+      {/* DIRECT NAVIGATION FALLBACK NOTICE */}
+      {navigationError && (
+        <aside
+          role="alert"
+          className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-200 animate-in fade-in duration-150"
+        >
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[18px]">
+              warning
+            </span>
+            <span>{navigationError}</span>
+          </div>
+          <button
+            onClick={() => setNavigationError(null)}
+            className="text-secondary hover:text-on-surface p-1 rounded transition-colors"
+            aria-label="Dismiss message"
+          >
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </aside>
+      )}
 
       {/* ACTIVE EVIDENCE VERIFICATION BANNER */}
       {isVerifying && (
@@ -217,8 +309,11 @@ export function EvidenceView() {
           filteredFindings.map((finding) => (
             <div
               key={finding.id}
-              className={`bg-surface-container-lowest rounded-xl p-5 shadow-xs border transition-all ${
-                selectedFinding?.id === finding.id
+              id={`finding-${finding.id}`}
+              className={`bg-surface-container-lowest rounded-xl p-5 shadow-xs border transition-all duration-300 ${
+                highlightedFindingId === finding.id
+                  ? 'border-primary ring-2 ring-primary/50 shadow-md bg-primary/[0.03]'
+                  : selectedFinding?.id === finding.id
                   ? 'border-primary ring-1 ring-primary/30'
                   : 'border-outline-variant/40'
               }`}
@@ -384,89 +479,103 @@ export function EvidenceView() {
 
               {/* Citations List for this Finding */}
               <div className="space-y-2">
-                {finding.citations.map((citation) => (
-                  <div
-                    key={citation.id}
-                    className="bg-surface-container-low/40 rounded-lg p-3 border border-outline-variant/30 flex flex-col gap-1.5 font-mono text-xs"
-                  >
-                    {/* Citation Meta Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-secondary font-sans">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="material-symbols-outlined text-primary text-[15px]">
-                          {citation.sourceType === 'github' ? 'terminal' : 'description'}
-                        </span>
-                        <strong className="text-on-surface font-mono text-xs">{citation.file}</strong>
-                        <span className="bg-surface-container-low px-1.5 py-0.2 rounded font-mono text-on-surface text-[10px] border border-outline-variant/30">
-                          L:{citation.lineRange}
-                        </span>
-                        {citation.commitSha && (
-                          <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono text-[10px]">
-                            SHA: {citation.commitSha.slice(0, 7)}
+                {finding.citations.map((citation) => {
+                  const isCitationHighlighted = highlightedCitationId === citation.id;
+                  return (
+                    <div
+                      key={citation.id}
+                      id={`citation-${citation.id}`}
+                      className={`rounded-lg p-3 border flex flex-col gap-1.5 font-mono text-xs transition-all duration-300 ${
+                        isCitationHighlighted
+                          ? 'bg-primary/10 border-primary ring-2 ring-primary/50 shadow-md'
+                          : 'bg-surface-container-low/40 border-outline-variant/30 hover:border-outline-variant/60'
+                      }`}
+                    >
+                      {/* Citation Meta Bar */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-secondary font-sans">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {isCitationHighlighted && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/20 px-2 py-0.5 rounded-full border border-primary/40 animate-pulse font-sans">
+                              <span className="material-symbols-outlined text-[13px]">my_location</span>
+                              <span>Target Evidence</span>
+                            </span>
+                          )}
+                          <span className="material-symbols-outlined text-primary text-[15px]">
+                            {citation.sourceType === 'github' ? 'terminal' : 'description'}
                           </span>
-                        )}
-                        {citation.prNumber && (
-                          <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono text-[10px]">
-                            PR #{citation.prNumber}
+                          <strong className="text-on-surface font-mono text-xs">{citation.file}</strong>
+                          <span className="bg-surface-container-low px-1.5 py-0.2 rounded font-mono text-on-surface text-[10px] border border-outline-variant/30">
+                            L:{citation.lineRange}
                           </span>
-                        )}
-                        {citation.issueNumber && (
-                          <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.2 rounded font-mono text-[10px]">
-                            Issue #{citation.issueNumber}
-                          </span>
-                        )}
-                        {citation.githubUrl && (
-                          <a
-                            href={citation.githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-primary hover:underline text-[10px] font-medium ml-1"
-                            title="View source on GitHub (opens in new tab)"
+                          {citation.commitSha && (
+                            <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono text-[10px]">
+                              SHA: {citation.commitSha.slice(0, 7)}
+                            </span>
+                          )}
+                          {citation.prNumber && (
+                            <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono text-[10px]">
+                              PR #{citation.prNumber}
+                            </span>
+                          )}
+                          {citation.issueNumber && (
+                            <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.2 rounded font-mono text-[10px]">
+                              Issue #{citation.issueNumber}
+                            </span>
+                          )}
+                          {citation.githubUrl && (
+                            <a
+                              href={citation.githubUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 text-primary hover:underline text-[10px] font-medium ml-1"
+                              title="View source on GitHub (opens in new tab)"
+                            >
+                              <span>GitHub</span>
+                              <span className="material-symbols-outlined text-[11px]">open_in_new</span>
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span>{citation.author}</span>
+                          <span>•</span>
+                          <span className="font-mono">{citation.timestamp}</span>
+                          <button
+                            onClick={() => setActiveInspectorCitation(citation)}
+                            className="px-2 h-6 bg-surface-container-lowest hover:bg-surface-container rounded border border-outline-variant/40 text-on-surface text-[11px] font-medium transition-colors flex items-center gap-1"
                           >
-                            <span>GitHub</span>
-                            <span className="material-symbols-outlined text-[11px]">open_in_new</span>
-                          </a>
-                        )}
+                            <span className="material-symbols-outlined text-[12px]">visibility</span>
+                            <span>Provenance</span>
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <span>{citation.author}</span>
-                        <span>•</span>
-                        <span className="font-mono">{citation.timestamp}</span>
+                      {/* Code / Content Snippet */}
+                      <div className="relative bg-surface-container-lowest rounded-md p-2.5 border border-outline-variant/30 overflow-x-auto">
+                        <pre className="text-xs text-on-surface leading-relaxed whitespace-pre font-mono">
+                          {citation.snippet}
+                        </pre>
                         <button
-                          onClick={() => setActiveInspectorCitation(citation)}
-                          className="px-2 h-6 bg-surface-container-lowest hover:bg-surface-container rounded border border-outline-variant/40 text-on-surface text-[11px] font-medium transition-colors flex items-center gap-1"
+                          onClick={() => handleCopySnippet(citation.snippet, citation.id)}
+                          className="absolute right-2 top-2 p-1 rounded bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                          title="Copy Snippet"
                         >
-                          <span className="material-symbols-outlined text-[12px]">visibility</span>
-                          <span>Provenance</span>
+                          <span className="material-symbols-outlined text-[14px]">
+                            {copiedCitationId === citation.id ? 'check' : 'content_copy'}
+                          </span>
                         </button>
                       </div>
-                    </div>
 
-                    {/* Code / Content Snippet */}
-                    <div className="relative bg-surface-container-lowest rounded-md p-2.5 border border-outline-variant/30 overflow-x-auto">
-                      <pre className="text-xs text-on-surface leading-relaxed whitespace-pre font-mono">
-                        {citation.snippet}
-                      </pre>
-                      <button
-                        onClick={() => handleCopySnippet(citation.snippet, citation.id)}
-                        className="absolute right-2 top-2 p-1 rounded bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                        title="Copy Snippet"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">
-                          {copiedCitationId === citation.id ? 'check' : 'content_copy'}
+                      {/* Hash & Clearance Tier */}
+                      <div className="flex items-center justify-between text-[10px] text-secondary pt-0.5 font-sans">
+                        <span className="font-mono">{citation.contentHash}</span>
+                        <span className="uppercase tracking-wider font-semibold text-secondary text-[9px]">
+                          Clearance: {citation.clearanceTier}
                         </span>
-                      </button>
+                      </div>
                     </div>
-
-                    {/* Hash & Clearance Tier */}
-                    <div className="flex items-center justify-between text-[10px] text-secondary pt-0.5 font-sans">
-                      <span className="font-mono">{citation.contentHash}</span>
-                      <span className="uppercase tracking-wider font-semibold text-secondary text-[9px]">
-                        Clearance: {citation.clearanceTier}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Quick Action to Review */}

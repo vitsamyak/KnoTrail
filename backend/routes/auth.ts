@@ -24,11 +24,54 @@ import type { UserRole } from '../../src/lib/types.ts';
 
 export const authRouter = Router();
 
-// Server-configured demo manager credentials (configurable via environment variables)
+export interface DemoAccountConfig {
+  email: string;
+  password: string;
+  role: UserRole;
+  userId: string;
+  name: string;
+  description: string;
+}
+
+/**
+ * Returns all configured demo accounts across the three supported roles.
+ * Configurable via environment variables with secure defaults.
+ */
+export function getAllDemoAccounts(): DemoAccountConfig[] {
+  return [
+    {
+      email: (process.env.DEMO_MANAGER_EMAIL || 'manager@knotrail.demo').trim().toLowerCase(),
+      password: process.env.DEMO_MANAGER_PASSWORD || 'KnoTrail2026!Manager',
+      role: 'MANAGER',
+      userId: 'usr_mgr_demo_2026',
+      name: 'Demo Project Manager',
+      description: 'Full governance: approve/reject findings, certify handovers, resolve conflicts, manage members.',
+    },
+    {
+      email: (process.env.DEMO_DEVELOPER_EMAIL || 'developer@knotrail.demo').trim().toLowerCase(),
+      password: process.env.DEMO_DEVELOPER_PASSWORD || 'KnoTrail2026!Dev',
+      role: 'DEVELOPER',
+      userId: 'usr_dev_demo_2026',
+      name: 'Demo Core Developer',
+      description: 'Operational permissions: contribute source notes, upload files, sync GitHub, edit finding details, retry updates.',
+    },
+    {
+      email: (process.env.DEMO_EXTERNAL_EMAIL || 'external@knotrail.demo').trim().toLowerCase(),
+      password: process.env.DEMO_EXTERNAL_PASSWORD || 'KnoTrail2026!Ext',
+      role: 'EXTERNAL',
+      userId: 'usr_ext_demo_2026',
+      name: 'Demo External Auditor',
+      description: 'Auditor permissions: read-only access with confidential source contents and internal paths redacted.',
+    },
+  ];
+}
+
+// Server-configured demo manager credentials (preserved for backward compatibility)
 export function getDemoCredentials(): { email: string; password: string } {
+  const accounts = getAllDemoAccounts();
   return {
-    email: (process.env.DEMO_MANAGER_EMAIL || 'manager@knotrail.demo').trim().toLowerCase(),
-    password: process.env.DEMO_MANAGER_PASSWORD || 'KnoTrail2026!Manager',
+    email: accounts[0].email,
+    password: accounts[0].password,
   };
 }
 
@@ -93,19 +136,25 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     }
 
     // 2. Check Server-Verified Demo Credentials
+    let matchedDemoAccount: DemoAccountConfig | null = null;
     if (!authenticatedUserId) {
-      const isEmailMatch = normalizedEmail === demo.email;
-      const isPasswordMatch = verifyPasswordTimingSafe(password, demo.password);
-
-      if (isEmailMatch && isPasswordMatch) {
-        authenticatedUserId = 'usr_mgr_demo_2026';
-        authenticatedEmail = demo.email;
-        // Generate signed HMAC token valid for 24 hours (86400 seconds)
-        sessionToken = createDevSessionToken(
-          { id: authenticatedUserId, email: authenticatedEmail },
-          86400
-        );
-        authProvider = 'server_demo';
+      const demoAccounts = getAllDemoAccounts();
+      for (const account of demoAccounts) {
+        if (
+          normalizedEmail === account.email &&
+          verifyPasswordTimingSafe(password, account.password)
+        ) {
+          matchedDemoAccount = account;
+          authenticatedUserId = account.userId;
+          authenticatedEmail = account.email;
+          // Generate signed HMAC token valid for 24 hours (86400 seconds)
+          sessionToken = createDevSessionToken(
+            { id: authenticatedUserId, email: authenticatedEmail },
+            86400
+          );
+          authProvider = 'server_demo';
+          break;
+        }
       }
     }
 
@@ -117,9 +166,9 @@ authRouter.post('/login', async (req: Request, res: Response) => {
       return;
     }
 
-    // 3. Target Workspace Binding & Manager Role Assignment
+    // 3. Target Workspace Binding & Role Assignment
     let targetWorkspaceId = workspaceId && isValidWorkspaceId(workspaceId) ? workspaceId : 'ws_proj_demo';
-    let memberRole: UserRole = 'MANAGER';
+    let memberRole: UserRole = matchedDemoAccount ? matchedDemoAccount.role : 'MANAGER';
 
     try {
       const storage = getStorage();
@@ -130,21 +179,28 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         project = await storage.createWorkspace(targetWorkspaceId);
       }
 
-      // Mark workspace protected and assign owner
-      await storage.setWorkspaceProtected(targetWorkspaceId, true, authenticatedUserId);
+      // Mark workspace protected and assign owner if manager
+      if (memberRole === 'MANAGER') {
+        await storage.setWorkspaceProtected(targetWorkspaceId, true, authenticatedUserId);
+      } else {
+        const isProtected = await storage.isWorkspaceProtected(targetWorkspaceId);
+        if (!isProtected) {
+          await storage.setWorkspaceProtected(targetWorkspaceId, true, 'usr_mgr_demo_2026');
+        }
+      }
 
-      // Register user as MANAGER in authoritative database/storage record
+      // Register user with their exact role in authoritative database/storage record
       const member = await storage.addWorkspaceMember(targetWorkspaceId, {
         userId: authenticatedUserId,
         email: authenticatedEmail || normalizedEmail,
-        role: 'MANAGER',
+        role: memberRole,
       });
       if (member?.role) {
         memberRole = member.role;
       }
     } catch (storageErr: any) {
       console.warn('[Auth Service] Workspace binding warning (remote database sync skipped or failed):', storageErr?.message || storageErr);
-      // Fallback: The signed HMAC session token still authenticates the user as MANAGER
+      // Fallback: The signed HMAC session token still authenticates the user with their role
     }
 
     res.status(200).json({
@@ -184,6 +240,15 @@ authRouter.get('/me', async (req: Request, res: Response) => {
 
     const workspaceId = req.query.workspaceId as string | undefined;
     let role: UserRole = 'MANAGER';
+
+    // Map known demo user IDs to prevent accidental role escalation if workspace is omitted
+    if (req.user.userId === 'usr_dev_demo_2026') {
+      role = 'DEVELOPER';
+    } else if (req.user.userId === 'usr_ext_demo_2026') {
+      role = 'EXTERNAL';
+    } else if (req.user.userId === 'usr_mgr_demo_2026') {
+      role = 'MANAGER';
+    }
 
     if (workspaceId && isValidWorkspaceId(workspaceId)) {
       const storage = getStorage();
@@ -225,10 +290,17 @@ authRouter.post('/logout', (req: Request, res: Response) => {
  * Returns server auth capabilities for client UI hints (never reveals passwords).
  */
 authRouter.get('/status', (req: Request, res: Response) => {
-  const demo = getDemoCredentials();
+  const manager = getDemoCredentials();
+  const accounts = getAllDemoAccounts();
   res.status(200).json({
     supabaseConfigured: isSupabaseConfigured(),
     demoAccountAvailable: true,
-    demoEmail: demo.email,
+    demoEmail: manager.email,
+    demoAccounts: accounts.map((a) => ({
+      role: a.role,
+      email: a.email,
+      name: a.name,
+      description: a.description,
+    })),
   });
 });

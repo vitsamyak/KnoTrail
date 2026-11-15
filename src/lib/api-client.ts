@@ -270,6 +270,12 @@ export const apiClient = {
     supabaseConfigured: boolean;
     demoAccountAvailable: boolean;
     demoEmail: string;
+    demoAccounts?: Array<{
+      role: UserRole;
+      email: string;
+      name: string;
+      description: string;
+    }>;
   }> {
     return request('/api/auth/status');
   },

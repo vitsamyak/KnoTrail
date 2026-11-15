@@ -27,6 +27,7 @@ export function ReviewView() {
     certifyHandover,
     setActiveView,
     setSelectedFinding,
+    navigateToEvidence,
   } = useProject();
 
   // Filter States
@@ -744,15 +745,70 @@ export function ReviewView() {
                     </div>
                   )}
 
+                {/* Supporting Evidence Citations Grid */}
+                {finding.citations && finding.citations.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-outline-variant/20 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-on-surface flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[15px] text-primary">fact_check</span>
+                        <span>Supporting Evidence References ({finding.citations.length})</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => navigateToEvidence(finding.id)}
+                        className="text-primary hover:underline text-[11px] font-medium flex items-center gap-0.5"
+                      >
+                        <span>View all in Evidence Explorer</span>
+                        <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {finding.citations.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => navigateToEvidence(finding.id, c.id)}
+                          className="p-2.5 rounded-lg bg-surface-container-low/60 hover:bg-surface-container border border-outline-variant/30 hover:border-primary/50 text-left transition-all flex flex-col gap-1 text-xs group cursor-pointer"
+                          title={`Click to jump directly to this evidence in Evidence Explorer (${c.file || c.sourceName})`}
+                        >
+                          <div className="flex items-center justify-between gap-1.5 w-full">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="material-symbols-outlined text-primary text-[14px] shrink-0">
+                                {c.sourceType === 'github' ? 'code' : 'description'}
+                              </span>
+                              <span className="font-mono text-xs font-semibold text-on-surface truncate">
+                                {c.file || c.sourceName}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-mono text-primary font-medium shrink-0 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                              <span>Inspect</span>
+                              <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-secondary font-mono flex-wrap">
+                            {c.lineRange && <span>Lines {c.lineRange}</span>}
+                            {c.pageNumber && <span>Page {c.pageNumber}</span>}
+                            {c.commitSha && <span>SHA: {c.commitSha.slice(0, 7)}</span>}
+                            {c.author && <span>by {c.author}</span>}
+                          </div>
+                          {c.quote && (
+                            <p className="text-[11px] text-secondary italic line-clamp-1 border-l-2 border-primary/30 pl-1.5 mt-0.5">
+                              &ldquo;{c.quote}&rdquo;
+                            </p>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Action Bar */}
                 <div className="mt-4 pt-3 border-t border-outline-variant/30 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-3 flex-wrap">
                     <button
-                      onClick={() => {
-                        setSelectedFinding(finding);
-                        setActiveView('evidence');
-                      }}
+                      onClick={() => navigateToEvidence(finding.id)}
                       className="text-primary hover:underline font-medium text-xs flex items-center gap-1"
+                      title="Jump to Evidence Explorer for this finding"
                     >
                       <span className="material-symbols-outlined text-[13px]">link</span>
                       <span>Supporting Evidence ({finding.citations.length})</span>

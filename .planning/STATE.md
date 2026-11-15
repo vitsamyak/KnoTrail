@@ -22,15 +22,44 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-09)
 
 **Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, continuous repository updates, and comprehensive 12-section delivery packages.  
-**Current focus:** Round 3 Improvement 3 (Continuous Knowledge Updates) - Milestone 3.5 Complete (100% Final Verification). Full regression suite (289/289 tests PASS). Backend and frontend production builds PASS. Zero open blockers.
+**Current focus:** Direct Evidence Explorer Navigation & Multi-Role Demo Login Enhancements Verified. Full regression suite (296/296 tests PASS). Backend and frontend production builds PASS. Zero open blockers.
 
 ## Current Position
 
-Phase: Round 3 Improvement 3: Continuous Knowledge Updates (Milestone 3.5 Complete - Improvement 3 Finalized)  
-Status: Tests PASS (289/289 in full test suite, 4/4 in Milestone 3.5 E2E suite, 8/8 in Milestone 3.4 suite, 8/8 in Milestone 3.3 suite, 8/8 in Milestone 3.2 suite, 8/8 in Milestone 3.1 suite, 57/57 in GitHub suites, 31/31 in security suites) | Builds PASS (backend:clean, frontend:clean) | System Ready for Final Submission  
-Last activity: 2026-11-15
+Phase: Direct Evidence Navigation & Role-Based Demo Authentication Enhancements (Complete & Verified)  
+Status: Tests PASS (296/296 in full test suite, 20/20 in loginAuth test suite) | Builds PASS (backend:clean, frontend:clean) | Zero-Auth Incognito Verified | Landing Page Demo Untouched | System Production Ready  
+Last activity: 2026-11-16
 
-Progress: [██████████] 100% (Improvement 3 Complete)
+Progress: [██████████] 100% (All Features & Enhancements Complete)
+
+## Performance Metrics
+
+**Enhancements Verification Summary:**
+1. **Direct Evidence Explorer Navigation**:
+   - Seamless jump from Review Center citation links or "Supporting Evidence" action buttons directly into Evidence Explorer (`EvidenceView.tsx`).
+   - Automatically clears conflicting search terms and status filters (`evidenceFilter = 'ALL'`) to ensure the target item is visible.
+   - Smoothly scrolls to target finding (`#finding-${id}`) or citation (`#citation-${id}`) with DOM retry polling.
+   - Applies high-visibility 3.2s highlight styling (`ring-2 ring-primary/50 shadow-md bg-primary/[0.03]`) and glowing "Target Evidence" pulsing badge.
+   - Non-blocking dismissible alert fallback if target finding or citation is modified or missing.
+   - Deep-linking & history navigation: `#evidence?findingId=...&citationId=...` updates URL hash and supports browser Back/Forward (`popstate`) navigation.
+2. **Multi-Role Demo Authentication & Strict Server RBAC**:
+   - Manager demo account: `manager@knotrail.demo` / `KnoTrail2026!Manager` (`usr_mgr_demo_2026`) - full governance controls (approve, reject, certify, resolve conflicts, delete sources, invite members).
+   - Developer demo account: `developer@knotrail.demo` / `KnoTrail2026!Dev` (`usr_dev_demo_2026`) - operational capabilities (contribute notes, upload files, sync GitHub, edit finding details, retry updates); strictly forbidden from approving findings or certifying handovers (HTTP 403 Forbidden).
+   - External demo account: `external@knotrail.demo` / `KnoTrail2026!Ext` (`usr_ext_demo_2026`) - auditor access (read-only with confidential source texts redacted and internal storage paths stripped); strictly forbidden from mutating sources or approving findings (HTTP 403 Forbidden).
+   - Constant-time verification (`verifyPasswordTimingSafe` with SHA-256) protects against timing attacks.
+   - Authoritative database recording: authenticating via any demo account inserts the member with their exact role into workspace storage.
+   - Fallback protection: `GET /api/auth/me` maps demo user IDs directly to their assigned roles even if workspace query parameters are omitted, strictly preventing privilege escalation.
+   - Credential secrecy: `GET /api/auth/status` publishes `demoAccounts` metadata (email, role, name, description) while never returning raw passwords or session secrets.
+   - Login Modal UX: intuitive 3-role selector tabs with role badge, icons, description, and automatic credential pre-fill.
+3. **Explore Live Demo Invariant & Zero-Auth Incognito Preservation**:
+   - `src/components/views/LandingView.tsx` remained 100% untouched.
+   - "Explore Live Demo" button, placement, styling, and anonymous demo workspace initialization (`ws_anon_*`) remain completely intact.
+   - Incognito / private window zero-login evaluation is verified and operational with zero friction.
+4. **Test Coverage & Build Results**:
+   - Total Tests: 296 tests across 22 test files (296 passed, 0 failed, 100% pass rate).
+   - TypeScript Checks: 0 errors on frontend (`npx tsc --noEmit`) and 0 errors on backend (`npx tsc -p tsconfig.backend.json --noEmit`).
+   - Backend Production Build: 314.4 KB clean bundle (`npm run backend:build`).
+   - Frontend Production Build: Clean Next.js 14 compilation (`npm run frontend:build`).
 
 ## Performance Metrics
 

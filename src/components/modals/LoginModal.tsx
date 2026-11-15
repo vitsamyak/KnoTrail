@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
+import type { UserRole } from '../../lib/types';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,18 +10,62 @@ interface LoginModalProps {
   onSuccess?: () => void;
 }
 
+const DEMO_ACCOUNTS: Array<{
+  role: UserRole;
+  label: string;
+  email: string;
+  password: string;
+  badge: string;
+  badgeColor: string;
+  description: string;
+  icon: string;
+}> = [
+  {
+    role: 'MANAGER',
+    label: 'Manager',
+    email: 'manager@knotrail.demo',
+    password: 'KnoTrail2026!Manager',
+    badge: 'Full Governance',
+    badgeColor: 'bg-primary/10 text-primary border-primary/30',
+    description: 'Approve & reject findings, certify handovers, resolve conflicts, manage members.',
+    icon: 'admin_panel_settings',
+  },
+  {
+    role: 'DEVELOPER',
+    label: 'Developer',
+    email: 'developer@knotrail.demo',
+    password: 'KnoTrail2026!Dev',
+    badge: 'Operational Access',
+    badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40',
+    description: 'Upload documents, sync GitHub, edit finding details, retry update jobs. No approval powers.',
+    icon: 'code',
+  },
+  {
+    role: 'EXTERNAL',
+    label: 'External',
+    email: 'external@knotrail.demo',
+    password: 'KnoTrail2026!Ext',
+    badge: 'Auditor (Read-Only)',
+    badgeColor: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40',
+    description: 'Auditor permissions: read-only access with confidential source contents and paths redacted.',
+    icon: 'visibility',
+  },
+];
+
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const { login, isAuthLoading, authError, setActiveView } = useProject();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('MANAGER');
+  const [email, setEmail] = useState('manager@knotrail.demo');
+  const [password, setPassword] = useState('KnoTrail2026!Manager');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setEmail('');
-      setPassword('');
+      setSelectedRole('MANAGER');
+      setEmail('manager@knotrail.demo');
+      setPassword('KnoTrail2026!Manager');
       setShowPassword(false);
       setLocalError(null);
     }
@@ -38,10 +83,14 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   if (!isOpen) return null;
 
-  const handleFillDemoCredentials = () => {
-    setEmail('manager@knotrail.demo');
-    setPassword('KnoTrail2026!Manager');
-    setLocalError(null);
+  const handleSelectDemoRole = (role: UserRole) => {
+    const matched = DEMO_ACCOUNTS.find((a) => a.role === role);
+    if (matched) {
+      setSelectedRole(matched.role);
+      setEmail(matched.email);
+      setPassword(matched.password);
+      setLocalError(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,6 +123,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     }
   };
 
+  const activeAccount = DEMO_ACCOUNTS.find((a) => a.role === selectedRole);
+
   return (
     <div
       role="dialog"
@@ -83,7 +134,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant/50 p-6 flex flex-col gap-4 overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg bg-surface rounded-xl shadow-2xl border border-outline-variant/50 p-6 flex flex-col gap-4 overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -100,7 +151,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 Sign In to KnoTrail
               </h2>
               <p className="text-[11px] text-secondary mt-0.5">
-                Server-verified authentication for protected workspaces
+                Server-verified authentication for protected workspaces &amp; RBAC evaluation
               </p>
             </div>
           </div>
@@ -114,37 +165,77 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         </div>
 
         {/* Public Demo Info Banner */}
-        <div className="p-3 bg-surface-container-low/50 border border-outline-variant/30 rounded-lg flex items-start gap-2.5 text-xs text-secondary">
+        <div className="p-3 bg-surface-container-low/60 border border-outline-variant/30 rounded-lg flex items-start gap-2.5 text-xs text-secondary">
           <span className="material-symbols-outlined text-primary text-[17px] shrink-0 mt-0.5">
             info
           </span>
           <div className="space-y-0.5">
-            <p className="font-semibold text-on-surface text-xs">Zero-Login Public Demo Available</p>
+            <p className="font-semibold text-on-surface text-xs">Frictionless Zero-Login Demo Available</p>
             <p className="text-secondary leading-relaxed text-[11px]">
-              Judges and evaluators can explore all 8 views with zero login. Sign in with the Demo Manager account to evaluate server-verified RBAC and team permissions.
+              Judges can explore all views with zero login. To evaluate server-verified RBAC boundaries and token verification, select one of the three role-specific demo accounts below.
             </p>
           </div>
         </div>
 
-        {/* Demo Credentials Quick-Fill Card */}
-        <div className="p-2.5 bg-surface-container-low border border-outline-variant/30 rounded-lg flex items-center justify-between gap-3 text-xs">
-          <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-on-surface text-xs">Demo Manager Account</span>
-            <span className="font-mono text-[11px] text-primary truncate">manager@knotrail.demo</span>
+        {/* Role-Specific Demo Account Selector */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-mono text-secondary uppercase tracking-wider font-semibold">
+            Select Demo Account Role:
+          </span>
+          <div className="grid grid-cols-3 gap-2">
+            {DEMO_ACCOUNTS.map((acc) => {
+              const isSelected = selectedRole === acc.role;
+              return (
+                <button
+                  key={acc.role}
+                  type="button"
+                  onClick={() => handleSelectDemoRole(acc.role)}
+                  className={`p-2.5 rounded-lg border text-left flex flex-col gap-1 transition-all ${
+                    isSelected
+                      ? 'bg-primary/10 border-primary ring-1 ring-primary/40 shadow-xs'
+                      : 'bg-surface-container-low hover:bg-surface-container border-outline-variant/30'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-on-surface flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[15px] text-primary">{acc.icon}</span>
+                      <span>{acc.label}</span>
+                    </span>
+                    {isSelected && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <span className="text-[10px] text-secondary font-mono truncate">{acc.email}</span>
+                </button>
+              );
+            })}
           </div>
-          <button
-            type="button"
-            onClick={handleFillDemoCredentials}
-            className="px-2.5 h-7 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface font-medium text-[11px] border border-outline-variant/40 transition-colors shrink-0"
-          >
-            Use Demo Login
-          </button>
+
+          {/* Active Role Permissions Card */}
+          {activeAccount && (
+            <div className="p-2.5 rounded-lg bg-surface-container-low/70 border border-outline-variant/30 text-xs flex items-start gap-2 mt-0.5">
+              <span className="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">
+                shield
+              </span>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <strong className="text-on-surface text-[11px] font-semibold">{activeAccount.label} Role:</strong>
+                  <span className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded border font-semibold ${activeAccount.badgeColor}`}>
+                    {activeAccount.badge}
+                  </span>
+                </div>
+                <p className="text-[11px] text-secondary leading-relaxed">
+                  {activeAccount.description}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Error Feedback Alert */}
         {(localError || authError) && (
-          <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg flex items-start gap-2 text-xs text-error">
-            <span className="material-symbols-outlined text-error text-[16px] shrink-0 mt-0.5">
+          <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-lg flex items-start gap-2 text-xs text-rose-700 dark:text-rose-300">
+            <span className="material-symbols-outlined text-rose-600 text-[16px] shrink-0 mt-0.5">
               error
             </span>
             <span className="font-medium leading-relaxed">{localError || authError}</span>
@@ -168,7 +259,12 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 autoComplete="email"
                 placeholder="manager@knotrail.demo"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  // Clear role highlight if user alters email
+                  const match = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === e.target.value.toLowerCase().trim());
+                  if (match) setSelectedRole(match.role);
+                }}
                 className="w-full bg-surface-container-low text-on-surface pl-8 pr-3 h-9 rounded-lg border border-outline-variant/40 focus:outline-none focus:ring-1 focus:ring-primary text-xs transition-colors font-mono"
               />
             </div>
@@ -222,7 +318,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
               ) : (
                 <>
                   <span className="material-symbols-outlined text-[15px]">login</span>
-                  <span>Sign In as Manager</span>
+                  <span>Sign In as {activeAccount ? activeAccount.label : 'User'}</span>
                 </>
               )}
             </button>
