@@ -4,6 +4,14 @@ import { authMiddleware } from './middleware/auth.ts';
 import { healthRouter } from './routes/health.ts';
 import { apiRouter } from './routes/index.ts';
 
+declare global {
+  namespace Express {
+    interface Request {
+      rawBody?: Buffer;
+    }
+  }
+}
+
 export function createApp() {
   const app = express();
 
@@ -20,8 +28,15 @@ export function createApp() {
   // Strict CORS policy
   app.use(strictCorsMiddleware);
 
-  // Body parsers for JSON and URL-encoded forms (10 MB limit)
-  app.use(express.json({ limit: '10mb' }));
+  // Body parsers for JSON and URL-encoded forms (10 MB limit) with rawBody preservation for webhooks
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req: any, _res: any, buf: Buffer) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Health probe routes (unprefixed at /health)

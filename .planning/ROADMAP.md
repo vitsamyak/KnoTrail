@@ -5,7 +5,10 @@
 KnoTrail is engineered across three major hackathon milestones:
 1. **Round 1 (Planning & Proposal)**: Conceptual proposal, evidence-linked handover architecture, editable Draw.io diagrams, and Round 2 qualification. [COMPLETED]
 2. **Round 2 (The Build — Current Milestone)**: 72-hour engineering sprint (8 Nov 2026 10:00 AM IST to 11 Nov 2026 10:00 AM IST) delivering an end-to-end, functional, permission-aware knowledge handover application testable standalone by hackathon judges. [ACTIVE]
-3. **Round 3 (Refinement & Final Delivery)**: Multi-workspace synchronization, live collaborative annotations, and real-time enterprise connectors (Slack, Jira, Linear). [PLANNED]
+3. **Round 3 (Refinement & Final Delivery)**: Multi-workspace synchronization, live collaborative annotations, and real-time enterprise connectors (Slack, Jira, Linear). [ACTIVE]
+   - **Phase 1: GitHub Integration (Milestones 1.1 - 1.4)** [COMPLETED]
+   - **Improvement 2: Role-Based Security Hardening** [COMPLETED]
+   - **Improvement 3: Continuous Knowledge Updates** [PLANNED - AWAITING APPROVAL]
 
 ## Phases
 
@@ -56,6 +59,23 @@ KnoTrail is engineered across three major hackathon milestones:
 **Goal**: Decouple the monolithic Next.js architecture into a standalone Node.js Express backend (`backend/`) deployable to Render and a pure web frontend deployable to Vercel, with 100% route contract parity across all 23 endpoints, strict CORS, health liveness/readiness probes, centralized frontend API client (`src/lib/api-client.ts`), secret isolation, Node 24 LTS support, and zero regressions.
 **Requirements**: SEP-01, SEP-02, SEP-03, SEP-04, SEP-05, SEP-06, SEP-07, SEP-08, SEP-09, SEP-10
 **Status**: COMPLETED (21/21 tests passing, total 149/149 passing across 9 test suites, backend build in 14ms, frontend Next.js production build passing with 0 errors)
+
+### Round 3 - Phase 1: GitHub Integration
+**Goal**: Connect GitHub repositories, ingest commit history, PRs, issues, and READMEs, extract evidence-grounded operational knowledge via Gemini 2.5 Flash, process webhooks securely (HMAC-SHA256, replay protection), and provide full frontend repository management with public demo support.
+**Status**: COMPLETED (57/57 tests passing across 5 test suites, total 231/231 passing)
+
+### Round 3 - Improvement 2: Role-Based Security Hardening
+**Goal**: Enforce manager-only governance for finding approval/rejection, handover certification, and source deletion; protect developer technical contributions; redact confidential source content and strip server paths for External users; mask team email addresses; defend against workspace state tampering and parameter collisions.
+**Status**: COMPLETED (31/31 role security tests passing, total 250/250 passing, builds passing)
+
+### Round 3 - Improvement 3: Continuous Knowledge Updates
+**Goal**: Automatically keep project knowledge synchronized with live GitHub activity; monitor push, PR, issue, and discussion events; scan for evidence drift; detect outdated or superseded claims; enforce automatic approval invalidation (forcing human re-review on drifted findings); de-certify handovers upon code drift; maintain persistent update history with retry resilience.
+**Status**: IN PROGRESS (Milestones 3.1, 3.2 & 3.3 COMPLETE; 27/27 milestone tests passing; 277/277 repository regression tests passing)
+- [x] Milestone 3.1: Continuous Update Engine & Webhook Expansion
+- [x] Milestone 3.2: Evidence Drift Scanning & Precise Approval Invalidation
+- [x] Milestone 3.3: REST Endpoints & Storage Methods (Frontend Integration)
+- [ ] Milestone 3.4: Frontend UI for Continuous Knowledge Tracking (Re-Review Badges & Update Activity Drawer)
+- [ ] Milestone 3.5: Comprehensive Testing & Verification
 
 
 
@@ -163,3 +183,25 @@ Phases execute in numeric order: Phase 1 → Phase 2 → Phase 3 → Phase 4 →
 | 4. Human Review, Correction & Handover Approval Workflow | 2/2 | Hardened (Phase A) | 2026-11-08 |
 | 5. Handover Viewer, Incoming Member Explorer & Permission Filtering | 2/2 | Hardened (Phase A) | 2026-11-08 |
 | 6. End-to-End System Integration, Verification & Standalone Judge Packaging | 0/2 | Not started | - |
+
+---
+
+### Round 3 Improvements: Advanced Capabilities & Robustness
+
+| Improvement | Milestones | Status | Completed |
+|-------------|:----------:|:------:|:---------:|
+| **Improvement 1: GitHub Integration** | 4/4 | Completed | 2026-11-15 |
+| - 1.1: GitHub REST Routes & Ingestion Compiler | 1/1 | Completed | 2026-11-15 |
+| - 1.2: Gemini Extraction & Evidence Grounding | 1/1 | Completed | 2026-11-15 |
+| - 1.3: Secure Webhooks (HMAC-SHA256 & Idempotency) | 1/1 | Completed | 2026-11-15 |
+| - 1.4: Frontend GitHub Repository Management | 1/1 | Completed | 2026-11-15 |
+| **Improvement 2: Role-Based Security Hardening** | 2/2 | Completed | 2026-11-15 |
+| - 2.1: Comprehensive RBAC Security Audit | 1/1 | Completed | 2026-11-15 |
+| - 2.2: RBAC Implementation & Data Redaction | 1/1 | Completed | 2026-11-15 |
+| **Improvement 3: Continuous Knowledge Updates** | 5/5 | Completed | 2026-11-15 |
+| - 3.1: Engine & Webhook Expansion (Mutex & Idempotency) | 1/1 | Completed | 2026-11-15 |
+| - 3.2: Evidence Drift Scanning & Selective Invalidation | 1/1 | Completed | 2026-11-15 |
+| - 3.3: REST Endpoints & Storage Methods (History & Retry) | 1/1 | Completed | 2026-11-15 |
+| - 3.4: Frontend UI for Continuous Tracking (Drawer & Badges) | 1/1 | Completed | 2026-11-15 |
+| - 3.5: Comprehensive Testing & Final Verification | 1/1 | Completed | 2026-11-15 |
+

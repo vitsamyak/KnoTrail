@@ -359,22 +359,24 @@ export function HandoverView() {
           <div className="flex items-center gap-space-sm mt-space-lg">
             <button
               onClick={() => handleGenerate(false)}
-              disabled={isGenerating || currentUserRole === 'EXTERNAL'}
-              title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External role cannot generate handovers' : undefined}
+              disabled={isGenerating || currentUserRole !== 'MANAGER'}
+              title={currentUserRole !== 'MANAGER' ? `Manager permissions required to generate handover package (current role: ${currentUserRole}).` : undefined}
               className="inline-flex items-center gap-2 px-space-xl py-space-md bg-primary hover:bg-primary-container text-on-primary rounded-xl font-headline-sm text-headline-sm shadow-md transition-all active:scale-95 disabled:opacity-50"
             >
               {isGenerating ? (
                 <KnowledgeTrailLoader variant="inline" size="sm" />
               ) : (
                 <span className="material-symbols-outlined text-[20px]">
-                  {currentUserRole === 'EXTERNAL' ? 'lock' : 'auto_fix_high'}
+                  {currentUserRole !== 'MANAGER' ? 'lock' : 'auto_fix_high'}
                 </span>
               )}
               <span>
                 {isGenerating
                   ? 'Compiling 12-Section Handover...'
-                  : currentUserRole === 'EXTERNAL'
-                  ? 'Read-Only (External)'
+                  : currentUserRole !== 'MANAGER'
+                  ? currentUserRole === 'EXTERNAL'
+                    ? 'Read-Only (External)'
+                    : 'Manager Role Required'
                   : 'Generate Certified Handover'}
               </span>
             </button>
@@ -387,51 +389,94 @@ export function HandoverView() {
   // 4. UNLOCKED & GENERATED 12-SECTION HANDOVER DOSSIER
   const meta = doc.metadata;
   const counts = doc.sectionCounts;
+  const reReviewCount = stats.needsReReviewCount ?? (project.findings || []).filter((f) => f.needsReReview).length;
 
   return (
     <div className="flex flex-col w-full gap-space-lg animate-in fade-in duration-200 pb-12">
       {/* OUTDATED INVALIDATION BANNER */}
-      {(stats.isHandoverOutdated || doc.isOutdated) && (
+      {(stats.isHandoverOutdated || doc.isOutdated || !project.handoverCertified) && (
         <aside
           role="alert"
-          className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-3 sm:p-space-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm shadow-sm"
+          className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 sm:p-space-md flex flex-col gap-3 shadow-sm"
         >
-          <div className="flex items-center gap-space-sm min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[24px]">warning</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-space-sm min-w-0">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="material-symbols-outlined text-[24px]">warning</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">
+                    Handover Outdated (Current: {doc.version})
+                  </h2>
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30">
+                    Re-Certification Required
+                  </span>
+                </div>
+                <p className="font-body-md text-body-md text-on-surface-variant text-xs leading-relaxed">
+                  {doc.outdatedReason ||
+                    stats.handoverOutdatedReason ||
+                    'Project data was modified after this handover was compiled. Manager review and re-certification are required.'}
+                </p>
+                <div className="flex items-center gap-2 flex-wrap text-[11px] text-secondary font-mono pt-1">
+                  {(() => {
+                    const reason = doc.outdatedReason || stats.handoverOutdatedReason || '';
+                    const match = reason.match(/\b([0-9a-f]{7,40})\b/i);
+                    return match ? (
+                      <span className="bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30 text-primary font-semibold">
+                        Commit: {match[1].slice(0, 7)}
+                      </span>
+                    ) : null;
+                  })()}
+                  <span className="text-amber-700 dark:text-amber-300 font-semibold">
+                    {reReviewCount} finding(s) require re-review in Review Center
+                  </span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">
-                Handover Outdated (Current: {doc.version})
-              </h2>
-              <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5 leading-relaxed">
-                {doc.outdatedReason ||
-                  stats.handoverOutdatedReason ||
-                  'Project data was modified after this handover was compiled. Regenerate to certify the latest findings.'}
-              </p>
+
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto shrink-0 justify-end">
+              <button
+                onClick={() => setActiveView('review')}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-medium text-xs transition-colors border border-outline-variant/40 shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-400">
+                  rate_review
+                </span>
+                <span>Review Drifted Findings ({reReviewCount})</span>
+              </button>
+
+              <button
+                onClick={() => handleGenerate(true)}
+                disabled={isGenerating || currentUserRole !== 'MANAGER' || reReviewCount > 0}
+                title={
+                  currentUserRole !== 'MANAGER'
+                    ? `Manager permissions required to regenerate handover package (current role: ${currentUserRole}).`
+                    : reReviewCount > 0
+                    ? 'Complete human review of drifted findings before regenerating certified handover.'
+                    : undefined
+                }
+                className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-space-md py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-label-md text-label-md shadow-sm transition-all active:scale-95 disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <KnowledgeTrailLoader variant="inline" size="sm" />
+                ) : (
+                  <span className="material-symbols-outlined text-[16px]">
+                    {currentUserRole !== 'MANAGER' ? 'lock' : 'refresh'}
+                  </span>
+                )}
+                <span>
+                  {isGenerating
+                    ? 'Updating Handover...'
+                    : currentUserRole !== 'MANAGER'
+                    ? currentUserRole === 'EXTERNAL'
+                      ? 'Read-Only (External)'
+                      : 'Manager Role Required'
+                    : 'Regenerate Handover'}
+                </span>
+              </button>
             </div>
           </div>
-          <button
-            onClick={() => handleGenerate(true)}
-            disabled={isGenerating || currentUserRole === 'EXTERNAL'}
-            title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External role cannot regenerate handovers' : undefined}
-            className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-space-md py-space-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-label-md text-label-md shadow-sm transition-all active:scale-95 shrink-0 disabled:opacity-50"
-          >
-            {isGenerating ? (
-              <KnowledgeTrailLoader variant="inline" size="sm" />
-            ) : (
-              <span className="material-symbols-outlined text-[16px]">
-                {currentUserRole === 'EXTERNAL' ? 'lock' : 'refresh'}
-              </span>
-            )}
-            <span>
-              {isGenerating
-                ? 'Updating Handover...'
-                : currentUserRole === 'EXTERNAL'
-                ? 'Read-Only (External)'
-                : 'Regenerate Handover'}
-            </span>
-          </button>
         </aside>
       )}
 
@@ -547,10 +592,19 @@ export function HandoverView() {
               <h1 className="font-display-lg text-xl sm:text-display-lg text-on-surface tracking-tight">
                 {meta.projectName} Engineering Handover Dossier
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold border border-primary/20">
-                <span className="material-symbols-outlined text-[16px] text-primary">verified</span>
-                <span>Certified &amp; Approved ({doc.version})</span>
-              </span>
+              {project.handoverCertified && !doc.isOutdated && !stats.isHandoverOutdated ? (
+                <span className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold border border-primary/20">
+                  <span className="material-symbols-outlined text-[16px] text-primary">verified</span>
+                  <span>Certified &amp; Approved ({doc.version})</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 font-label-sm text-label-sm font-semibold border border-amber-500/30">
+                  <span className="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-400">
+                    history_toggle_off
+                  </span>
+                  <span>Uncertified / Needs Re-Certification</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -1199,9 +1253,15 @@ export function HandoverView() {
               </p>
             </div>
           </div>
-          <span className="px-space-md py-1 rounded-full bg-primary/20 text-primary border border-primary/30 font-label-sm text-label-sm font-semibold">
-            Certified Record
-          </span>
+          {project.handoverCertified && !doc.isOutdated && !stats.isHandoverOutdated ? (
+            <span className="px-space-md py-1 rounded-full bg-primary/20 text-primary border border-primary/30 font-label-sm text-label-sm font-semibold">
+              Certified Record
+            </span>
+          ) : (
+            <span className="px-space-md py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-label-sm text-label-sm font-semibold">
+              Uncertified / Re-Certification Required
+            </span>
+          )}
         </div>
 
         {/* Governance Metrics */}

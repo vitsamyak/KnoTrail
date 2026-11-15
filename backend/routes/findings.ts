@@ -7,9 +7,9 @@ export const findingsRouter = Router();
 /**
  * POST /api/findings/:id/approve
  * Approves a finding subject to Phase A and Phase F review gates.
- * Requires MANAGER or DEVELOPER permissions.
+ * Safeguard: ONLY Managers can approve findings (management sign-off gate).
  */
-findingsRouter.post('/:id/approve', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
+findingsRouter.post('/:id/approve', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
     const workspaceId = req.workspaceAuth!.workspaceId;
     const { reviewerNotes, reviewerName } = req.body || {};
@@ -49,9 +49,9 @@ findingsRouter.post('/:id/approve', requireWorkspaceAccess, requireRole(['MANAGE
 /**
  * POST /api/findings/:id/reject
  * Rejects a finding with mandatory documented reason.
- * Requires MANAGER or DEVELOPER permissions.
+ * Safeguard: ONLY Managers can formally reject findings.
  */
-findingsRouter.post('/:id/reject', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
+findingsRouter.post('/:id/reject', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
     const workspaceId = req.workspaceAuth!.workspaceId;
     const { reason, reviewerName } = req.body || {};

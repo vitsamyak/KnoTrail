@@ -663,6 +663,7 @@ test('Phase D: Real AI Knowledge Extraction Test Suite', async (t) => {
 
     // Genuine live API call when key is configured
     console.log('    ℹ EXECUTING: GEMINI_API_KEY detected. Running live test with gemini-2.5-flash...');
+    let timeoutTimer;
     try {
       const findings = await Promise.race([
         extractWithGemini(
@@ -670,9 +671,12 @@ test('Phase D: Real AI Knowledge Extraction Test Suite', async (t) => {
           'We decided to switch database port to 5433 to avoid port collision. Lead Engineer will update firewall.',
           { model: 'gemini-2.5-flash' }
         ),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Live Gemini API network request timed out (15s)')), 15000)
-        ),
+        new Promise((_, reject) => {
+          timeoutTimer = setTimeout(() => reject(new Error('Live Gemini API network request timed out (15s)')), 15000);
+          if (timeoutTimer && typeof timeoutTimer.unref === 'function') {
+            timeoutTimer.unref();
+          }
+        }),
       ]);
 
       assert.ok(Array.isArray(findings), 'Live API must return an array of findings');
@@ -692,6 +696,8 @@ test('Phase D: Real AI Knowledge Extraction Test Suite', async (t) => {
         return;
       }
       throw err;
+    } finally {
+      if (timeoutTimer) clearTimeout(timeoutTimer);
     }
   });
 });

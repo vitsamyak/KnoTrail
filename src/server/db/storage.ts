@@ -13,6 +13,7 @@ import type {
   UserRole,
   WorkspaceMemberRecord,
   GitHubIntegration,
+  ContinuousUpdateRecord,
 } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSON } from '../../lib/handoverFilter.ts';
@@ -105,9 +106,18 @@ export interface StorageRepository {
   getGitHubIntegration(workspaceId: string, repoId?: number): Promise<GitHubIntegration | null>;
   saveGitHubIntegration(workspaceId: string, integration: GitHubIntegration): Promise<GitHubIntegration>;
   listGitHubIntegrations(workspaceId: string): Promise<GitHubIntegration[]>;
+  findIntegrationsByRepoId(repoId: number): Promise<GitHubIntegration[]>;
   deleteGitHubIntegration(workspaceId: string, repoId: number): Promise<boolean>;
   recordWebhookDelivery(deliveryId: string, eventType: string, repoId: number, payloadHash: string): Promise<boolean>;
   isWebhookDeliveryProcessed(deliveryId: string): Promise<boolean>;
+  recordContinuousUpdate(workspaceId: string, record: ContinuousUpdateRecord): Promise<ContinuousUpdateRecord>;
+  getContinuousUpdateHistory(workspaceId: string, limit?: number): Promise<ContinuousUpdateRecord[]>;
+  getContinuousUpdate(workspaceId: string, updateId: string): Promise<ContinuousUpdateRecord | null>;
+  updateContinuousUpdateStatus(
+    workspaceId: string,
+    updateId: string,
+    updates: Partial<ContinuousUpdateRecord>
+  ): Promise<ContinuousUpdateRecord | null>;
 }
 
 export function sanitizeProjectData(project: ProjectData): ProjectData {
@@ -274,8 +284,10 @@ export class DurableFileRepository implements StorageRepository {
       const currentHash = computeProjectDataSnapshotHash(project);
       if (currentHash !== project.currentHandover.sourceSnapshotHash) {
         project.currentHandover.isOutdated = true;
-        project.currentHandover.outdatedReason =
-          'Project findings or source documents were modified after handover generation.';
+        if (!project.currentHandover.outdatedReason) {
+          project.currentHandover.outdatedReason =
+            'Project findings or source documents were modified after handover generation.';
+        }
       }
     }
 
@@ -392,7 +404,8 @@ export class DurableFileRepository implements StorageRepository {
       project = await this.createWorkspace(workspaceId);
     }
 
-    const targetSource = project.sources.find((s) => s.id === sourceId);
+    const sources = project.sources || [];
+    const targetSource = sources.find((s) => s.id === sourceId);
     if (targetSource?.documentData?.storagePath && fs.existsSync(targetSource.documentData.storagePath)) {
       try {
         await fs.promises.unlink(targetSource.documentData.storagePath);
@@ -401,7 +414,7 @@ export class DurableFileRepository implements StorageRepository {
       }
     }
 
-    const updatedSources = project.sources.filter((s) => s.id !== sourceId);
+    const updatedSources = sources.filter((s) => s.id !== sourceId);
     const updatedProject: ProjectData = {
       ...project,
       sources: updatedSources,
@@ -414,7 +427,7 @@ export class DurableFileRepository implements StorageRepository {
   async getSource(workspaceId: string, sourceId: string): Promise<ProjectSource | null> {
     const project = await this.getWorkspace(workspaceId);
     if (!project) return null;
-    return project.sources.find((s) => s.id === sourceId) || null;
+    return (project.sources || []).find((s) => s.id === sourceId) || null;
   }
 
   async approveFinding(
@@ -476,6 +489,7 @@ export class DurableFileRepository implements StorageRepository {
         reviewedBy: reviewer,
         reviewedAt: timestamp,
         reviewerNotes: finalNotes,
+        needsReReview: false,
       };
     });
 
@@ -545,6 +559,7 @@ export class DurableFileRepository implements StorageRepository {
         reviewedAt: timestamp,
         rejectionReason: cleanReason,
         reviewerNotes: cleanReason,
+        needsReReview: false,
       };
     });
 
@@ -1235,6 +1250,20 @@ export class DurableFileRepository implements StorageRepository {
     return this.readIntegrations(workspaceId);
   }
 
+  async findIntegrationsByRepoId(repoId: number): Promise<GitHubIntegration[]> {
+    const workspaces = await this.listWorkspaces();
+    const results: GitHubIntegration[] = [];
+    for (const ws of workspaces) {
+      const list = await this.readIntegrations(ws);
+      for (const item of list) {
+        if (item.repoId === repoId) {
+          results.push(item);
+        }
+      }
+    }
+    return results;
+  }
+
   async deleteGitHubIntegration(workspaceId: string, repoId: number): Promise<boolean> {
     const list = await this.readIntegrations(workspaceId);
     const filtered = list.filter((i) => i.repoId !== repoId);
@@ -1277,6 +1306,78 @@ export class DurableFileRepository implements StorageRepository {
     } catch {
       return false;
     }
+  }
+
+  async recordContinuousUpdate(workspaceId: string, record: ContinuousUpdateRecord): Promise<ContinuousUpdateRecord> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+    const history = project.updateHistory || [];
+    const updatedHistory = [record, ...history.filter((h) => h.id !== record.id)];
+    const updatedProject: ProjectData = {
+      ...project,
+      updateHistory: updatedHistory,
+    };
+    await this.saveProject(workspaceId, updatedProject);
+    return record;
+  }
+
+  async getContinuousUpdateHistory(workspaceId: string, limit: number = 50): Promise<ContinuousUpdateRecord[]> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project || !project.updateHistory) return [];
+    return project.updateHistory.slice(0, limit);
+  }
+
+  async getContinuousUpdate(workspaceId: string, updateId: string): Promise<ContinuousUpdateRecord | null> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project || !project.updateHistory) return null;
+    return project.updateHistory.find((h) => h.id === updateId) || null;
+  }
+
+  async updateContinuousUpdateStatus(
+    workspaceId: string,
+    updateId: string,
+    updates: Partial<ContinuousUpdateRecord>
+  ): Promise<ContinuousUpdateRecord | null> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project || !project.updateHistory) return null;
+    let found = false;
+    let updatedRecord: ContinuousUpdateRecord | null = null;
+    const updatedHistory = project.updateHistory.map((h) => {
+      if (h.id === updateId) {
+        found = true;
+        updatedRecord = {
+          ...h,
+          ...updates,
+          id: h.id,
+          workspaceId: h.workspaceId,
+          integrationId: h.integrationId,
+          repoOwner: h.repoOwner,
+          repoName: h.repoName,
+          repoId: h.repoId,
+          trigger: h.trigger,
+          eventType: h.eventType,
+          deliveryId: h.deliveryId,
+          reason: h.reason,
+          commitSha: h.commitSha,
+          timestamp: h.timestamp,
+          maxRetries: h.maxRetries,
+          completedAt: updates.status === 'success' || updates.status === 'failed' || updates.status === 'partial'
+            ? (updates.completedAt || new Date().toISOString())
+            : h.completedAt,
+        };
+        return updatedRecord;
+      }
+      return h;
+    });
+
+    if (!found) return null;
+    await this.saveProject(workspaceId, {
+      ...project,
+      updateHistory: updatedHistory,
+    });
+    return updatedRecord;
   }
 }
 

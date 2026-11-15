@@ -4,7 +4,23 @@ import type {
   EvidenceCitation,
   HandoverDocument,
   UserRole,
+  ProjectSource,
 } from '../../lib/types.ts';
+
+/**
+ * Masks an email address for privacy protection (e.g. "s***9@gmail.com").
+ */
+export function maskEmailAddress(email: string): string {
+  if (!email || typeof email !== 'string') return '***@knotrail.local';
+  const parts = email.split('@');
+  if (parts.length !== 2) return '***@knotrail.local';
+  const [local, domain] = parts;
+  const maskedLocal =
+    local.length <= 2
+      ? `${local[0] || '*'}***`
+      : `${local[0]}***${local[local.length - 1]}`;
+  return `${maskedLocal}@${domain}`;
+}
 
 /**
  * Checks whether a citation has confidential clearance.
@@ -86,7 +102,96 @@ export function redactProjectDataForRole(project: ProjectData, role?: UserRole):
     }));
   }
 
+  // 5. Redact sources for External role
+  if (p.sources && Array.isArray(p.sources)) {
+    p.sources = p.sources.map((s) => redactSourceForRole(s, role));
+  }
+
+  // 6. Mask internal team emails for External role
+  if (p.lead && p.lead.email) {
+    p.lead.email = maskEmailAddress(p.lead.email);
+  }
+  if (p.stakeholders && Array.isArray(p.stakeholders)) {
+    p.stakeholders = p.stakeholders.map((s) => ({
+      ...s,
+      email: s.email ? maskEmailAddress(s.email) : s.email,
+    }));
+  }
+
   return p;
+}
+
+/**
+ * Checks whether a source is marked confidential or contains restricted operational information.
+ */
+export function isConfidentialSource(source: ProjectSource): boolean {
+  // Check if name indicates secrets/credentials or internal environment
+  const lowerName = (source.name || '').toLowerCase();
+  if (
+    lowerName.includes('.env') ||
+    lowerName.includes('secret') ||
+    lowerName.includes('credential') ||
+    lowerName.includes('token')
+  ) {
+    return true;
+  }
+
+  // Check if description indicates restricted/confidential
+  const desc = (source.description || '').toLowerCase();
+  if (desc.includes('confidential') || desc.includes('restricted')) {
+    return true;
+  }
+
+  // Check if extracted content has explicit confidential markings or connection strings
+  const content = source.documentData?.extractedText || '';
+  if (
+    content.includes('clearanceTier: CONFIDENTIAL') ||
+    content.includes('CONFIDENTIAL:') ||
+    content.includes('DB_CONNECTION_STRING=') ||
+    content.includes('postgres://')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Redacts a single ProjectSource for External viewers.
+ * Prevents confidential extracted text exposure, hides internal storage paths,
+ * while preserving legitimate public/non-confidential structure and read-only access.
+ */
+export function redactSourceForRole(source: ProjectSource, role?: UserRole): ProjectSource {
+  if (role !== 'EXTERNAL') {
+    return source;
+  }
+
+  const s: ProjectSource = JSON.parse(JSON.stringify(source));
+  const isConfidential = isConfidentialSource(s);
+
+  // Always strip physical server storage path for External callers
+  if (s.documentData?.storagePath) {
+    s.documentData.storagePath = undefined;
+  }
+
+  if (isConfidential) {
+    if (s.documentData) {
+      if (s.documentData.extractedText) {
+        s.documentData.extractedText =
+          '[REDACTED: Confidential document content restricted to Manager and Developer roles.]';
+      }
+      if (s.documentData.pages && Array.isArray(s.documentData.pages)) {
+        s.documentData.pages = s.documentData.pages.map((p) => ({
+          ...p,
+          text: '[REDACTED: Confidential page content restricted to Manager and Developer roles.]',
+        }));
+      }
+    }
+
+    s.description = '[REDACTED: Restricted project source.]';
+  }
+
+  return s;
 }
 
 /**

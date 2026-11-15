@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { getStorage } from '../../src/server/db/storage.ts';
 import { isValidWorkspaceId } from '../../src/server/db/types.ts';
 import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
-import { redactProjectDataForRole } from '../../src/server/security/redactor.ts';
+import { redactProjectDataForRole, maskEmailAddress } from '../../src/server/security/redactor.ts';
 import type { UserRole } from '../../src/lib/types.ts';
 
 export const workspacesRouter = Router();
@@ -56,6 +56,57 @@ workspacesRouter.post('/', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVE
     const storage = getStorage();
     let project;
     if (incomingProject) {
+      // SECURITY INVARIANT: Non-Manager roles cannot tamper with security-sensitive fields or certification gates
+      if (req.workspaceAuth!.role !== 'MANAGER') {
+        const existing = await storage.getWorkspace(workspaceId);
+        if (existing) {
+          incomingProject.isProtected = existing.isProtected;
+          incomingProject.ownerId = existing.ownerId;
+          incomingProject.handoverCertified = existing.handoverCertified;
+          incomingProject.certificationHash = existing.certificationHash;
+          incomingProject.currentHandover = existing.currentHandover;
+          incomingProject.handovers = existing.handovers;
+          incomingProject.reviewAuditHistory = existing.reviewAuditHistory;
+          incomingProject.updateHistory = existing.updateHistory;
+
+          // Preserve sources if not explicitly supplied in partial updates
+          if (incomingProject.sources === undefined && existing.sources) {
+            incomingProject.sources = existing.sources;
+          }
+
+          // Preserve authoritative approval and rejection status from existing records
+          if (Array.isArray(incomingProject.findings) && Array.isArray(existing.findings)) {
+            const existingMap = new Map(existing.findings.map((f) => [f.id, f]));
+            incomingProject.findings = incomingProject.findings.map((incomingFinding: any) => {
+              const existingFinding = existingMap.get(incomingFinding.id);
+              if (existingFinding) {
+                return {
+                  ...incomingFinding,
+                  approved: existingFinding.approved,
+                  rejected: existingFinding.rejected,
+                  reviewStatus: existingFinding.reviewStatus,
+                };
+              }
+              // New findings contributed by Developer must enter review as unapproved
+              return {
+                ...incomingFinding,
+                approved: false,
+                rejected: false,
+                reviewStatus: 'PENDING_REVIEW',
+              };
+            });
+          }
+        }
+      } else {
+        // Manager role: preserve existing updateHistory if omitted from partial workspace updates
+        if (incomingProject.updateHistory === undefined) {
+          const existing = await storage.getWorkspace(workspaceId);
+          if (existing?.updateHistory) {
+            incomingProject.updateHistory = existing.updateHistory;
+          }
+        }
+      }
+
       project = await storage.saveProject(workspaceId, incomingProject);
     } else {
       project = await storage.createWorkspace(workspaceId, initialProject);
@@ -156,9 +207,18 @@ workspacesRouter.get('/:id/members', requireWorkspaceAccess, requireRole(['MANAG
     const storage = getStorage();
     const members = await storage.listWorkspaceMembers(workspaceId);
 
+    // External Member Privacy: Mask email addresses for External role
+    const sanitizedMembers =
+      req.workspaceAuth?.role === 'EXTERNAL'
+        ? members.map((m) => ({
+            ...m,
+            email: maskEmailAddress(m.email),
+          }))
+        : members;
+
     res.status(200).json({
       workspaceId,
-      members,
+      members: sanitizedMembers,
       status: 'success',
     });
   } catch (error: any) {

@@ -11,6 +11,7 @@ import type {
   UserRole,
   WorkspaceMemberRecord,
   GitHubIntegration,
+  ContinuousUpdateRecord,
 } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { revalidateEditedFinding } from '../verification/verifier.ts';
@@ -109,8 +110,10 @@ export class SupabaseStorageRepository implements StorageRepository {
       const currentHash = computeProjectDataSnapshotHash(project);
       if (currentHash !== project.currentHandover.sourceSnapshotHash) {
         project.currentHandover.isOutdated = true;
-        project.currentHandover.outdatedReason =
-          'Project findings or source documents were modified after handover generation.';
+        if (!project.currentHandover.outdatedReason) {
+          project.currentHandover.outdatedReason =
+            'Project findings or source documents were modified after handover generation.';
+        }
       }
     }
 
@@ -345,7 +348,8 @@ export class SupabaseStorageRepository implements StorageRepository {
       project = await this.createWorkspace(workspaceId);
     }
 
-    const targetSource = project.sources.find((s) => s.id === sourceId);
+    const sources = project.sources || [];
+    const targetSource = sources.find((s) => s.id === sourceId);
     if (targetSource?.documentData?.storagePath) {
       try {
         await this.client.storage.from(this.bucket).remove([targetSource.documentData.storagePath]);
@@ -354,7 +358,7 @@ export class SupabaseStorageRepository implements StorageRepository {
       }
     }
 
-    const updatedSources = project.sources.filter((s) => s.id !== sourceId);
+    const updatedSources = sources.filter((s) => s.id !== sourceId);
     const updatedProject: ProjectData = {
       ...project,
       sources: updatedSources,
@@ -367,7 +371,7 @@ export class SupabaseStorageRepository implements StorageRepository {
   async getSource(workspaceId: string, sourceId: string): Promise<ProjectSource | null> {
     const project = await this.getWorkspace(workspaceId);
     if (!project) return null;
-    return project.sources.find((s) => s.id === sourceId) || null;
+    return (project.sources || []).find((s) => s.id === sourceId) || null;
   }
 
   async approveFinding(
@@ -427,6 +431,7 @@ export class SupabaseStorageRepository implements StorageRepository {
         reviewedBy: reviewer,
         reviewedAt: timestamp,
         reviewerNotes: finalNotes,
+        needsReReview: false,
       };
     });
 
@@ -495,6 +500,7 @@ export class SupabaseStorageRepository implements StorageRepository {
         reviewedAt: timestamp,
         rejectionReason: cleanReason,
         reviewerNotes: cleanReason,
+        needsReReview: false,
       };
     });
 
@@ -1107,8 +1113,6 @@ export class SupabaseStorageRepository implements StorageRepository {
 
   async isWorkspaceProtected(workspaceId: string): Promise<boolean> {
     if (!isValidWorkspaceId(workspaceId)) return false;
-    // Fast path: anonymous zero-auth demo workspaces are never protected
-    if (workspaceId.startsWith('ws_anon_')) return false;
 
     try {
       const { data, error } = await this.client
@@ -1116,10 +1120,8 @@ export class SupabaseStorageRepository implements StorageRepository {
         .select('is_protected')
         .eq('id', workspaceId)
         .maybeSingle();
-      if (error || !data) {
-        return !workspaceId.startsWith('ws_anon_');
-      }
-      if (data.is_protected !== null && data.is_protected !== undefined) {
+
+      if (!error && data && data.is_protected !== null && data.is_protected !== undefined) {
         return Boolean(data.is_protected);
       }
       return !workspaceId.startsWith('ws_anon_');
@@ -1264,6 +1266,15 @@ export class SupabaseStorageRepository implements StorageRepository {
     return data.map(mapDbRowToGitHubIntegration);
   }
 
+  async findIntegrationsByRepoId(repoId: number): Promise<GitHubIntegration[]> {
+    const { data, error } = await this.client
+      .from('github_integrations')
+      .select('*')
+      .eq('repo_id', repoId);
+    if (error || !data) return [];
+    return data.map(mapDbRowToGitHubIntegration);
+  }
+
   async deleteGitHubIntegration(workspaceId: string, repoId: number): Promise<boolean> {
     if (!isValidWorkspaceId(workspaceId)) return false;
     const { error } = await this.client
@@ -1293,6 +1304,78 @@ export class SupabaseStorageRepository implements StorageRepository {
     if (error || !data) return false;
     return true;
   }
+
+  async recordContinuousUpdate(workspaceId: string, record: ContinuousUpdateRecord): Promise<ContinuousUpdateRecord> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project) {
+      project = await this.createWorkspace(workspaceId);
+    }
+    const history = project.updateHistory || [];
+    const updatedHistory = [record, ...history.filter((h) => h.id !== record.id)];
+    const updatedProject: ProjectData = {
+      ...project,
+      updateHistory: updatedHistory,
+    };
+    await this.saveProject(workspaceId, updatedProject);
+    return record;
+  }
+
+  async getContinuousUpdateHistory(workspaceId: string, limit: number = 50): Promise<ContinuousUpdateRecord[]> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project || !project.updateHistory) return [];
+    return project.updateHistory.slice(0, limit);
+  }
+
+  async getContinuousUpdate(workspaceId: string, updateId: string): Promise<ContinuousUpdateRecord | null> {
+    const project = await this.getWorkspace(workspaceId);
+    if (!project || !project.updateHistory) return null;
+    return project.updateHistory.find((h) => h.id === updateId) || null;
+  }
+
+  async updateContinuousUpdateStatus(
+    workspaceId: string,
+    updateId: string,
+    updates: Partial<ContinuousUpdateRecord>
+  ): Promise<ContinuousUpdateRecord | null> {
+    let project = await this.getWorkspace(workspaceId);
+    if (!project || !project.updateHistory) return null;
+    let found = false;
+    let updatedRecord: ContinuousUpdateRecord | null = null;
+    const updatedHistory = project.updateHistory.map((h) => {
+      if (h.id === updateId) {
+        found = true;
+        updatedRecord = {
+          ...h,
+          ...updates,
+          id: h.id,
+          workspaceId: h.workspaceId,
+          integrationId: h.integrationId,
+          repoOwner: h.repoOwner,
+          repoName: h.repoName,
+          repoId: h.repoId,
+          trigger: h.trigger,
+          eventType: h.eventType,
+          deliveryId: h.deliveryId,
+          reason: h.reason,
+          commitSha: h.commitSha,
+          timestamp: h.timestamp,
+          maxRetries: h.maxRetries,
+          completedAt: updates.status === 'success' || updates.status === 'failed' || updates.status === 'partial'
+            ? (updates.completedAt || new Date().toISOString())
+            : h.completedAt,
+        };
+        return updatedRecord;
+      }
+      return h;
+    });
+
+    if (!found) return null;
+    await this.saveProject(workspaceId, {
+      ...project,
+      updateHistory: updatedHistory,
+    });
+    return updatedRecord;
+  }
 }
 
 function mapDbRowToGitHubIntegration(row: any): GitHubIntegration {
@@ -1311,6 +1394,8 @@ function mapDbRowToGitHubIntegration(row: any): GitHubIntegration {
     errorMessage: row.error_message,
     config: row.config || {},
     metadata: row.metadata,
+    knowledgeStatus: row.metadata?.knowledgeStatus || 'idle',
+    lastProcessedCommitSha: row.metadata?.lastProcessedCommitSha || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -1331,7 +1416,11 @@ function mapGitHubIntegrationToDbRow(workspaceId: string, item: GitHubIntegratio
     last_commit_sha: item.lastCommitSha || null,
     error_message: item.errorMessage || null,
     config: item.config || {},
-    metadata: item.metadata || null,
+    metadata: {
+      ...(item.metadata || {}),
+      knowledgeStatus: item.knowledgeStatus || 'idle',
+      lastProcessedCommitSha: item.lastProcessedCommitSha || null,
+    },
     updated_at: new Date().toISOString(),
   };
 }

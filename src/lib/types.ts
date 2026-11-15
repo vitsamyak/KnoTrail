@@ -39,7 +39,7 @@ export interface ReviewAuditAction {
   id: string;
   findingId: string;
   workspaceId: string;
-  actionType: 'APPROVE' | 'REJECT' | 'EDIT' | 'RESOLVE_CONFLICT' | 'ADD_NOTE' | 'REVALIDATE';
+  actionType: 'APPROVE' | 'REJECT' | 'EDIT' | 'RESOLVE_CONFLICT' | 'ADD_NOTE' | 'REVALIDATE' | 'APPROVAL_RESET';
   action?: string;
   notes?: string;
   previousStatus: string;
@@ -147,6 +147,9 @@ export interface KnowledgeFinding {
   reviewerNotes?: string;
   rejectionReason?: string;
   conflictDetails?: ConflictDetails;
+  needsReReview?: boolean;
+  reReviewReason?: string;
+  driftDetectedAt?: string;
   category: string;
   urgency: 'critical' | 'high' | 'medium' | 'low';
   owner: string;
@@ -226,6 +229,7 @@ export interface ProjectData {
   currentHandover?: HandoverDocument;
   shareRecords?: HandoverShareRecord[];
   githubIntegrations?: GitHubIntegration[];
+  updateHistory?: ContinuousUpdateRecord[];
 }
 
 // Phase G: Comprehensive Handover Document Models
@@ -556,6 +560,8 @@ export interface GitHubIntegration {
   errorMessage?: string | null;
   config: GitHubIntegrationConfig;
   metadata?: GitHubRepositoryMetadata;
+  knowledgeStatus?: ContinuousKnowledgeStatus;
+  lastProcessedCommitSha?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -567,4 +573,64 @@ export interface GitHubWebhookEvent {
   payloadHash: string;
   processedAt: string;
 }
+
+// ============================================================================
+// Improvement 3: Continuous Knowledge Updates & Update History Models
+// ============================================================================
+
+export type ContinuousUpdateTrigger = 'webhook' | 'manual_sync' | 'retry';
+export type ContinuousUpdateStatus = 'success' | 'partial' | 'failed' | 'no_change';
+export type ContinuousKnowledgeStatus =
+  | 'idle'
+  | 'extracting'
+  | 'verifying'
+  | 'completed'
+  | 'failed'
+  | 'partial'
+  | 'skipped';
+
+export interface ContinuousUpdateRecord {
+  id: string; // e.g. "cur_..."
+  workspaceId: string;
+  integrationId: string;
+  repoOwner: string;
+  repoName: string;
+  repoId: number;
+  trigger: ContinuousUpdateTrigger;
+  eventType: string; // 'push' | 'pull_request' | 'issues' | 'issue_comment' | 'pull_request_review' | etc.
+  deliveryId?: string;
+  commitSha?: string;
+  reason: string;
+  ingestionStatus: 'synced' | 'failed' | 'unchanged';
+  knowledgeStatus: ContinuousKnowledgeStatus;
+  status: ContinuousUpdateStatus;
+  retryCount: number;
+  maxRetries: number;
+  findingsAdded: number;
+  findingsInvalidated: number;
+  conflictsDetected: number;
+  handoverInvalidated: boolean;
+  errorMessage?: string;
+  timestamp: string;
+  completedAt?: string;
+}
+
+export interface ContinuousUpdateHistoryResponse {
+  history: ContinuousUpdateRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+  status: 'success';
+}
+
+export interface ContinuousUpdateRetryResponse {
+  success: boolean;
+  status: 'success' | 'partial';
+  record: ContinuousUpdateRecord;
+  findingsAdded: number;
+  error?: string;
+  message?: string;
+}
+
 

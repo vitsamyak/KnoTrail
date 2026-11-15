@@ -255,10 +255,10 @@ export function DashboardView() {
                   Handover Status
                 </span>
                 <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${
+                  className={`text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider border ${
                     project.handoverCertified
-                      ? 'bg-success/10 text-success border border-success/20'
-                      : 'bg-warning/10 text-warning border border-warning/20'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}
                 >
                   {project.handoverCertified ? 'Certified' : 'In Progress'}
@@ -348,10 +348,10 @@ export function DashboardView() {
                         <span
                           className={`material-symbols-outlined text-[17px] mt-0.5 shrink-0 ${
                             f.status === 'VERIFIED'
-                              ? 'text-success'
+                              ? 'text-primary'
                               : f.status === 'CONFLICTING'
                               ? 'text-error'
-                              : 'text-warning'
+                              : 'text-amber-600'
                           }`}
                         >
                           {f.status === 'VERIFIED'
@@ -366,12 +366,12 @@ export function DashboardView() {
                               {f.title}
                             </span>
                             <span
-                              className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded-full border ${
+                              className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded-md border ${
                                 f.status === 'VERIFIED'
-                                  ? 'bg-success/10 text-success border-success/20'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                                   : f.status === 'CONFLICTING'
-                                  ? 'bg-error/10 text-error border-error/20'
-                                  : 'bg-warning/10 text-warning border-warning/20'
+                                  ? 'bg-rose-50 text-rose-800 border-rose-200'
+                                  : 'bg-amber-50 text-amber-800 border-amber-200'
                               }`}
                             >
                               {f.status}

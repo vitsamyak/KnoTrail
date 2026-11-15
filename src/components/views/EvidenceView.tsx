@@ -35,7 +35,9 @@ export function EvidenceView() {
         (c) =>
           c.file.toLowerCase().includes(searchFilter.toLowerCase()) ||
           c.author.toLowerCase().includes(searchFilter.toLowerCase()) ||
-          (c.commitSha && c.commitSha.toLowerCase().includes(searchFilter.toLowerCase()))
+          (c.commitSha && c.commitSha.toLowerCase().includes(searchFilter.toLowerCase())) ||
+          (c.prNumber && `pr #${c.prNumber}`.toLowerCase().includes(searchFilter.toLowerCase())) ||
+          (c.issueNumber && `issue #${c.issueNumber}`.toLowerCase().includes(searchFilter.toLowerCase()))
       );
     return matchesStatus && matchesSearch;
   });
@@ -111,11 +113,11 @@ export function EvidenceView() {
             onClick={() => setEvidenceFilter('VERIFIED')}
             className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-all ${
               evidenceFilter === 'VERIFIED'
-                ? 'bg-success/15 text-success border border-success/30 font-semibold shadow-xs'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-2xs'
                 : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
             }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
             <span>VERIFIED</span>
             <span className="text-[10px] font-mono opacity-80">
               ({project.findings.filter((f) => f.status === 'VERIFIED').length})
@@ -126,11 +128,11 @@ export function EvidenceView() {
             onClick={() => setEvidenceFilter('UNCERTAIN')}
             className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-all ${
               evidenceFilter === 'UNCERTAIN'
-                ? 'bg-warning/15 text-warning border border-warning/30 font-semibold shadow-xs'
+                ? 'bg-amber-50 text-amber-800 border border-amber-200 font-semibold shadow-2xs'
                 : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
             }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-warning"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
             <span>UNCERTAIN</span>
             <span className="text-[10px] font-mono opacity-80">
               ({project.findings.filter((f) => f.status === 'UNCERTAIN').length})
@@ -221,14 +223,14 @@ export function EvidenceView() {
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                    className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                       finding.status === 'VERIFIED'
-                        ? 'bg-success/10 text-success border-success/20'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                         : finding.status === 'CONFLICTING'
-                        ? 'bg-error/10 text-error border-error/20'
+                        ? 'bg-rose-50 text-rose-800 border-rose-200'
                         : finding.status === 'UNCERTAIN'
-                        ? 'bg-warning/10 text-warning border-warning/20'
-                        : 'bg-surface-container-low text-secondary border-outline-variant/40'
+                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                        : 'bg-surface-container text-secondary border-outline-variant/40'
                     }`}
                   >
                     {finding.status}
@@ -240,8 +242,8 @@ export function EvidenceView() {
                         finding.evidenceValidity === 'MATCHED'
                           ? 'bg-primary/5 text-primary border-primary/20'
                           : finding.evidenceValidity === 'MISMATCHED'
-                          ? 'bg-warning/10 text-warning border-warning/20'
-                          : 'bg-surface-container-low text-secondary border-outline-variant/30'
+                          ? 'bg-amber-50 text-amber-800 border-amber-200'
+                          : 'bg-surface-container text-secondary border-outline-variant/30'
                       }`}
                       title="Quote coordinate verification"
                     >
@@ -253,10 +255,10 @@ export function EvidenceView() {
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border font-mono ${
                         finding.claimStatus === 'SUPPORTED'
-                          ? 'bg-success/10 text-success border-success/20'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                           : finding.claimStatus === 'CONFLICTING'
-                          ? 'bg-error/10 text-error border-error/20'
-                          : 'bg-surface-container-low text-secondary border-outline-variant/30'
+                          ? 'bg-rose-50 text-rose-800 border-rose-200'
+                          : 'bg-surface-container text-secondary border-outline-variant/30'
                       }`}
                       title="Semantic claim verification"
                     >
@@ -276,8 +278,8 @@ export function EvidenceView() {
 
               {/* Temporal Supersession Banner */}
               {finding.isTemporalSuperseded && (
-                <div className="mb-3 p-2.5 rounded-lg bg-warning/10 border border-warning/20 flex items-center gap-2 text-xs text-warning">
-                  <span className="material-symbols-outlined text-[16px]">history</span>
+                <div className="mb-3 p-2.5 rounded-lg bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs text-amber-900">
+                  <span className="material-symbols-outlined text-[16px] text-amber-700">history</span>
                   <span>
                     <strong>Possibly Outdated:</strong> This finding may be superseded by newer documentation
                     {finding.supersededByDate ? ` dated ${finding.supersededByDate}` : ''}. Review in Review Center.
@@ -386,15 +388,39 @@ export function EvidenceView() {
                     {/* Citation Meta Bar */}
                     <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-secondary font-sans">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="material-symbols-outlined text-primary text-[15px]">description</span>
+                        <span className="material-symbols-outlined text-primary text-[15px]">
+                          {citation.sourceType === 'github' ? 'terminal' : 'description'}
+                        </span>
                         <strong className="text-on-surface font-mono text-xs">{citation.file}</strong>
                         <span className="bg-surface-container-low px-1.5 py-0.2 rounded font-mono text-on-surface text-[10px] border border-outline-variant/30">
                           L:{citation.lineRange}
                         </span>
                         {citation.commitSha && (
                           <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono text-[10px]">
-                            SHA: {citation.commitSha}
+                            SHA: {citation.commitSha.slice(0, 7)}
                           </span>
+                        )}
+                        {citation.prNumber && (
+                          <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono text-[10px]">
+                            PR #{citation.prNumber}
+                          </span>
+                        )}
+                        {citation.issueNumber && (
+                          <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.2 rounded font-mono text-[10px]">
+                            Issue #{citation.issueNumber}
+                          </span>
+                        )}
+                        {citation.githubUrl && (
+                          <a
+                            href={citation.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-primary hover:underline text-[10px] font-medium ml-1"
+                            title="View source on GitHub (opens in new tab)"
+                          >
+                            <span>GitHub</span>
+                            <span className="material-symbols-outlined text-[11px]">open_in_new</span>
+                          </a>
                         )}
                       </div>
 
@@ -490,7 +516,12 @@ export function EvidenceView() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-surface-container-low/40 p-3 rounded-lg border border-outline-variant/30">
                 <div>
                   <span className="text-secondary uppercase text-[10px] font-semibold block">Source Stream</span>
-                  <span className="font-medium text-on-surface">{activeInspectorCitation.sourceName}</span>
+                  <span className="font-medium text-on-surface flex items-center gap-1.5">
+                    {activeInspectorCitation.sourceType === 'github' && (
+                      <span className="material-symbols-outlined text-primary text-[14px]">terminal</span>
+                    )}
+                    {activeInspectorCitation.sourceName}
+                  </span>
                 </div>
                 <div>
                   <span className="text-secondary uppercase text-[10px] font-semibold block">File Location</span>
@@ -511,6 +542,106 @@ export function EvidenceView() {
                   </span>
                 </div>
               </div>
+
+              {/* GitHub Provenance Grounding Card */}
+              {(activeInspectorCitation.gitHubProvenance ||
+                activeInspectorCitation.githubUrl ||
+                activeInspectorCitation.commitSha ||
+                activeInspectorCitation.sourceType === 'github') && (
+                <div className="p-3 bg-surface-container-low/60 rounded-lg border border-primary/25 flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[15px]">code</span>
+                      GitHub Repository Grounding
+                    </span>
+                    {activeInspectorCitation.githubUrl && (
+                      <a
+                        href={activeInspectorCitation.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-semibold"
+                      >
+                        <span>Open on GitHub</span>
+                        <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-surface-container-lowest p-2.5 rounded-md border border-outline-variant/30">
+                    {activeInspectorCitation.gitHubProvenance?.repositoryFullName ? (
+                      <div>
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Repository</span>
+                        <span className="font-mono font-semibold text-on-surface break-all">
+                          {activeInspectorCitation.gitHubProvenance.repositoryFullName}
+                        </span>
+                      </div>
+                    ) : activeInspectorCitation.sourceName ? (
+                      <div>
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Repository</span>
+                        <span className="font-mono font-semibold text-on-surface break-all">
+                          {activeInspectorCitation.sourceName}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {activeInspectorCitation.gitHubProvenance?.branch && (
+                      <div>
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Branch</span>
+                        <span className="font-mono text-on-surface">
+                          {activeInspectorCitation.gitHubProvenance.branch}
+                        </span>
+                      </div>
+                    )}
+
+                    {activeInspectorCitation.commitSha && (
+                      <div>
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Commit SHA</span>
+                        <span className="font-mono text-primary font-semibold">
+                          {activeInspectorCitation.commitSha.slice(0, 10)}
+                        </span>
+                      </div>
+                    )}
+
+                    {activeInspectorCitation.prNumber && (
+                      <div>
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Pull Request</span>
+                        <span className="font-mono text-on-surface font-semibold">
+                          #{activeInspectorCitation.prNumber}
+                        </span>
+                      </div>
+                    )}
+
+                    {activeInspectorCitation.issueNumber && (
+                      <div>
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Issue</span>
+                        <span className="font-mono text-on-surface font-semibold">
+                          #{activeInspectorCitation.issueNumber}
+                        </span>
+                      </div>
+                    )}
+
+                    {activeInspectorCitation.gitHubProvenance?.filePath && (
+                      <div className="col-span-2">
+                        <span className="text-[10px] text-secondary uppercase font-medium block">Git File Path</span>
+                        <span className="font-mono text-on-surface break-all">
+                          {activeInspectorCitation.gitHubProvenance.filePath}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {activeInspectorCitation.gitHubProvenance?.diffHunk?.patchExcerpt && (
+                    <div className="pt-1">
+                      <span className="text-[10px] text-secondary uppercase font-medium block mb-1">
+                        Git Diff Hunk / Excerpt
+                      </span>
+                      <pre className="text-[11px] font-mono bg-surface-container-lowest p-2 rounded border border-outline-variant/30 overflow-x-auto text-on-surface leading-snug">
+                        {activeInspectorCitation.gitHubProvenance.diffHunk.patchExcerpt}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <span className="text-xs font-semibold text-on-surface block mb-1">
@@ -535,7 +666,7 @@ export function EvidenceView() {
                       </span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-success/10 text-success font-mono text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[10px] font-bold">
                     VALID
                   </span>
                 </div>
@@ -547,10 +678,10 @@ export function EvidenceView() {
                   );
                   const findingStatus = parentFinding?.status || 'VERIFIED';
                   const statusColors: Record<string, string> = {
-                    VERIFIED: 'bg-success/10 text-success border-success/20',
-                    UNCERTAIN: 'bg-warning/10 text-warning border-warning/20',
-                    CONFLICTING: 'bg-error/10 text-error border-error/20',
-                    MISSING: 'bg-surface-container-low text-secondary border-outline-variant/30',
+                    VERIFIED: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                    UNCERTAIN: 'bg-amber-50 text-amber-800 border-amber-200',
+                    CONFLICTING: 'bg-rose-50 text-rose-800 border-rose-200',
+                    MISSING: 'bg-surface-container text-secondary border-outline-variant/30',
                   };
                   return (
                     <div className="bg-surface-container-low/40 p-2.5 rounded-lg border border-outline-variant/30 flex items-center justify-between">

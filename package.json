@@ -8,7 +8,7 @@
     "build": "npm run backend:build && npm run frontend:build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --env-file-if-exists=.env.local --no-warnings --test src/__tests__/*.test.mjs",
+    "test": "node --env-file-if-exists=.env.local --no-warnings --test --test-force-exit src/__tests__/*.test.mjs",
     "backend:dev": "node --env-file-if-exists=.env.local --watch --experimental-strip-types backend/server.ts",
     "backend:build": "tsc -p tsconfig.backend.json --noEmit && esbuild backend/server.ts --bundle --platform=node --target=node20 --format=esm --packages=external --outfile=dist/backend/server.js && node -e \"require('fs').writeFileSync('dist/package.json', JSON.stringify({type:'module'}))\"",
     "backend:start": "node dist/backend/server.js",

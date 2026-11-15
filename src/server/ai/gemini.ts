@@ -14,6 +14,19 @@ export function isGeminiConfigured(): boolean {
 }
 
 export function buildExtractionPrompt(documentName: string, text: string, chunkInfo?: string): string {
+  const isGitHubDoc =
+    documentName.toLowerCase().includes('github') ||
+    text.includes('# GitHub Repository:');
+
+  const domainGuidance = isGitHubDoc
+    ? `
+GITHUB REPOSITORY EXTRACTION RULES:
+- From commits: Extract technical and architectural decisions, dependencies, and configuration changes directly substantiated by commit messages and diffs. Do NOT treat trivial typo fixes, cosmetic formatting, or routine minor commits as confirmed architectural decisions.
+- From pull requests: Extract feature descriptions, implementation rationale, code review feedback/approvals, and merged architectural decisions.
+- From issues: Extract verified bugs, operational blockers, pending tasks, technical discussion outcomes, and resolved issues.
+- For finding "owner": Attribute to the committer, PR author, reviewer, or issue assignee specified in the text.`
+    : '';
+
   return `You are KnoTrail's Project Knowledge Extraction Agent.
 Your mission is to perform deep operational knowledge reconstruction from this authentic project document: "${documentName}"${chunkInfo ? ` (${chunkInfo})` : ''}.
 This knowledge is critical for team member handover to prevent critical operational knowledge loss.
@@ -23,7 +36,7 @@ GROUNDING RULES (MANDATORY):
 2. EXACT QUOTES: For EVERY finding, you MUST provide "supportingQuote", which must be an EXACT, VERBATIM substring copied directly from the document text. Do NOT rephrase or extrapolate quotes.
 3. If an owner is not mentioned, use "Unassigned" or infer team role if explicitly stated.
 4. For every "decision", you MUST extract "reasoning" (why it was made) and "impact" (operational effect).
-5. If contradictory statements exist within the text, mark "isConflict": true and provide conflict details.
+5. If contradictory statements exist within the text, mark "isConflict": true and provide conflict details.${domainGuidance}
 
 CATEGORIES TO EXTRACT (7 Operational Types):
 - "decision": Architectural, infrastructure, design, or policy decisions.

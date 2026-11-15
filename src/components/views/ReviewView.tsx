@@ -30,7 +30,7 @@ export function ReviewView() {
   } = useProject();
 
   // Filter States
-  const [statusFilter, setStatusFilter] = useState<'ALL' | ReviewStatus>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | ReviewStatus | 'NEEDS_RE_REVIEW'>('ALL');
   const [categoryFilter] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -84,7 +84,12 @@ export function ReviewView() {
   // Filter findings according to status, category, and search text
   const filteredFindings = project.findings.filter((finding) => {
     const computedStatus = getFindingReviewStatus(finding, conflicts);
-    const matchesStatus = statusFilter === 'ALL' || computedStatus === statusFilter;
+    const matchesStatus =
+      statusFilter === 'ALL'
+        ? true
+        : statusFilter === 'NEEDS_RE_REVIEW'
+        ? Boolean(finding.needsReReview)
+        : computedStatus === statusFilter;
     const matchesCategory =
       categoryFilter === 'ALL' ||
       finding.type === categoryFilter ||
@@ -372,7 +377,7 @@ export function ReviewView() {
               onClick={() => setStatusFilter('APPROVED')}
               className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === 'APPROVED'
-                  ? 'bg-success/15 text-success font-semibold border border-success/30 shadow-xs'
+                  ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200 shadow-2xs'
                   : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
@@ -382,7 +387,7 @@ export function ReviewView() {
               onClick={() => setStatusFilter('REJECTED')}
               className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === 'REJECTED'
-                  ? 'bg-error/15 text-error font-semibold border border-error/30 shadow-xs'
+                  ? 'bg-rose-50 text-rose-800 font-semibold border border-rose-200 shadow-2xs'
                   : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
@@ -392,7 +397,7 @@ export function ReviewView() {
               onClick={() => setStatusFilter('CONFLICT_REQUIRES_RESOLUTION')}
               className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === 'CONFLICT_REQUIRES_RESOLUTION'
-                  ? 'bg-error/20 text-error font-semibold border border-error/40 shadow-xs'
+                  ? 'bg-rose-50 text-rose-800 font-semibold border border-rose-200 shadow-2xs'
                   : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
@@ -402,11 +407,21 @@ export function ReviewView() {
               onClick={() => setStatusFilter('NEEDS_CORRECTION')}
               className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === 'NEEDS_CORRECTION'
-                  ? 'bg-warning/15 text-warning font-semibold border border-warning/30 shadow-xs'
+                  ? 'bg-amber-50 text-amber-800 font-semibold border border-amber-200 shadow-2xs'
                   : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
               Needs Correction ({stats.needsCorrectionCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter('NEEDS_RE_REVIEW')}
+              className={`h-8 px-3 rounded-lg text-xs font-medium transition-all ${
+                statusFilter === 'NEEDS_RE_REVIEW'
+                  ? 'bg-amber-50 text-amber-800 font-semibold border border-amber-200 shadow-2xs'
+                  : 'text-secondary hover:bg-surface-container-low hover:text-on-surface'
+              }`}
+            >
+              Needs Re-Review ({stats.needsReReviewCount ?? (project.findings || []).filter((f) => f.needsReReview).length})
             </button>
           </div>
 
@@ -579,25 +594,25 @@ export function ReviewView() {
 
                     {/* Review Status Badge */}
                     {reviewStatus === 'APPROVED' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-success bg-success/10 border border-success/20 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
                         <span className="material-symbols-outlined text-[12px]">check_circle</span>
                         <span>Approved</span>
                       </span>
                     )}
                     {reviewStatus === 'REJECTED' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-error bg-error/10 border border-error/20 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
                         <span className="material-symbols-outlined text-[12px]">cancel</span>
                         <span>Rejected</span>
                       </span>
                     )}
                     {reviewStatus === 'NEEDS_CORRECTION' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
                         <span className="material-symbols-outlined text-[12px]">build</span>
                         <span>Needs Correction</span>
                       </span>
                     )}
                     {reviewStatus === 'CONFLICT_REQUIRES_RESOLUTION' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-error bg-error/10 border border-error/20 px-2 py-0.5 rounded-full animate-pulse">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md animate-pulse">
                         <span className="material-symbols-outlined text-[12px]">warning</span>
                         <span>Conflict Requires Resolution</span>
                       </span>
@@ -606,6 +621,14 @@ export function ReviewView() {
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-secondary bg-surface-container-low border border-outline-variant/30 px-2 py-0.5 rounded-full">
                         <span className="material-symbols-outlined text-[12px]">schedule</span>
                         <span>Pending Review</span>
+                      </span>
+                    )}
+
+                    {/* Continuous Update Re-Review Badge */}
+                    {finding.needsReReview && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                        <span className="material-symbols-outlined text-[12px]">sync_problem</span>
+                        <span>Needs Re-Review</span>
                       </span>
                     )}
 
@@ -658,6 +681,34 @@ export function ReviewView() {
                         <p className="text-secondary leading-relaxed">{finding.impact}</p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Continuous Update Drift & Re-Review Details Callout */}
+                {finding.needsReReview && (
+                  <div className="mt-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-900 dark:text-amber-100 flex items-start gap-2.5">
+                    <span className="material-symbols-outlined text-[17px] text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+                      history_toggle_off
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <strong className="text-amber-800 dark:text-amber-200 font-semibold">
+                          Requires Manager Re-Review
+                        </strong>
+                        <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
+                          Evidence Drift
+                        </span>
+                      </div>
+                      <p className="text-secondary leading-relaxed mt-1">
+                        {finding.reReviewReason ||
+                          'Supporting evidence for this finding was modified, removed, or superseded in a recent repository update.'}
+                      </p>
+                      {finding.driftDetectedAt && (
+                        <span className="block text-[11px] font-mono text-amber-700/80 dark:text-amber-300/80 mt-1">
+                          Drift detected: {new Date(finding.driftDetectedAt).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -725,6 +776,20 @@ export function ReviewView() {
                       <span className="material-symbols-outlined text-[13px]">history</span>
                       <span>Audit Trail ({auditActions.length})</span>
                     </button>
+
+                    {finding.citations.some((c: any) => c.gitHubProvenance) && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-secondary bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30">
+                        <span className="material-symbols-outlined text-[13px] text-primary">code</span>
+                        <span>
+                          {(() => {
+                            const gh = finding.citations.find((c: any) => c.gitHubProvenance)?.gitHubProvenance;
+                            return gh
+                              ? `${gh.repositoryName}@${(gh.commitSha || '').slice(0, 7) || gh.branch}`
+                              : 'GitHub Provenance';
+                          })()}
+                        </span>
+                      </span>
+                    )}
                   </div>
 
                   {/* Review Actions */}
@@ -777,27 +842,29 @@ export function ReviewView() {
                     {/* Reject Finding */}
                     <button
                       onClick={() => handleOpenRejectModal(finding)}
-                      disabled={currentUserRole === 'EXTERNAL'}
-                      title={currentUserRole === 'EXTERNAL' ? 'Read-only access for External role' : undefined}
+                      disabled={currentUserRole !== 'MANAGER'}
+                      title={currentUserRole !== 'MANAGER' ? 'Manager permissions required to reject findings' : undefined}
                       className={`px-2.5 h-7 rounded-md font-medium text-xs flex items-center gap-1 transition-colors border ${
-                        currentUserRole === 'EXTERNAL'
+                        currentUserRole !== 'MANAGER'
                           ? 'bg-surface-container-low text-secondary opacity-50 cursor-not-allowed border-outline-variant/40'
                           : finding.rejected
                           ? 'bg-error/10 text-error border-error/30'
                           : 'bg-surface-container-low hover:bg-error/10 text-secondary hover:text-error border-outline-variant/40'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[13px]">close</span>
+                      <span className="material-symbols-outlined text-[13px]">
+                        {currentUserRole !== 'MANAGER' ? 'lock' : 'close'}
+                      </span>
                       <span>{finding.rejected ? 'Rejected' : 'Reject'}</span>
                     </button>
 
                     {/* Approve Finding Button */}
                     <button
                       onClick={() => handleApproveClick(finding)}
-                      disabled={isConflictBlocked || isMissingEvidence || currentUserRole === 'EXTERNAL'}
+                      disabled={isConflictBlocked || isMissingEvidence || currentUserRole !== 'MANAGER'}
                       title={
-                        currentUserRole === 'EXTERNAL'
-                          ? 'Read-only access: External members cannot approve findings.'
+                        currentUserRole !== 'MANAGER'
+                          ? 'Manager permissions required to approve findings.'
                           : isConflictBlocked
                           ? 'Direct approval locked: Resolve contradictory sources first.'
                           : isMissingEvidence
@@ -807,7 +874,7 @@ export function ReviewView() {
                           : undefined
                       }
                       className={`px-3 h-7 rounded-md font-medium text-xs flex items-center gap-1 transition-all shadow-xs ${
-                        isConflictBlocked || isMissingEvidence || currentUserRole === 'EXTERNAL'
+                        isConflictBlocked || isMissingEvidence || currentUserRole !== 'MANAGER'
                           ? 'bg-surface-container-low text-secondary opacity-50 cursor-not-allowed border border-outline-variant/40'
                           : finding.approved
                           ? 'bg-success/15 text-success border border-success/30 font-semibold'
@@ -815,11 +882,13 @@ export function ReviewView() {
                       }`}
                     >
                       <span className="material-symbols-outlined text-[14px]">
-                        {isConflictBlocked || isMissingEvidence || currentUserRole === 'EXTERNAL' ? 'lock' : 'check'}
+                        {isConflictBlocked || isMissingEvidence || currentUserRole !== 'MANAGER' ? 'lock' : 'check'}
                       </span>
                       <span>
-                        {currentUserRole === 'EXTERNAL'
-                          ? 'Read-Only'
+                        {currentUserRole !== 'MANAGER'
+                          ? currentUserRole === 'EXTERNAL'
+                            ? 'Read-Only'
+                            : 'Manager Only'
                           : isConflictBlocked
                           ? 'Locked (Conflict)'
                           : isMissingEvidence

@@ -2,16 +2,38 @@
 
 import React, { useState, useRef } from 'react';
 import { useProject } from '../../context/ProjectContext';
-import { ProjectSource } from '../../lib/types';
+import { ProjectSource, GitHubIntegration } from '../../lib/types';
 import { formatBytes, isAllowedFile, MAX_FILE_SIZE_BYTES, MAX_FILES_PER_BATCH } from '../../server/documents/extractor';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
+import { ConnectGitHubModal } from '../modals/ConnectGitHubModal';
+import { UpdateHistoryDrawer } from '../modals/UpdateHistoryDrawer';
 
 export function SourceManagerView() {
-  const { project, addSource, uploadSources, deleteSource, runAiSync, isSyncing, setActiveView } = useProject();
+  const {
+    project,
+    workspaceId,
+    addSource,
+    uploadSources,
+    deleteSource,
+    runAiSync,
+    isSyncing,
+    setActiveView,
+    gitHubIntegrations,
+    isGitHubLoading,
+    syncingRepoId,
+    gitHubError,
+    syncGitHubRepo,
+    disconnectGitHubRepo,
+    currentUserRole,
+  } = useProject();
 
   // Modal states
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPasteModal, setShowPasteModal] = useState(false);
+  const [showGitHubModal, setShowGitHubModal] = useState(false);
+  const [selectedHistoryRepo, setSelectedHistoryRepo] = useState<GitHubIntegration | null>(null);
+  const [disconnectConfirmRepo, setDisconnectConfirmRepo] = useState<GitHubIntegration | null>(null);
+  const [syncFeedback, setSyncFeedback] = useState<{ repoId: number; success: boolean; message: string } | null>(null);
   const [inspectSource, setInspectSource] = useState<ProjectSource | null>(null);
   const [deleteConfirmSource, setDeleteConfirmSource] = useState<ProjectSource | null>(null);
 
@@ -135,21 +157,49 @@ export function SourceManagerView() {
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
           <button
             onClick={() => {
+              if (currentUserRole === 'EXTERNAL') return;
               setSelectedFiles([]);
               setUploadResults([]);
               setShowUploadModal(true);
             }}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors"
+            disabled={currentUserRole === 'EXTERNAL'}
+            title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot upload documents' : undefined}
+            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg text-xs font-medium shadow-xs transition-colors ${
+              currentUserRole === 'EXTERNAL'
+                ? 'bg-surface-container-low text-secondary opacity-50 cursor-not-allowed border border-outline-variant/40'
+                : 'bg-primary hover:bg-primary-hover text-on-primary'
+            }`}
           >
-            <span className="material-symbols-outlined text-[17px]">upload_file</span>
+            <span className="material-symbols-outlined text-[17px]">
+              {currentUserRole === 'EXTERNAL' ? 'lock' : 'upload_file'}
+            </span>
             <span>Upload Documents</span>
           </button>
 
           <button
-            onClick={() => setShowPasteModal(true)}
+            onClick={() => setShowGitHubModal(true)}
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
           >
-            <span className="material-symbols-outlined text-[17px]">edit_note</span>
+            <span className="material-symbols-outlined text-[17px] text-primary">
+              {currentUserRole === 'EXTERNAL' ? 'lock' : 'hub'}
+            </span>
+            <span>Connect GitHub</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (currentUserRole === 'EXTERNAL') return;
+              setShowPasteModal(true);
+            }}
+            disabled={currentUserRole === 'EXTERNAL'}
+            title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot add source notes' : undefined}
+            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors ${
+              currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <span className="material-symbols-outlined text-[17px]">
+              {currentUserRole === 'EXTERNAL' ? 'lock' : 'edit_note'}
+            </span>
             <span>Paste Notes</span>
           </button>
 
@@ -164,6 +214,229 @@ export function SourceManagerView() {
             <span>{isSyncing ? 'Syncing...' : 'Sync Workspace'}</span>
           </button>
         </div>
+      </div>
+
+      {/* CONNECTED GITHUB REPOSITORIES SECTION */}
+      <div className="bg-surface-container-lowest rounded-xl p-5 sm:p-6 border border-outline-variant/40 shadow-xs flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[20px]">hub</span>
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span>Connected GitHub Repositories</span>
+                <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-primary text-[11px] font-mono font-bold">
+                  {gitHubIntegrations.length}
+                </span>
+              </h2>
+              <p className="text-xs text-secondary mt-0.5">
+                Automatic repository ingestion with real-time webhooks, source attribution, and evidence grounding.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowGitHubModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors self-start sm:self-auto"
+          >
+            <span className="material-symbols-outlined text-[15px]">add</span>
+            <span>Add Repository</span>
+          </button>
+        </div>
+
+        {/* Sync Feedback Toast / Banner */}
+        {syncFeedback && (
+          <div
+            className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-2 animate-in fade-in duration-150 ${
+              syncFeedback.success
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-rose-50 border-rose-200 text-rose-800'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">
+                {syncFeedback.success ? 'check_circle' : 'error'}
+              </span>
+              <span className="font-medium">{syncFeedback.message}</span>
+            </div>
+            <button
+              onClick={() => setSyncFeedback(null)}
+              className="text-secondary hover:text-on-surface p-0.5 rounded"
+            >
+              <span className="material-symbols-outlined text-[14px]">close</span>
+            </button>
+          </div>
+        )}
+
+        {/* Rate-Limit or Error Banner */}
+        {gitHubError && (
+          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px] text-amber-700 shrink-0">warning</span>
+            <span>{gitHubError}</span>
+          </div>
+        )}
+
+        {/* Integrations Grid */}
+        {gitHubIntegrations.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {gitHubIntegrations.map((integ) => {
+              const isCurrentlySyncing = syncingRepoId === integ.repoId;
+              const matchingSource = project.sources.find(
+                (s) => s.githubIntegrationId === integ.id || s.id === `src_gh_${integ.repoId}`
+              );
+
+              return (
+                <div
+                  key={integ.id}
+                  className="bg-surface-container-low/40 rounded-xl p-4 border border-outline-variant/40 flex flex-col justify-between hover:border-outline-variant/70 transition-all gap-3"
+                >
+                  <div>
+                    {/* Top Row: Owner/Repo & Status Badge */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-primary text-[20px] shrink-0">folder_git</span>
+                        <div className="min-w-0">
+                          <h3 className="text-xs font-bold text-on-surface truncate font-mono" title={`${integ.repoOwner}/${integ.repoName}`}>
+                            {integ.repoOwner}/{integ.repoName}
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-[10px] text-secondary mt-0.5">
+                            <span className="bg-surface-container px-1.5 py-0.2 rounded font-mono font-medium">
+                              branch: {integ.selectedBranch || integ.defaultBranch}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border border-outline-variant/30 shrink-0">
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            integ.syncStatus === 'synced'
+                              ? 'bg-emerald-600'
+                              : integ.syncStatus === 'syncing' || isCurrentlySyncing
+                              ? 'bg-primary animate-pulse'
+                              : integ.syncStatus === 'error'
+                              ? 'bg-error'
+                              : 'bg-secondary'
+                          }`}
+                        ></span>
+                        <span className="capitalize text-secondary">
+                          {isCurrentlySyncing ? 'Syncing...' : integ.syncStatus}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Scope Badges */}
+                    <div className="flex items-center gap-1 flex-wrap text-[10px] text-secondary mb-2">
+                      {integ.config.includeCommits && (
+                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">commits</span>
+                      )}
+                      {integ.config.includePullRequests && (
+                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">PRs</span>
+                      )}
+                      {integ.config.includeIssues && (
+                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">issues</span>
+                      )}
+                      {integ.config.includeDocs && (
+                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">docs</span>
+                      )}
+                    </div>
+
+                    {/* Telemetry info */}
+                    <div className="text-[11px] text-secondary flex flex-col gap-0.5 font-mono">
+                      {integ.lastCommitSha && (
+                        <span className="truncate">
+                          Latest SHA: <strong className="text-primary">{integ.lastCommitSha.slice(0, 7)}</strong>
+                        </span>
+                      )}
+                      <span>
+                        Last Synced: {integ.lastSyncedAt ? new Date(integ.lastSyncedAt).toLocaleTimeString() : 'Never'}
+                      </span>
+                      {matchingSource && (
+                        <span className="text-primary font-semibold">
+                          {matchingSource.recordCount} records indexed
+                        </span>
+                      )}
+                      {integ.errorMessage && (
+                        <span className="text-error text-[10px] line-clamp-1" title={integ.errorMessage}>
+                          Error: {integ.errorMessage}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bottom Actions */}
+                  <div className="pt-2 border-t border-outline-variant/30 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={async () => {
+                          setSyncFeedback(null);
+                          const res = await syncGitHubRepo(integ.repoId);
+                          if (res.success) {
+                            setSyncFeedback({
+                              repoId: integ.repoId,
+                              success: true,
+                              message: `Synchronized ${integ.repoOwner}/${integ.repoName}: ${res.recordCounts?.commits || 0} commits, ${res.recordCounts?.pullRequests || 0} PRs, ${res.recordCounts?.issues || 0} issues.`,
+                            });
+                          } else {
+                            setSyncFeedback({
+                              repoId: integ.repoId,
+                              success: false,
+                              message: res.error || 'Sync failed.',
+                            });
+                          }
+                        }}
+                        disabled={isCurrentlySyncing || isGitHubLoading || currentUserRole === 'EXTERNAL'}
+                        className="inline-flex items-center gap-1 text-primary hover:text-primary-hover font-semibold text-[11px] disabled:opacity-50 transition-colors"
+                        title="Synchronize repository context"
+                      >
+                        <span className={`material-symbols-outlined text-[14px] ${isCurrentlySyncing ? 'animate-spin' : ''}`}>
+                          sync
+                        </span>
+                        <span>{isCurrentlySyncing ? 'Syncing...' : 'Sync Now'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedHistoryRepo(integ)}
+                        className="inline-flex items-center gap-1 text-secondary hover:text-on-surface font-medium text-[11px] transition-colors"
+                        title="View continuous update activity history"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">history</span>
+                        <span>Activity</span>
+                      </button>
+                    </div>
+
+                    {currentUserRole === 'MANAGER' && (
+                      <button
+                        onClick={() => setDisconnectConfirmRepo(integ)}
+                        disabled={isCurrentlySyncing || isGitHubLoading}
+                        className="text-error/70 hover:text-error hover:underline text-[11px] font-medium transition-colors"
+                        title="Disconnect repository"
+                      >
+                        Disconnect
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-4 bg-surface-container-low/40 rounded-xl border border-dashed border-outline-variant/50 text-center flex flex-col items-center justify-center gap-1.5 py-6">
+            <span className="material-symbols-outlined text-secondary text-[24px]">hub</span>
+            <span className="text-xs font-semibold text-on-surface">No GitHub repositories connected yet</span>
+            <p className="text-[11px] text-secondary max-w-sm leading-relaxed">
+              Connect public GitHub repositories to automatically index commit history, pull request debates, and issues with full cryptographic evidence citations.
+            </p>
+            <button
+              onClick={() => setShowGitHubModal(true)}
+              className="mt-1 inline-flex items-center gap-1.5 px-3 h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-medium text-xs border border-outline-variant/40 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[14px]">add_link</span>
+              <span>Connect Sample Repository</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter Tabs & Privacy Guarantee */}
@@ -283,11 +556,11 @@ export function SourceManagerView() {
                   </button>
                 )}
 
-                {source.isUploaded && (
+                {source.isUploaded && currentUserRole === 'MANAGER' && (
                   <button
                     onClick={() => setDeleteConfirmSource(source)}
                     className="text-error/70 hover:text-error hover:underline font-medium text-[11px] flex items-center gap-0.5"
-                    title="Remove Document"
+                    title="Remove Document (Manager Only)"
                   >
                     <span className="material-symbols-outlined text-[13px]">delete</span>
                   </button>
@@ -363,7 +636,7 @@ export function SourceManagerView() {
                 <p className="text-[11px] text-secondary">.pdf (Page coordinates tracked)</p>
               </div>
             </div>
-            <span className="text-[9px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+            <span className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
@@ -377,7 +650,7 @@ export function SourceManagerView() {
                 <p className="text-[11px] text-secondary">.md, .markdown (Headings preserved)</p>
               </div>
             </div>
-            <span className="text-[9px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+            <span className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
@@ -391,7 +664,7 @@ export function SourceManagerView() {
                 <p className="text-[11px] text-secondary">.txt (Line numbers preserved)</p>
               </div>
             </div>
-            <span className="text-[9px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+            <span className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
@@ -863,6 +1136,83 @@ export function SourceManagerView() {
           </div>
         </div>
       )}
+      {/* MODAL 5: CONNECT GITHUB MODAL */}
+      <ConnectGitHubModal
+        isOpen={showGitHubModal}
+        onClose={() => setShowGitHubModal(false)}
+        onSuccess={() => {
+          setShowGitHubModal(false);
+          setSyncFeedback({
+            repoId: 0,
+            success: true,
+            message: 'Repository connected successfully. Use "Sync Now" to index activity.',
+          });
+        }}
+      />
+
+      {/* MODAL 6: CONFIRM DISCONNECT GITHUB REPOSITORY */}
+      {disconnectConfirmRepo && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface-container-lowest max-w-md w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl p-5 sm:p-6 shadow-2xl border border-outline-variant/50 flex flex-col gap-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[20px]">link_off</span>
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-sm font-semibold text-on-surface">
+                  Disconnect Repository?
+                </h3>
+                <p className="text-xs text-secondary mt-0.5">
+                  Are you sure you want to disconnect &quot;{disconnectConfirmRepo.repoOwner}/{disconnectConfirmRepo.repoName}&quot;? Associated ingested source documents will be cleaned up.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/30">
+              <button
+                type="button"
+                onClick={() => setDisconnectConfirmRepo(null)}
+                className="px-3.5 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-medium text-xs border border-outline-variant/40"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const repoId = disconnectConfirmRepo.repoId;
+                  setDisconnectConfirmRepo(null);
+                  const res = await disconnectGitHubRepo(repoId);
+                  if (res.success) {
+                    setSyncFeedback({
+                      repoId,
+                      success: true,
+                      message: 'GitHub repository disconnected successfully.',
+                    });
+                  } else {
+                    setSyncFeedback({
+                      repoId,
+                      success: false,
+                      message: res.error || 'Failed to disconnect repository.',
+                    });
+                  }
+                }}
+                className="px-3.5 h-8 rounded-lg bg-error text-white hover:bg-error/90 font-medium transition-colors text-xs shadow-xs"
+              >
+                Confirm Disconnect
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Continuous Update Activity History Drawer */}
+      <UpdateHistoryDrawer
+        isOpen={Boolean(selectedHistoryRepo)}
+        onClose={() => setSelectedHistoryRepo(null)}
+        integration={selectedHistoryRepo}
+        workspaceId={workspaceId}
+        currentUserRole={currentUserRole}
+      />
     </div>
   );
 }

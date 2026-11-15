@@ -1,17 +1,17 @@
 ---
 gsd_state_version: "1.0"
-current_phase: Green Visual Identity Restoration
-current_phase_name: KnoTrail Original Soft Green Visual Identity Restoration
-status: complete
-stopped_at: "Successfully restored KnoTrail's original recognizable soft-green visual identity across the entire application while preserving all layout, spacing, typography, component refinements, and UX enhancements. Centralized the restored palette into design tokens and globals: Main Background (#EAF3E9), Secondary Background (#F1F7EF), Surface (#FFFFFF), Primary Green (#426B56), Primary Hover (#315542), Active Nav Green (#5A806B), Soft Green Container (#DCEBDD), Borders (#D5E3D5), Primary Text (#202923), and Secondary Text (#718075). Updated Sidebar with soft green background and differentiated sections, and confirmed all 8 views and public share views sit cleanly on the soft green canvas with crisp white cards. Both frontend and backend builds compile with 0 errors and all 185 automated tests pass with 100% success rate."
-last_updated: "2026-11-15T18:03:00.000Z"
+current_phase: Round 3 Improvement 3: Continuous Knowledge Updates
+current_phase_name: Comprehensive Testing & Final Verification (Milestone 3.5)
+status: milestone_3_5_complete
+stopped_at: "Successfully verified, tested, and finalized Round 3 Improvement 3, Milestone 3.5: Comprehensive Testing & Final Verification. Verified the complete 15-step end-to-end lifecycle from repository connection, initial sync, AI extraction, evidence verification, Manager approval, handover certification, commit push webhook, automatic ingestion, precision evidence drift detection, selective approval revocation, handover de-certification and outdated warning activation, Review Center re-review by Manager, re-approval, handover re-certification, to complete update history audit trails. Verified all security boundaries: Manager-only governance (approval, rejection, handover generation, certification), Developer permissions (sync, source contribution, retry), External read-only access (source content redaction, stripped paths, no sync/retry/approve), cross-workspace isolation, workspace state tampering protection, and retry ceilings (422). Verified failure recovery under Gemini API unavailability (status: partial/failed, never falsely marked completed), GitHub rate limits (graceful structured error), invalid webhook signatures (401), duplicate webhook deliveries (idempotent 200 duplicate), per-repository concurrency serialization (mutex queue prevents race conditions), and backend restart recovery (persistent update history). Verified UI responsive layouts, amber drift badges, update history drawer, and outdated handover banners. The full regression suite passed with 289/289 tests passing (100% pass rate). TypeScript typecheck (0 errors), backend production build, and frontend production build succeeded with zero errors. Documentation updated in README.md, STATE.md, and ROADMAP.md. Milestone 3.5 and Improvement 3 are complete."
+last_updated: "2026-11-15T22:49:00.000Z"
 last_activity: 2026-11-15
 state_head: main
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 14
-  completed_plans: 14
+  total_phases: 12
+  completed_phases: 12
+  total_plans: 20
+  completed_plans: 20
   percent: 100
 ---
 
@@ -21,89 +21,64 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-11-09)
 
-**Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, and comprehensive 12-section delivery packages.  
-**Current focus:** Round 3 Backend Health Audit & Bug Fixes Complete. All backend regression suites PASS (65/65). Production build PASS (220.5kb). Original Express & Supabase architecture preserved.
+**Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, continuous repository updates, and comprehensive 12-section delivery packages.  
+**Current focus:** Round 3 Improvement 3 (Continuous Knowledge Updates) - Milestone 3.5 Complete (100% Final Verification). Full regression suite (289/289 tests PASS). Backend and frontend production builds PASS. Zero open blockers.
 
 ## Current Position
 
-Phase: Round 3 Backend Health Audit & Critical Bug Fixes  
-Status: Tests PASS (65/65 Backend Suites, 93/93 Core Suites, 16/16 AI Suite) | Builds PASS (tsc: 0 errors, esbuild: clean) | Deliverable Created (.planning/ROUND3_BACKEND_HEALTH_REPORT.md)  
+Phase: Round 3 Improvement 3: Continuous Knowledge Updates (Milestone 3.5 Complete - Improvement 3 Finalized)  
+Status: Tests PASS (289/289 in full test suite, 4/4 in Milestone 3.5 E2E suite, 8/8 in Milestone 3.4 suite, 8/8 in Milestone 3.3 suite, 8/8 in Milestone 3.2 suite, 8/8 in Milestone 3.1 suite, 57/57 in GitHub suites, 31/31 in security suites) | Builds PASS (backend:clean, frontend:clean) | System Ready for Final Submission  
 Last activity: 2026-11-15
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% (Improvement 3 Complete)
 
 ## Performance Metrics
 
-**Velocity:**
-- Architecture: Decoupled multi-cloud topology (Frontend on Vercel, Backend on Render in Singapore, PostgreSQL & Storage on Supabase Mumbai)
-- Total screens responsive & verified: 8 of 8 + /share/[token] public viewer
-  - Landing Page (`LandingView.tsx`)
-  - Main Dashboard (`DashboardView.tsx`)
-  - Project Workspace (`WorkspaceView.tsx`)
-  - Source Manager (`SourceManagerView.tsx`)
-  - AI Analysis (`AnalysisView.tsx`)
-  - Evidence Explorer (`EvidenceView.tsx`)
-  - Human Review Center (`ReviewView.tsx`)
-  - Handover Dossier (`HandoverView.tsx`)
-  - Public Shared Dossier (`/share/[token]`)
-- Total API endpoints implemented: 23 active REST routes (`/api/...` in standalone Express backend, matching 100% of previous contracts)
-- Handover Document Schema: 12 formal sections (Cover/Meta, Exec Summary, Overview, Decisions, Tasks, Responsibilities, Risks, Dependencies, Questions, Next Actions, Evidence Inventory, Review History)
-- Handover Invalidation Protocol: Automatic drift detection via SHA-256 finding/source fingerprint hash; flags `isOutdated: true` upon post-certification data mutations
-- Multi-Format Export Parity: 100% parity across Markdown (with TOC & citations), typed JSON schema, and A4 printable PDF view
-- Public Share Links: High-entropy cryptographic tokens (`kt_share_<uuid>`), read-only public access without login, on-demand revocation, stored strictly as SHA-256 hashes
-- Cloud Storage: Private Supabase Storage bucket (`knotrail-source-files`), workspace-scoped paths (`<workspaceId>/<sourceId>.<ext>`), orphan cleanup on write failure
-- Concurrency Handling: PostgreSQL optimistic concurrency control via integer `version` column and `save_workspace_state` stored procedure
-- Health Probes: `GET /health/live` (process liveness, 200 OK) and `GET /health/ready` (deep readiness with Supabase probe, safe 503 on dependency failure)
-- CORS Policy: Strict CORS middleware with `CORS_ORIGINS` whitelist, preflight OPTIONS handling, and zero wildcards in production
-- Automated test suite: 149 of 149 tests passing across 9 test suites:
-  - Phase A (Handover Integrity): 8 tests
-  - Phase B (Persistence): 9 tests
-  - Phase C (Source Ingestion): 13 tests
-  - Phase D (AI Extraction): 15 tests
-  - Phase E (Evidence Verification): 23 tests
-  - Phase F (Human Approval): 16 tests
-  - Phase G (Handover Generation & Delivery): 21 tests
-  - Phase H (Supabase Backend & Cloud Storage): 18 tests
-  - Phase I (Standalone Express Backend & Decoupled Frontend API): 21 tests
-  - Reconciliation: Node test runner reports 149 total tests; all pass.
-- Backend Production Build: `npm run backend:build` compiles to `dist/backend/server.js` (190 KB) in under 20ms
-- Frontend Production Build: `npm run frontend:build` compiles cleanly with 0 errors across all routes (`/`, `/_not-found`, `/share/[token]`)
-- Render Build Resolution: Configured `npm ci --include=dev && npm run backend:build` in `render.yaml` to ensure `@types/express` and `@types/multer` are retained during production builds where `NODE_ENV=production`. Simulated under production environment: verified 238 packages installed, type checks passed, and bundle emitted with zero errors.
-
-**By Screen / Workflow Stage:**
-
-| Step | Screen Name | Component | Status | Verification |
-|------|-------------|-----------|--------|--------------|
-| 1 | Landing Page | LandingView.tsx | Complete | Google Stitch matched, zero-auth verified |
-| 2 | Main Dashboard | DashboardView.tsx | Complete | Telemetry matrix, auto-save status, sparklines |
-| 3 | Project Workspace | WorkspaceView.tsx | Complete | Master header, stakeholder pod, 7-category findings explorer |
-| 4 | Source Manager | SourceManagerView.tsx | Complete | Drag-and-drop & browse upload, document inspector modal, safe deletion |
-| 5 | AI Analysis | AnalysisView.tsx | Complete | Real AI extraction with Gemini 2.5 Flash, document selector, dynamic grounding telemetry, API setup card |
-| 6 | Evidence Explorer | EvidenceView.tsx | Complete | Status filter strip, code snippet inspector drawer |
-| 7 | Human Review Center | ReviewView.tsx | Complete | Oversight mandate, conflict resolution modal, certify gate |
-| 8 | Handover Dossier | HandoverView.tsx | Complete | Locked gate screen, conditional certification badge, approved-only filter, dependencies included, JSON/Markdown exports |
-
-## Accumulated Context
-
-### Decisions
-
-- [ADR-001]: Upheld KnoTrail's original knowledge-handover problem statement over the conflicting brand-governance selection email paragraph.
-- [ADR-002]: Enforced the RECONSTRUCT → VERIFY → REVIEW → HANDOVER pipeline. Mandated that every finding must carry source citations.
-- [ADR-003]: Next.js 14 App Router full-stack architecture with React 18, Tailwind CSS, TypeScript, and client-side reactive state.
-- [ADR-004]: Established strict 2-person team scope (Samyak Gedam, Sanshrey Sanagar) and autonomous judge self-service criteria.
-- [ADR-005]: Integrated Gravitas 6 Invariants and GSD v1.16.0 workflows for reliable engineering.
-- [ADR-006]: Frictionless Public Web Architecture & Zero-Auth Demo Policy (No login/signup required; mandatory Incognito compatibility; pre-seeded Project Titan Handover dataset).
-- [ADR-007]: Strict Handover Integrity Gating & Approved-Only Export Policy (Enforce approved-only filtering, conditional certification badge, human review gate lock, dependency inclusion, export parity).
-- [ADR-008]: Persistent Storage Architecture & Anonymous Workspace Isolation (PostgreSQL relational schema, durable server storage with atomic writes, multi-visitor anonymous isolation, hybrid client-server sync, 10 REST endpoints).
-- [ADR-009]: Real Document Source Ingestion & Server-Side Text Extraction Methodology (PDF via unpdf page preservation, TXT/MD line numbering, SHA-256 hash, zero fake AI generation, drag-and-drop UI).
-- [ADR-010]: Real AI Knowledge Extraction Architecture & Evidence Grounding Engine (Google GenAI SDK `@google/genai` v3.0.0, Gemini 2.5 Flash, exact quote verification, PDF page and TXT/MD line coordinates, 7 operational categories, Zero Fake AI Invariant, unapproved status defaults).
-
-### Blockers/Concerns
-
-None. All Phase C document ingestion requirements and test scenarios satisfied.
-
-## Session Continuity
-
-Last session: 2026-11-08 12:56 IST
-Stopped at: Phase C successfully implemented, tested (30/30 tests pass), build verified (exit code 0), Gravitas contract verified PASS, GSD STATE.md, ROADMAP.md, REQUIREMENTS.md, and DECISIONS.md fully updated.
-Next action: Ready for Phase D (Real Knowledge Extraction Pipeline & LLM grounding).
+**Round 3 Improvement 3 Final Verification Summary (Milestone 3.5):**
+1. **End-to-End Workflow Verification**:
+   - Step 1: Connect GitHub repository (`POST /api/github/integrations`) -> Connected (HTTP 201).
+   - Step 2: Initial repository synchronization (`POST /api/github/integrations/:repoId/sync`) -> Synced.
+   - Step 3: Extract candidate knowledge findings via structured extraction pipeline.
+   - Step 4: Verify findings against source text and attach cryptographic citations.
+   - Step 5: Review and approve findings as Manager (non-manager attempts rejected with 403).
+   - Step 6: Generate certified handover dossier (`POST /api/handovers/certify`) -> Certified (`handoverCertified: true`).
+   - Step 7: Push new commit via signed GitHub webhook (`X-Hub-Signature-256`, HMAC-SHA256).
+   - Step 8: Webhook triggers automatic ingestion and continuous update cycle.
+   - Step 9: Precision drift detector executes whitespace/formatting-insensitive overlap analysis.
+   - Step 10: Materially outdated findings have approval revoked (`approved: false`, `needsReReview: true`).
+   - Step 11: Handover is marked outdated (`isOutdated: true`) and de-certified (`handoverCertified: false`).
+   - Step 12: Manager inspects Review Center filtered by "Needs Re-Review".
+   - Step 13: Manager edits and re-approves findings with documented review notes (`needsReReview: false`).
+   - Step 14: Handover is regenerated and certified (`handoverCertified: true`, `isOutdated: false`).
+   - Step 15: Complete update history audit trail verified (`GET /api/github/integrations/:repoId/history`).
+2. **Security & RBAC Enforcement**:
+   - Manager-only gates: approve/reject finding, resolve conflict, generate/certify handover, delete source.
+   - Developer permissions: sync repository, contribute source notes, edit finding details, retry incomplete updates.
+   - External role boundaries: read-only access, source content redacted, storage paths stripped, masked member emails.
+   - Cross-workspace isolation: BOLA attacks between workspaces return HTTP 403.
+   - Workspace state tampering: non-managers cannot pre-certify handovers or overwrite `updateHistory` via `POST /api/workspaces`.
+   - Webhook security: HMAC-SHA256 timing-safe signature verification rejects invalid signatures with HTTP 401.
+   - Retry limits: HTTP 422 returned when `retryCount >= maxRetries`.
+3. **Failure Recovery & Resilience**:
+   - Gemini API unavailable: Ingestion succeeds, knowledge status marked `partial`/`failed`, error recorded in `updateHistory`, integration status never falsely marked `synced`.
+   - GitHub API rate limits (403/429): Handled gracefully with structured error message; server does not crash.
+   - Duplicate deliveries: `X-GitHub-Delivery` idempotency cache prevents duplicate processing (`status: 'duplicate'`).
+   - Concurrency serialization: Mutex queue (`withRepositoryLock`) queues concurrent webhook arrivals sequentially per repository, preventing race conditions.
+   - Backend restart: Storage layer recovers full state, unreviewed findings, and `updateHistory` across restarts.
+   - Supabase connection missing: Storage factory gracefully falls back to local file-based storage or signals degraded readiness probe (`GET /health/ready`), keeping demo evaluation unblocked.
+4. **UI Visual & Functional Polish**:
+   - Review Center: Needs Re-Review filter pill, amber badge, drift explanation box, GitHub provenance chip.
+   - Source Manager: Activity button, slide-out `UpdateHistoryDrawer` with pagination, loading/empty/partial/failed states.
+   - Handover View: Outdated invalidation alert banner, re-review count, commit SHA badge, certified badge suppression when uncertified.
+   - Material Design 3 soft-green visual identity (`emerald-500/600`), dark mode compatibility, and responsive mobile layouts.
+5. **Complete Website UI/UX Refinement**:
+   - Redesigned Top Navigation Header with disciplined three-part architecture: Left (compact brand + tagline), Center (How It Works, Round 3 Updates, Capabilities, Workflow, Our Mission), Right (GitHub link, Sign In, Explore Live Demo).
+   - Added responsive mobile navigation drawer for landing page with zero-auth demo access.
+   - Refined Internal Navigation (`Sidebar.tsx` and `Header.tsx`): consistent 56px height, vertically centered alignment, brand-primary active states, and streamlined search and access controls.
+   - Unified color tokens and status badges (`emerald`, `amber`, `rose`) across all major views (`DashboardView`, `WorkspaceView`, `SourceManagerView`, `EvidenceView`, `ReviewView`, `AnalysisView`, `HandoverView`).
+   - Clean, professional SaaS typography and component sizing without oversized headings or unnecessary decorative elements.
+6. **Test Coverage & Build Results**:
+   - Total Tests: 289 tests across 22 test files (289 passed, 0 failed, 100% pass rate).
+   - TypeScript Check: 0 errors (`npx tsc --noEmit`).
+   - Backend Production Build: 312.3 KB bundle (`npm run backend:build`).
+   - Frontend Production Build: Clean Next.js 14 compilation (`npm run frontend:build`).

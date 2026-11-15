@@ -8,6 +8,11 @@ import type {
   HandoverShareRecord,
   UserRole,
   WorkspaceMemberRecord,
+  GitHubIntegration,
+  GitHubIntegrationConfig,
+  ContinuousUpdateRecord,
+  ContinuousUpdateHistoryResponse,
+  ContinuousUpdateRetryResponse,
 } from './types.ts';
 
 // In-memory auth token and demo perspective state
@@ -648,5 +653,99 @@ export const apiClient = {
     status: string;
   }> {
     return request(`/api/handovers/share/${encodeURIComponent(token)}`);
+  },
+
+  // ============================================================================
+  // GitHub Integration & Repository Management
+  // ============================================================================
+
+  async listGitHubIntegrations(
+    workspaceId: string
+  ): Promise<{ integrations: GitHubIntegration[]; status: string; count: number }> {
+    return request(`/api/github/integrations?workspaceId=${encodeURIComponent(workspaceId)}`);
+  },
+
+  async connectGitHubRepository(
+    workspaceId: string,
+    params: {
+      repoOwner: string;
+      repoName: string;
+      selectedBranch?: string;
+      installationId?: number | null;
+      config?: Partial<GitHubIntegrationConfig>;
+    }
+  ): Promise<{ integration: GitHubIntegration; status: string; message: string }> {
+    return request('/api/github/integrations', {
+      method: 'POST',
+      body: JSON.stringify({ workspaceId, ...params }),
+    });
+  },
+
+  async syncGitHubIntegration(
+    workspaceId: string,
+    repoId: number,
+    options?: {
+      runAiExtraction?: boolean;
+      reason?: string;
+    }
+  ): Promise<{
+    status: string;
+    knowledgeStatus?: 'extracting' | 'completed' | 'failed' | 'skipped' | 'idle';
+    integration: GitHubIntegration;
+    source: ProjectSource;
+    recordCounts: { commits: number; pullRequests: number; issues: number; docs: number };
+    isChanged: boolean;
+    findingsAdded?: number;
+    updateRecord?: ContinuousUpdateRecord;
+  }> {
+    return request(`/api/github/integrations/${encodeURIComponent(repoId)}/sync`, {
+      method: 'POST',
+      body: JSON.stringify({ workspaceId, ...options }),
+    });
+  },
+
+  async getContinuousUpdateHistory(
+    workspaceId: string,
+    repoId: number,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<ContinuousUpdateHistoryResponse> {
+    const params = new URLSearchParams({ workspaceId: String(workspaceId) });
+    if (typeof options?.limit === 'number') {
+      params.set('limit', String(options.limit));
+    }
+    if (typeof options?.offset === 'number') {
+      params.set('offset', String(options.offset));
+    }
+    return request(`/api/github/integrations/${encodeURIComponent(repoId)}/history?${params.toString()}`);
+  },
+
+  async retryContinuousUpdate(
+    workspaceId: string,
+    repoId: number,
+    updateId: string
+  ): Promise<ContinuousUpdateRetryResponse> {
+    return request(`/api/github/integrations/${encodeURIComponent(repoId)}/retry-update`, {
+      method: 'POST',
+      body: JSON.stringify({ workspaceId, updateId }),
+    });
+  },
+
+  async disconnectGitHubRepository(
+    workspaceId: string,
+    repoId: number
+  ): Promise<{ status: string; repoId: number; message: string }> {
+    return request(`/api/github/integrations/${encodeURIComponent(repoId)}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ workspaceId }),
+    });
+  },
+
+  async getGitHubRateLimit(
+    workspaceId: string
+  ): Promise<{ rateLimit: any; status: string }> {
+    return request(`/api/github/rate-limit?workspaceId=${encodeURIComponent(workspaceId)}`);
   },
 };

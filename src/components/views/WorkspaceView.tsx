@@ -11,6 +11,7 @@ export function WorkspaceView() {
     setSelectedFinding,
     isProjectCreated,
     setShowCreateProjectModal,
+    currentUserRole,
   } = useProject();
   const [selectedTab, setSelectedTab] = useState<'all' | FindingType>('all');
   const [workspaceSearch, setWorkspaceSearch] = useState('');
@@ -41,10 +42,21 @@ export function WorkspaceView() {
           </p>
           <div className="flex items-center gap-2.5 mt-6">
             <button
-              onClick={() => setShowCreateProjectModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 h-9 bg-primary hover:bg-primary-hover text-on-primary rounded-lg text-xs font-medium shadow-xs transition-colors"
+              onClick={() => {
+                if (currentUserRole === 'EXTERNAL') return;
+                setShowCreateProjectModal(true);
+              }}
+              disabled={currentUserRole === 'EXTERNAL'}
+              title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot create projects' : undefined}
+              className={`inline-flex items-center gap-1.5 px-4 h-9 rounded-lg text-xs font-medium shadow-xs transition-colors ${
+                currentUserRole === 'EXTERNAL'
+                  ? 'bg-surface-container-low text-secondary opacity-50 cursor-not-allowed border border-outline-variant/40'
+                  : 'bg-primary hover:bg-primary-hover text-on-primary'
+              }`}
             >
-              <span className="material-symbols-outlined text-[18px]">create_new_folder</span>
+              <span className="material-symbols-outlined text-[18px]">
+                {currentUserRole === 'EXTERNAL' ? 'lock' : 'create_new_folder'}
+              </span>
               <span>Create Project</span>
             </button>
             <button
@@ -63,8 +75,8 @@ export function WorkspaceView() {
             <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5">
               <div className="flex flex-col gap-2 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20 text-[10px] font-semibold uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0"></span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-semibold uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse shrink-0"></span>
                     Handover Active • Target: {project.targetExitDate}
                   </span>
                   <span className="px-2 py-0.5 rounded-md bg-surface-container-low text-secondary border border-outline-variant/40 font-mono text-[11px]">
@@ -106,10 +118,19 @@ export function WorkspaceView() {
               {/* Action Group */}
               <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 self-start xl:self-center w-full xl:w-auto shrink-0">
                 <button
-                  onClick={() => setShowCreateProjectModal(true)}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 bg-surface-container-low hover:bg-surface-container text-on-surface px-3.5 h-9 rounded-lg text-xs font-medium border border-outline-variant/40 transition-colors"
+                  onClick={() => {
+                    if (currentUserRole === 'EXTERNAL') return;
+                    setShowCreateProjectModal(true);
+                  }}
+                  disabled={currentUserRole === 'EXTERNAL'}
+                  title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot create projects' : undefined}
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 bg-surface-container-low hover:bg-surface-container text-on-surface px-3.5 h-9 rounded-lg text-xs font-medium border border-outline-variant/40 transition-colors ${
+                    currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-[17px]">add</span>
+                  <span className="material-symbols-outlined text-[17px]">
+                    {currentUserRole === 'EXTERNAL' ? 'lock' : 'add'}
+                  </span>
                   <span>New Project</span>
                 </button>
                 <button
@@ -284,14 +305,14 @@ export function WorkspaceView() {
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                            className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                               finding.status === 'VERIFIED'
-                                ? 'bg-success/10 text-success border-success/20'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                                 : finding.status === 'CONFLICTING'
-                                ? 'bg-error/10 text-error border-error/20'
+                                ? 'bg-rose-50 text-rose-800 border-rose-200'
                                 : finding.status === 'UNCERTAIN'
-                                ? 'bg-warning/10 text-warning border-warning/20'
-                                : 'bg-surface-container-low text-secondary border-outline-variant/40'
+                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                : 'bg-surface-container text-secondary border-outline-variant/40'
                             }`}
                           >
                             {finding.status}

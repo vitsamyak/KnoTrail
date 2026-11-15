@@ -12,6 +12,8 @@ import {
   HandoverDocument,
   HandoverShareRecord,
   UserRole,
+  GitHubIntegration,
+  GitHubIntegrationConfig,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
@@ -105,6 +107,21 @@ interface ProjectContextType {
   isProjectCreated: boolean;
   showCreateProjectModal: boolean;
   setShowCreateProjectModal: (show: boolean) => void;
+  // GitHub Integration & Management
+  gitHubIntegrations: GitHubIntegration[];
+  isGitHubLoading: boolean;
+  syncingRepoId: number | null;
+  gitHubError: string | null;
+  refreshGitHubIntegrations: () => Promise<void>;
+  connectGitHubRepo: (params: {
+    repoOwner: string;
+    repoName: string;
+    selectedBranch?: string;
+    installationId?: number | null;
+    config?: Partial<GitHubIntegrationConfig>;
+  }) => Promise<{ success: boolean; error?: string; integration?: GitHubIntegration }>;
+  syncGitHubRepo: (repoId: number) => Promise<{ success: boolean; error?: string; recordCounts?: any; isChanged?: boolean }>;
+  disconnectGitHubRepo: (repoId: number) => Promise<{ success: boolean; error?: string }>;
   stats: {
     totalSources: number;
     totalFindings: number;
@@ -124,6 +141,7 @@ interface ProjectContextType {
     rejectedCount: number;
     pendingReviewCount: number;
     needsCorrectionCount: number;
+    needsReReviewCount: number;
     certificationProgressPercent: number;
     isHandoverBlocked: boolean;
     canCertifyHandover: boolean;
@@ -205,6 +223,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [hasAiApiKey, setHasAiApiKey] = useState<boolean>(false);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // GitHub Integration States
+  const [gitHubIntegrations, setGitHubIntegrations] = useState<GitHubIntegration[]>([]);
+  const [isGitHubLoading, setIsGitHubLoading] = useState(false);
+  const [syncingRepoId, setSyncingRepoId] = useState<number | null>(null);
+  const [gitHubError, setGitHubError] = useState<string | null>(null);
 
   // Helper to persist state to local cache immediately
   const persistToLocalCache = useCallback((wsId: string, updatedProject: ProjectData) => {
@@ -1140,6 +1164,102 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         project.id !== 'proj-default-001')
   );
 
+  // ============================================================================
+  // GitHub Integration Methods
+  // ============================================================================
+
+  const refreshGitHubIntegrations = useCallback(async () => {
+    if (!workspaceId) return;
+    setIsGitHubLoading(true);
+    setGitHubError(null);
+    try {
+      const res = await apiClient.listGitHubIntegrations(workspaceId);
+      setGitHubIntegrations(res.integrations || []);
+    } catch (err: any) {
+      console.warn('Could not fetch GitHub integrations:', err);
+      setGitHubError(err?.message || 'Failed to fetch GitHub integrations');
+    } finally {
+      setIsGitHubLoading(false);
+    }
+  }, [workspaceId]);
+
+  useEffect(() => {
+    if (workspaceId) {
+      refreshGitHubIntegrations();
+    }
+  }, [workspaceId, refreshGitHubIntegrations]);
+
+  const connectGitHubRepo = async (params: {
+    repoOwner: string;
+    repoName: string;
+    selectedBranch?: string;
+    installationId?: number | null;
+    config?: Partial<GitHubIntegrationConfig>;
+  }) => {
+    setIsGitHubLoading(true);
+    setGitHubError(null);
+    try {
+      const res = await apiClient.connectGitHubRepository(workspaceId, params);
+      await refreshGitHubIntegrations();
+      return { success: true, integration: res.integration };
+    } catch (err: any) {
+      const errMsg = err?.message || 'Failed to connect GitHub repository';
+      setGitHubError(errMsg);
+      return { success: false, error: errMsg };
+    } finally {
+      setIsGitHubLoading(false);
+    }
+  };
+
+  const syncGitHubRepo = async (repoId: number) => {
+    if (syncingRepoId !== null) {
+      return { success: false, error: 'A repository sync is already in progress.' };
+    }
+    setSyncingRepoId(repoId);
+    setGitHubError(null);
+    try {
+      const res = await apiClient.syncGitHubIntegration(workspaceId, repoId);
+      const updatedWs = await apiClient.getWorkspace(workspaceId);
+      if (updatedWs?.project) {
+        setProject(updatedWs.project);
+        persistToLocalCache(workspaceId, updatedWs.project);
+      }
+      await refreshGitHubIntegrations();
+      return {
+        success: true,
+        recordCounts: res.recordCounts,
+        isChanged: res.isChanged,
+      };
+    } catch (err: any) {
+      const errMsg = err?.message || 'Failed to synchronize repository';
+      setGitHubError(errMsg);
+      return { success: false, error: errMsg };
+    } finally {
+      setSyncingRepoId(null);
+    }
+  };
+
+  const disconnectGitHubRepo = async (repoId: number) => {
+    setIsGitHubLoading(true);
+    setGitHubError(null);
+    try {
+      await apiClient.disconnectGitHubRepository(workspaceId, repoId);
+      const updatedWs = await apiClient.getWorkspace(workspaceId);
+      if (updatedWs?.project) {
+        setProject(updatedWs.project);
+        persistToLocalCache(workspaceId, updatedWs.project);
+      }
+      await refreshGitHubIntegrations();
+      return { success: true };
+    } catch (err: any) {
+      const errMsg = err?.message || 'Failed to disconnect repository';
+      setGitHubError(errMsg);
+      return { success: false, error: errMsg };
+    } finally {
+      setIsGitHubLoading(false);
+    }
+  };
+
   // Calculate live statistics
   const totalSources = project.sources.length;
   const totalFindings = project.findings.length;
@@ -1236,6 +1356,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         isProjectCreated,
         showCreateProjectModal,
         setShowCreateProjectModal,
+        // GitHub Integration
+        gitHubIntegrations,
+        isGitHubLoading,
+        syncingRepoId,
+        gitHubError,
+        refreshGitHubIntegrations,
+        connectGitHubRepo,
+        syncGitHubRepo,
+        disconnectGitHubRepo,
         stats: {
           totalSources,
           totalFindings,
@@ -1255,6 +1384,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           rejectedCount,
           pendingReviewCount,
           needsCorrectionCount: blockStatus.needsCorrectionCount,
+          needsReReviewCount: project.findings.filter((f) => Boolean(f.needsReReview)).length,
           certificationProgressPercent,
           isHandoverBlocked: blockStatus.isBlocked,
           canCertifyHandover: blockStatus.canCertify,

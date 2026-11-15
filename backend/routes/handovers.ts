@@ -67,9 +67,9 @@ handoversRouter.get('/', requireWorkspaceAccess, async (req: Request, res: Respo
 /**
  * POST /api/handovers/generate
  * Generates and saves a formal 12-section handover package.
- * Requires MANAGER or DEVELOPER permissions.
+ * Safeguard: ONLY Managers can generate handover packages.
  */
-handoversRouter.post('/generate', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
+handoversRouter.post('/generate', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
     const workspaceId = req.workspaceAuth!.workspaceId;
     const { signerName, version, regenerate } = req.body || {};

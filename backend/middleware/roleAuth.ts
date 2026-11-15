@@ -20,20 +20,53 @@ declare global {
   }
 }
 
+export class WorkspaceIdCollisionError extends Error {
+  constructor(message: string = 'Workspace ID parameter collision: Contradictory workspace IDs provided in request.') {
+    super(message);
+    this.name = 'WorkspaceIdCollisionError';
+  }
+}
+
 /**
- * Extracts workspace ID from query, body, or route parameters.
+ * Extracts and validates workspace ID with strict precedence and collision detection:
+ * 1. Route workspace IDs (req.params.workspaceId or req.params.id on workspace routes) take precedence.
+ * 2. If contradictory workspace IDs are provided across route, query, or body, throws WorkspaceIdCollisionError.
+ * 3. Returns validated workspace ID or null.
  */
 export function extractWorkspaceId(req: Request): string | null {
-  const wsId =
-    (req.query.workspaceId as string) ||
-    (req.body && typeof req.body === 'object' && req.body.workspaceId) ||
-    (req.params && req.params.workspaceId) ||
-    ((req.baseUrl.includes('workspaces') || req.path.startsWith('/workspaces')) &&
-      req.params &&
-      req.params.id);
+  const isWorkspaceRoute =
+    (req.baseUrl && req.baseUrl.includes('workspaces')) ||
+    (req.path && req.path.startsWith('/workspaces')) ||
+    (req.originalUrl && req.originalUrl.includes('/api/workspaces/'));
 
-  if (typeof wsId === 'string' && isValidWorkspaceId(wsId.trim())) {
-    return wsId.trim();
+  const routeWsId =
+    (req.params && typeof req.params.workspaceId === 'string' && req.params.workspaceId.trim()) ||
+    (isWorkspaceRoute && req.params && typeof req.params.id === 'string' && req.params.id.trim()) ||
+    null;
+
+  const queryWsId =
+    (req.query && typeof req.query.workspaceId === 'string' && req.query.workspaceId.trim()) || null;
+
+  const bodyWsId =
+    (req.body && typeof req.body === 'object' && typeof req.body.workspaceId === 'string' && req.body.workspaceId.trim()) || null;
+
+  // Collision detection: Check for contradictory workspace IDs across parameters
+  const specifiedIds = [routeWsId, queryWsId, bodyWsId].filter((id): id is string => Boolean(id));
+  if (specifiedIds.length > 1) {
+    const first = specifiedIds[0];
+    const hasCollision = specifiedIds.some((id) => id !== first);
+    if (hasCollision) {
+      throw new WorkspaceIdCollisionError(
+        `Workspace ID collision: Contradictory workspace IDs provided across route, query, or body parameters (${specifiedIds.join(' vs ')}).`
+      );
+    }
+  }
+
+  // Precedence: Route parameter takes precedence, followed by query, then body
+  const selected = routeWsId || queryWsId || bodyWsId;
+
+  if (selected && isValidWorkspaceId(selected)) {
+    return selected;
   }
   return null;
 }
@@ -45,7 +78,17 @@ export function extractWorkspaceId(req: Request): string | null {
  * - Client-supplied role headers are strictly ignored for protected workspaces.
  */
 export async function requireWorkspaceAccess(req: Request, res: Response, next: NextFunction) {
-  const workspaceId = extractWorkspaceId(req);
+  let workspaceId: string | null = null;
+  try {
+    workspaceId = extractWorkspaceId(req);
+  } catch (err: any) {
+    if (err instanceof WorkspaceIdCollisionError) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.status(400).json({ error: err?.message || 'Invalid workspace parameter.' });
+    return;
+  }
 
   if (!workspaceId) {
     res.status(400).json({

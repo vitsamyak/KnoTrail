@@ -4,6 +4,7 @@ import type {
   EvidenceStatus,
   KnowledgeFinding,
   ProjectSource,
+  GitHubEvidenceProvenance,
 } from '../../lib/types.ts';
 import type { RawExtractedFinding } from './types.ts';
 
@@ -12,6 +13,17 @@ export interface GroundedCitationResult {
   confidence: number;
   citations: EvidenceCitation[];
   reviewerNotes: string;
+}
+
+export interface ParsedGitHubProvenance {
+  commitSha?: string;
+  prNumber?: number;
+  issueNumber?: number;
+  author?: string;
+  timestamp?: string;
+  githubUrl?: string;
+  file?: string;
+  gitHubProvenance?: GitHubEvidenceProvenance;
 }
 
 /**
@@ -80,6 +92,185 @@ export function findQuoteInText(
   }
 
   return { found: false, startIndex: -1, endIndex: -1, matchedText: '' };
+}
+
+/**
+ * Extracts authentic GitHub coordinates and provenance from the ingested Markdown source text
+ * at the specific character position of a verified quotation.
+ */
+export function extractGitHubProvenanceFromText(
+  fullText: string,
+  startIndex: number,
+  source: ProjectSource,
+  coords: { lineRange: string; snippet: string }
+): ParsedGitHubProvenance {
+  if (source.type !== 'github' || !fullText || startIndex < 0) {
+    return {};
+  }
+
+  // Look back from quotation index to locate the containing section/entity header
+  const textBefore = fullText.slice(0, Math.min(startIndex + 100, fullText.length));
+
+  const repoMeta = source.githubMetadata;
+  const repoOwner = repoMeta?.owner || 'owner';
+  const repoName = repoMeta?.name || source.name.replace(/^GitHub:\s*/i, '').split('/')[1] || 'repo';
+  const repoFullName = repoMeta?.fullName || `${repoOwner}/${repoName}`;
+  const defaultBranch = repoMeta?.defaultBranch || 'main';
+
+  // Find nearest entity headers
+  const commitIdx = textBefore.lastIndexOf('### Commit ');
+  const prIdx = textBefore.lastIndexOf('### Pull Request #');
+  const issueIdx = textBefore.lastIndexOf('### Issue #');
+  const docIdx = textBefore.lastIndexOf('## Section 4:');
+
+  const maxIdx = Math.max(commitIdx, prIdx, issueIdx, docIdx);
+  if (maxIdx === -1) {
+    return {};
+  }
+
+  const blockText = textBefore.slice(maxIdx);
+
+  // 1. Commit Entity
+  if (maxIdx === commitIdx) {
+    const shaMatch = blockText.match(/- Full SHA:\s*([a-f0-9]{40})/i);
+    const shortShaMatch = blockText.match(/### Commit\s*([a-f0-9]+)/i);
+    const authorMatch = blockText.match(/- Author:\s*([^<\n]+?)(?:\s*<([^>\n]+)>)?\n/i);
+    const dateMatch = blockText.match(/- Date:\s*([^\n]+)/i);
+    const urlMatch = blockText.match(/- URL:\s*(https:\/\/github\.com\/[^\s\n]+)/i);
+    const fileMatch = blockText.match(/\*\s*\[[a-z]+\]\s*([^\s(]+)/i);
+
+    const commitSha = shaMatch?.[1] || shortShaMatch?.[1];
+    const author = authorMatch?.[1]?.trim() || 'Git Committer';
+    const timestamp = dateMatch?.[1]?.trim() || new Date().toISOString();
+    const githubUrl = urlMatch?.[1]?.trim() || (commitSha ? `https://github.com/${repoFullName}/commit/${commitSha}` : undefined);
+    const file = fileMatch?.[1]?.trim() || repoFullName;
+
+    const gitHubProvenance: GitHubEvidenceProvenance = {
+      repositoryId: repoMeta?.id || 0,
+      repositoryOwner: repoOwner,
+      repositoryName: repoName,
+      repositoryFullName: repoFullName,
+      branch: defaultBranch,
+      commitSha,
+      filePath: fileMatch?.[1]?.trim(),
+      originalGitHubUrl: githubUrl || `https://github.com/${repoFullName}`,
+      author,
+      timestamp,
+      contentHash: `sha256:${crypto.createHash('sha256').update(coords.snippet.trim()).digest('hex')}`,
+      synthesizedLineRange: coords.lineRange,
+    };
+
+    return {
+      commitSha,
+      author,
+      timestamp,
+      githubUrl,
+      file,
+      gitHubProvenance,
+    };
+  }
+
+  // 2. Pull Request Entity
+  if (maxIdx === prIdx) {
+    const prNumMatch = blockText.match(/### Pull Request #(\d+):/i);
+    const authorMatch = blockText.match(/- Author:\s*([^\s|\n]+)/i);
+    const createdMatch = blockText.match(/- Created:\s*([^\s|\n]+)/i);
+    const urlMatch = blockText.match(/- URL:\s*(https:\/\/github\.com\/[^\s\n]+)/i);
+
+    const prNumber = prNumMatch ? parseInt(prNumMatch[1], 10) : undefined;
+    const author = authorMatch?.[1]?.trim() || 'PR Contributor';
+    const timestamp = createdMatch?.[1]?.trim() || new Date().toISOString();
+    const githubUrl = urlMatch?.[1]?.trim() || (prNumber ? `https://github.com/${repoFullName}/pull/${prNumber}` : undefined);
+
+    const gitHubProvenance: GitHubEvidenceProvenance = {
+      repositoryId: repoMeta?.id || 0,
+      repositoryOwner: repoOwner,
+      repositoryName: repoName,
+      repositoryFullName: repoFullName,
+      branch: defaultBranch,
+      prNumber,
+      originalGitHubUrl: githubUrl || `https://github.com/${repoFullName}`,
+      author,
+      timestamp,
+      contentHash: `sha256:${crypto.createHash('sha256').update(coords.snippet.trim()).digest('hex')}`,
+      synthesizedLineRange: coords.lineRange,
+    };
+
+    return {
+      prNumber,
+      author,
+      timestamp,
+      githubUrl,
+      file: repoFullName,
+      gitHubProvenance,
+    };
+  }
+
+  // 3. Issue Entity
+  if (maxIdx === issueIdx) {
+    const issueNumMatch = blockText.match(/### Issue #(\d+):/i);
+    const authorMatch = blockText.match(/Author:\s*([^\s|\n]+)/i);
+    const createdMatch = blockText.match(/- Created:\s*([^\s|\n]+)/i);
+    const urlMatch = blockText.match(/- URL:\s*(https:\/\/github\.com\/[^\s\n]+)/i);
+
+    const issueNumber = issueNumMatch ? parseInt(issueNumMatch[1], 10) : undefined;
+    const author = authorMatch?.[1]?.trim() || 'Issue Reporter';
+    const timestamp = createdMatch?.[1]?.trim() || new Date().toISOString();
+    const githubUrl = urlMatch?.[1]?.trim() || (issueNumber ? `https://github.com/${repoFullName}/issues/${issueNumber}` : undefined);
+
+    const gitHubProvenance: GitHubEvidenceProvenance = {
+      repositoryId: repoMeta?.id || 0,
+      repositoryOwner: repoOwner,
+      repositoryName: repoName,
+      repositoryFullName: repoFullName,
+      branch: defaultBranch,
+      issueNumber,
+      originalGitHubUrl: githubUrl || `https://github.com/${repoFullName}`,
+      author,
+      timestamp,
+      contentHash: `sha256:${crypto.createHash('sha256').update(coords.snippet.trim()).digest('hex')}`,
+      synthesizedLineRange: coords.lineRange,
+    };
+
+    return {
+      issueNumber,
+      author,
+      timestamp,
+      githubUrl,
+      file: repoFullName,
+      gitHubProvenance,
+    };
+  }
+
+  // 4. Documentation Entity
+  if (maxIdx === docIdx) {
+    const fileMatch = blockText.match(/File:\s*([^\s|]+)/i);
+    const filePath = fileMatch?.[1]?.trim() || 'README.md';
+    const githubUrl = `https://github.com/${repoFullName}/blob/${defaultBranch}/${filePath}`;
+
+    const gitHubProvenance: GitHubEvidenceProvenance = {
+      repositoryId: repoMeta?.id || 0,
+      repositoryOwner: repoOwner,
+      repositoryName: repoName,
+      repositoryFullName: repoFullName,
+      branch: defaultBranch,
+      filePath,
+      originalGitHubUrl: githubUrl,
+      author: 'Repository Documentation',
+      timestamp: new Date().toISOString(),
+      contentHash: `sha256:${crypto.createHash('sha256').update(coords.snippet.trim()).digest('hex')}`,
+      synthesizedLineRange: coords.lineRange,
+    };
+
+    return {
+      file: filePath,
+      githubUrl,
+      author: 'Documentation Contributor',
+      gitHubProvenance,
+    };
+  }
+
+  return {};
 }
 
 /**
@@ -189,16 +380,27 @@ export function groundFinding(
     const coords = calculateCoordinates(source, searchResult.startIndex, searchResult.endIndex, searchResult.matchedText);
     const contentHash = `sha256:${crypto.createHash('sha256').update(coords.snippet).digest('hex')}`;
 
+    // Extract rich GitHub provenance if source is an ingested repository
+    const ghProv = source.type === 'github'
+      ? extractGitHubProvenanceFromText(fullText, searchResult.startIndex, source, coords)
+      : {};
+
     const verifiedCitation: EvidenceCitation = {
       id: `cit-verified-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       sourceId: source.id,
       sourceName: source.name,
       sourceType: source.type,
-      file: source.name,
+      file: ghProv.file || source.name,
       lineRange: coords.lineRange,
-      author: 'Document Source',
-      timestamp: new Date().toUTCString(),
+      commitSha: ghProv.commitSha,
+      githubUrl: ghProv.githubUrl,
+      prNumber: ghProv.prNumber,
+      issueNumber: ghProv.issueNumber,
+      gitHubProvenance: ghProv.gitHubProvenance,
+      author: ghProv.author || (source.type === 'github' ? 'GitHub Contributor' : 'Document Source'),
+      timestamp: ghProv.timestamp || new Date().toUTCString(),
       snippet: coords.snippet,
+      quote: searchResult.matchedText,
       contentHash,
       clearanceTier: 'INTERNAL',
       confidence: 96,
@@ -214,11 +416,20 @@ export function groundFinding(
       };
     }
 
+    let reviewerNotes = `Grounding verified against ${source.name} (${coords.lineRange}). Pending human review.`;
+    if (ghProv.commitSha) {
+      reviewerNotes = `Grounding verified against GitHub commit ${ghProv.commitSha.slice(0, 7)} (${coords.lineRange}). Pending human review.`;
+    } else if (ghProv.prNumber) {
+      reviewerNotes = `Grounding verified against GitHub PR #${ghProv.prNumber} (${coords.lineRange}). Pending human review.`;
+    } else if (ghProv.issueNumber) {
+      reviewerNotes = `Grounding verified against GitHub Issue #${ghProv.issueNumber} (${coords.lineRange}). Pending human review.`;
+    }
+
     return {
       status: 'VERIFIED',
       confidence: 95,
       citations: [verifiedCitation],
-      reviewerNotes: `Grounding verified against ${source.name} (${coords.lineRange}). Pending human review.`,
+      reviewerNotes,
     };
   }
 
@@ -256,6 +467,13 @@ export function buildKnowledgeFinding(
 ): KnowledgeFinding {
   const findingId = `FIND-AI-${Date.now().toString().slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
+  const primaryAuthor = grounding.citations[0]?.author;
+  const isGenericAuthor = !primaryAuthor || primaryAuthor === 'Document Source' || primaryAuthor === 'AI Extraction' || primaryAuthor === 'AI Model (Ungrounded)';
+  const resolvedOwner =
+    raw.owner && raw.owner.trim().length > 0 && raw.owner.trim().toLowerCase() !== 'unassigned'
+      ? raw.owner.trim()
+      : (!isGenericAuthor ? primaryAuthor! : fallbackOwner);
+
   const finding: KnowledgeFinding = {
     id: findingId,
     type: raw.type,
@@ -271,7 +489,7 @@ export function buildKnowledgeFinding(
     reviewerNotes: grounding.reviewerNotes,
     category: raw.category || 'General Operations',
     urgency: raw.urgency || 'medium',
-    owner: raw.owner && raw.owner.trim().length > 0 ? raw.owner.trim() : fallbackOwner,
+    owner: resolvedOwner,
     createdDate: new Date().toISOString().split('T')[0],
   };
 

@@ -7,6 +7,7 @@ import { findingsRouter } from './findings.ts';
 import { conflictsRouter } from './conflicts.ts';
 import { handoversRouter } from './handovers.ts';
 import { authRouter } from './auth.ts';
+import { githubRouter } from './github.ts';
 
 export const apiRouter = Router();
 
@@ -18,4 +19,5 @@ apiRouter.use('/analysis', analysisRouter);
 apiRouter.use('/findings', findingsRouter);
 apiRouter.use('/conflicts', conflictsRouter);
 apiRouter.use('/handovers', handoversRouter);
+apiRouter.use('/github', githubRouter);
 

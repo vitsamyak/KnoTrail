@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { app } from '../../backend/app.ts';
 import { apiClient, ApiClientError, getApiBaseUrl } from '../lib/api-client.ts';
-import { getStorage } from '../server/db/storage.ts';
+import { getStorage, resetStorageInstance } from '../server/db/storage.ts';
 import { generateSecureWorkspaceId } from '../server/db/types.ts';
 
 /**
@@ -26,11 +26,13 @@ async function createTestServer() {
 test('▶ Phase I: Standalone Express Backend & Decoupled Frontend API Suite', async (t) => {
   const origStorageBackend = process.env.STORAGE_BACKEND;
   process.env.STORAGE_BACKEND = 'file';
+  resetStorageInstance();
 
   const { server, baseUrl, close } = await createTestServer();
 
   t.after(async () => {
     process.env.STORAGE_BACKEND = origStorageBackend;
+    resetStorageInstance();
     await close();
   });
 

@@ -4,6 +4,7 @@ import { isValidWorkspaceId } from '../../src/server/db/types.ts';
 import { extractDocument, MAX_FILES_PER_BATCH } from '../../src/server/documents/extractor.ts';
 import { uploadMiddleware, handleUploadErrors } from '../middleware/upload.ts';
 import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
+import { redactSourceForRole } from '../../src/server/security/redactor.ts';
 import type { ProjectSource } from '../../src/lib/types.ts';
 
 export const sourcesRouter = Router();
@@ -22,7 +23,10 @@ sourcesRouter.get('/', requireWorkspaceAccess, async (req: Request, res: Respons
       project = await storage.createWorkspace(workspaceId);
     }
 
-    res.status(200).json({ sources: project.sources, status: 'success' });
+    const callerRole = req.workspaceAuth!.role;
+    const sanitizedSources = (project.sources || []).map((s) => redactSourceForRole(s, callerRole));
+
+    res.status(200).json({ sources: sanitizedSources, status: 'success' });
   } catch (error: any) {
     console.error('API Error in GET /api/sources:', error?.message || error);
     res.status(500).json({ error: error?.message || 'Internal server error' });
@@ -213,7 +217,10 @@ sourcesRouter.get('/:id', requireWorkspaceAccess, async (req: Request, res: Resp
       return;
     }
 
-    res.status(200).json({ source, status: 'success' });
+    const callerRole = req.workspaceAuth!.role;
+    const sanitizedSource = redactSourceForRole(source, callerRole);
+
+    res.status(200).json({ source: sanitizedSource, status: 'success' });
   } catch (error: any) {
     console.error('API Error in GET /api/sources/:id:', error?.message || error);
     res.status(500).json({ error: error?.message || 'Internal server error' });
@@ -223,9 +230,9 @@ sourcesRouter.get('/:id', requireWorkspaceAccess, async (req: Request, res: Resp
 /**
  * DELETE /api/sources/:id
  * Deletes a source and its uploaded raw document.
- * Requires MANAGER or DEVELOPER permissions.
+ * Safeguard: ONLY Managers can delete project sources.
  */
-sourcesRouter.delete('/:id', requireWorkspaceAccess, requireRole(['MANAGER', 'DEVELOPER']), async (req: Request, res: Response) => {
+sourcesRouter.delete('/:id', requireWorkspaceAccess, requireRole(['MANAGER']), async (req: Request, res: Response) => {
   try {
     const workspaceId = req.workspaceAuth!.workspaceId;
     const storage = getStorage();

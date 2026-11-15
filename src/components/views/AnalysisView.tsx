@@ -22,6 +22,7 @@ export function AnalysisView() {
     runVerification,
     isVerifying,
     stats,
+    currentUserRole,
   } = useProject();
 
   const [activeCategory, setActiveCategory] = useState<'all' | FindingType>('all');
@@ -114,9 +115,15 @@ export function AnalysisView() {
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
           <button
-            onClick={() => handleRunAiExtraction()}
-            disabled={isAnalysing || isSyncing || isVerifying}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors disabled:opacity-60"
+            onClick={() => {
+              if (currentUserRole === 'EXTERNAL') return;
+              handleRunAiExtraction();
+            }}
+            disabled={isAnalysing || isSyncing || isVerifying || currentUserRole === 'EXTERNAL'}
+            title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot trigger AI extraction' : undefined}
+            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors disabled:opacity-60 ${
+              currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
             {isAnalysing ? (
               <>
@@ -125,17 +132,28 @@ export function AnalysisView() {
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
-                <span>Extract with AI</span>
+                <span className="material-symbols-outlined text-[17px]">
+                  {currentUserRole === 'EXTERNAL' ? 'lock' : 'auto_awesome'}
+                </span>
+                <span>{currentUserRole === 'EXTERNAL' ? 'Read-Only (External)' : 'Extract with AI'}</span>
               </>
             )}
           </button>
 
           <button
-            onClick={() => handleRunVerification()}
-            disabled={isAnalysing || isSyncing || isVerifying || project.findings.length === 0}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium transition-colors border border-outline-variant/40 disabled:opacity-50"
-            title="Verify quotations and scan for cross-document conflicts"
+            onClick={() => {
+              if (currentUserRole === 'EXTERNAL') return;
+              handleRunVerification();
+            }}
+            disabled={isAnalysing || isSyncing || isVerifying || project.findings.length === 0 || currentUserRole === 'EXTERNAL'}
+            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium transition-colors border border-outline-variant/40 disabled:opacity-50 ${
+              currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            title={
+              currentUserRole === 'EXTERNAL'
+                ? 'Read-only access: External members cannot run verification'
+                : 'Verify quotations and scan for cross-document conflicts'
+            }
           >
             {isVerifying ? (
               <>
@@ -144,8 +162,10 @@ export function AnalysisView() {
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[17px] text-primary">fact_check</span>
-                <span>Verify Quotes &amp; Conflicts</span>
+                <span className="material-symbols-outlined text-[17px] text-primary">
+                  {currentUserRole === 'EXTERNAL' ? 'lock' : 'fact_check'}
+                </span>
+                <span>{currentUserRole === 'EXTERNAL' ? 'Read-Only (External)' : 'Verify Quotes & Conflicts'}</span>
               </>
             )}
           </button>
@@ -277,11 +297,11 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
       {/* SUCCESS NOTIFICATION */}
       {analysisSuccessMsg && (
-        <div className="bg-success/10 border border-success/30 rounded-xl p-4 text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-on-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in">
           <div className="flex items-start gap-2.5">
-            <span className="material-symbols-outlined text-[18px] text-success shrink-0 mt-0.5">check_circle</span>
+            <span className="material-symbols-outlined text-[18px] text-emerald-700 shrink-0 mt-0.5">check_circle</span>
             <div className="flex-1">
-              <strong className="block font-semibold text-success">Extraction Successful</strong>
+              <strong className="block font-semibold text-emerald-800">Extraction Successful</strong>
               <p className="mt-0.5 text-secondary leading-relaxed">{analysisSuccessMsg}</p>
             </div>
           </div>
@@ -508,14 +528,14 @@ GEMINI_API_KEY=your_gemini_api_key_here
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                    className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                       finding.status === 'VERIFIED'
-                        ? 'bg-success/10 text-success border-success/20'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                         : finding.status === 'CONFLICTING'
-                        ? 'bg-error/10 text-error border-error/20'
+                        ? 'bg-rose-50 text-rose-800 border-rose-200'
                         : finding.status === 'UNCERTAIN'
-                        ? 'bg-warning/10 text-warning border-warning/20'
-                        : 'bg-surface-container-low text-secondary border-outline-variant/40'
+                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                        : 'bg-surface-container text-secondary border-outline-variant/40'
                     }`}
                   >
                     {finding.status}
@@ -524,12 +544,12 @@ GEMINI_API_KEY=your_gemini_api_key_here
                   <span className="text-secondary">•</span>
                   <span className="text-xs text-secondary">Owner: {finding.owner}</span>
                   {!finding.approved && !finding.rejected && (
-                    <span className="text-[10px] bg-warning/10 text-warning border border-warning/20 px-2 py-0.2 rounded font-semibold uppercase">
+                    <span className="text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.2 rounded font-semibold uppercase">
                       Pending Review
                     </span>
                   )}
                   {finding.approved && (
-                    <span className="text-[10px] bg-success/10 text-success border border-success/20 px-2 py-0.2 rounded font-semibold uppercase flex items-center gap-0.5">
+                    <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.2 rounded font-semibold uppercase flex items-center gap-0.5">
                       <span className="material-symbols-outlined text-[12px]">check</span>
                       <span>Approved</span>
                     </span>
