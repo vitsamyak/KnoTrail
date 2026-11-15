@@ -14,8 +14,36 @@ import type {
 let clientAuthToken: string | null = null;
 let clientDemoPerspective: UserRole | null = null;
 
+const SESSION_STORAGE_KEY = 'knotrail_auth_token';
+
+export function initClientSessionFromStorage(): string | null {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+      if (stored && stored.trim().length > 0) {
+        clientAuthToken = stored.trim();
+        return clientAuthToken;
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+  }
+  return clientAuthToken;
+}
+
 export function setClientAuthToken(token: string | null) {
   clientAuthToken = token;
+  if (typeof window !== 'undefined') {
+    try {
+      if (token) {
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, token);
+      } else {
+        window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  }
 }
 
 export function getClientAuthToken(): string | null {
@@ -165,6 +193,64 @@ async function request<T>(
 export const apiClient = {
   // Base URL introspection
   getBaseUrl: getApiBaseUrl,
+
+  // --- Authentication ---
+  async login(credentials: {
+    email: string;
+    password: string;
+    workspaceId?: string;
+  }): Promise<{
+    status: string;
+    token: string;
+    authProvider: string;
+    user: { userId: string; email: string; role: UserRole };
+    workspace: { id: string; isProtected: boolean; memberRole: UserRole };
+  }> {
+    const res = await request<{
+      status: string;
+      token: string;
+      authProvider: string;
+      user: { userId: string; email: string; role: UserRole };
+      workspace: { id: string; isProtected: boolean; memberRole: UserRole };
+    }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+
+    if (res.token) {
+      setClientAuthToken(res.token);
+    }
+    return res;
+  },
+
+  async logout(): Promise<{ status: string; message: string }> {
+    try {
+      const res = await request<{ status: string; message: string }>('/api/auth/logout', {
+        method: 'POST',
+      });
+      return res;
+    } finally {
+      setClientAuthToken(null);
+    }
+  },
+
+  async getAuthSession(workspaceId?: string): Promise<{
+    isAuthenticated: boolean;
+    user: { userId: string; email: string; authProvider: string } | null;
+    role?: UserRole;
+    workspaceId?: string | null;
+  }> {
+    const query = workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : '';
+    return request(`/api/auth/me${query}`);
+  },
+
+  async getAuthStatus(): Promise<{
+    supabaseConfigured: boolean;
+    demoAccountAvailable: boolean;
+    demoEmail: string;
+  }> {
+    return request('/api/auth/status');
+  },
 
   // --- Workspaces ---
   async getWorkspace(workspaceId: string): Promise<{ workspaceId: string; project: ProjectData; status: string }> {

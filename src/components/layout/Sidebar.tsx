@@ -21,6 +21,10 @@ export function Sidebar() {
     isProjectCreated,
     isMobileNavOpen,
     setIsMobileNavOpen,
+    currentUser,
+    isAuthenticated,
+    setShowLoginModal,
+    logout,
   } = useProject();
 
   const navItems: NavItem[] = [
@@ -142,6 +146,70 @@ export function Sidebar() {
             <span>Review Progress</span>
             <span className="font-semibold text-on-surface">{stats.certificationProgressPercent}%</span>
           </div>
+        </div>
+
+        {/* Authentication & Security Role Card */}
+        <div className="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-2 border border-outline-variant/30">
+          <div className="flex items-center justify-between">
+            <span className="font-label-sm text-[11px] text-outline font-semibold uppercase tracking-wider">
+              {isAuthenticated ? 'Security Session' : 'Access Mode'}
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                isAuthenticated
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-surface-container-highest text-outline'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+              {isAuthenticated ? 'AUTHENTICATED' : 'ANONYMOUS'}
+            </span>
+          </div>
+
+          {isAuthenticated && currentUser ? (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                  {currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'M'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold text-on-surface truncate" title={currentUser.email}>
+                    {currentUser.email}
+                  </div>
+                  <div className="text-[10px] text-primary font-mono font-medium flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[12px]">verified</span>
+                    <span>Role: {currentUser.role}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  await logout();
+                  if (isMobile) setIsMobileNavOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-surface-container hover:bg-error-container/20 text-on-surface hover:text-error rounded-md text-[11px] font-medium transition-colors border border-outline-variant/30"
+              >
+                <span className="material-symbols-outlined text-[14px]">logout</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[11px] text-on-surface-variant leading-tight">
+                Operating in Public Demo. Sign in for verified Manager access.
+              </p>
+              <button
+                onClick={() => {
+                  setShowLoginModal(true);
+                  if (isMobile) setIsMobileNavOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-primary hover:bg-inverse-surface text-on-primary rounded-md text-[11px] font-semibold transition-all shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[14px]">login</span>
+                <span>Sign In as Manager</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Footer Meta & Demo Reset */}

@@ -5,6 +5,7 @@ import { useProject } from '../../context/ProjectContext';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { CreateProjectModal } from '../modals/CreateProjectModal';
+import { LoginModal } from '../modals/LoginModal';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -20,6 +21,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     syncStatusMessage,
     showCreateProjectModal,
     setShowCreateProjectModal,
+    showLoginModal,
+    setShowLoginModal,
   } = useProject();
 
   // Lock background scroll when mobile drawer is open
@@ -61,6 +64,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div key={activeView} className="animate-in fade-in duration-200">
           {children}
         </div>
+
+        {/* Global Login Modal on Landing */}
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onSuccess={() => setActiveView('workspace')}
+        />
       </div>
     );
   }
@@ -113,6 +123,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <CreateProjectModal
         isOpen={showCreateProjectModal}
         onClose={() => setShowCreateProjectModal(false)}
+        onSuccess={() => setActiveView('workspace')}
+      />
+
+      {/* Global Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
         onSuccess={() => setActiveView('workspace')}
       />
     </div>

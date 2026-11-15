@@ -4,7 +4,7 @@ import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 
 export function LandingView() {
-  const { setActiveView } = useProject();
+  const { setActiveView, setShowLoginModal, isAuthenticated } = useProject();
 
   return (
     <main className="min-h-screen w-full flex items-center justify-center px-3 sm:px-space-md py-space-md bg-background text-on-surface antialiased">
@@ -57,6 +57,21 @@ export function LandingView() {
               </button>
               <button
                 onClick={() => {
+                  if (isAuthenticated) {
+                    setActiveView('workspace');
+                  } else {
+                    setShowLoginModal(true);
+                  }
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl shadow-xs border border-outline-variant/30 font-headline-sm text-sm font-semibold transition-all duration-200 min-h-[46px]"
+              >
+                <span className="material-symbols-outlined text-lg text-primary">
+                  {isAuthenticated ? 'verified_user' : 'login'}
+                </span>
+                <span>{isAuthenticated ? 'Open Manager Workspace' : 'Sign In as Manager'}</span>
+              </button>
+              <button
+                onClick={() => {
                   const el = document.getElementById('how-it-works');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
@@ -68,9 +83,9 @@ export function LandingView() {
             </div>
 
             {/* Frictionless Zero-Auth Reassurance */}
-            <div className="flex items-center justify-center gap-1.5 pt-space-md text-xs text-on-surface-variant">
+            <div className="flex items-center justify-center gap-1.5 pt-space-md text-xs text-on-surface-variant flex-wrap text-center">
               <span className="material-symbols-outlined text-base text-primary">verified_user</span>
-              <span>Free to try • No sign-up or login required • Works immediately in your browser</span>
+              <span>Free Public Demo • No sign-up or login required • Sign in with Demo Manager account for protected RBAC</span>
             </div>
           </div>
         </section>
@@ -437,6 +452,21 @@ export function LandingView() {
               >
                 <span>Open Project Workspace</span>
                 <span className="material-symbols-outlined text-[18px]">folder_open</span>
+              </button>
+              <button
+                onClick={() => {
+                  if (isAuthenticated) {
+                    setActiveView('workspace');
+                  } else {
+                    setShowLoginModal(true);
+                  }
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl font-headline-sm text-sm border border-outline-variant/30 transition-all min-h-[46px]"
+              >
+                <span className="material-symbols-outlined text-[18px] text-primary">
+                  {isAuthenticated ? 'verified_user' : 'login'}
+                </span>
+                <span>{isAuthenticated ? 'Manager Logged In' : 'Sign In as Manager'}</span>
               </button>
               <button
                 onClick={() => setActiveView('sources')}

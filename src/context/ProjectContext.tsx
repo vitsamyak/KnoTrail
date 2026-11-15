@@ -15,7 +15,12 @@ import {
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
-import { apiClient, setClientDemoPerspective } from '../lib/api-client';
+import {
+  apiClient,
+  setClientDemoPerspective,
+  initClientSessionFromStorage,
+  setClientAuthToken,
+} from '../lib/api-client';
 
 interface ProjectContextType {
   activeView: ActiveView;
@@ -26,6 +31,14 @@ interface ProjectContextType {
   isProtectedWorkspace: boolean;
   demoPerspective: UserRole;
   setDemoPerspective: (role: UserRole) => void;
+  currentUser: { userId: string; email: string; role: UserRole } | null;
+  isAuthenticated: boolean;
+  isAuthLoading: boolean;
+  authError: string | null;
+  showLoginModal: boolean;
+  setShowLoginModal: (show: boolean) => void;
+  login: (credentials: { email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
   isLoading: boolean;
   isNavigating: boolean;
   isMobileNavOpen: boolean;
@@ -155,12 +168,21 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [demoPerspective, setDemoPerspectiveState] = useState<UserRole>('MANAGER');
 
+  // Server-verified Authentication States
+  const [currentUser, setCurrentUser] = useState<{ userId: string; email: string; role: UserRole } | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+
   const setDemoPerspective = useCallback((role: UserRole) => {
     setDemoPerspectiveState(role);
     setClientDemoPerspective(role);
   }, []);
 
-  const currentUserRole: UserRole = project.isProtected
+  const currentUserRole: UserRole = isAuthenticated && currentUser
+    ? currentUser.role
+    : project.isProtected
     ? (project.currentUserRole || 'MANAGER')
     : demoPerspective;
 
@@ -195,6 +217,96 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, []);
+
+  // Restore authenticated session from sessionStorage on mount
+  useEffect(() => {
+    const token = initClientSessionFromStorage();
+    if (token) {
+      apiClient
+        .getAuthSession(workspaceId)
+        .then((session) => {
+          if (session.isAuthenticated && session.user) {
+            setIsAuthenticated(true);
+            setCurrentUser({
+              userId: session.user.userId,
+              email: session.user.email,
+              role: session.role || 'MANAGER',
+            });
+          } else {
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setClientAuthToken(null);
+          }
+        })
+        .catch(() => {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+          setClientAuthToken(null);
+        });
+    }
+  }, [workspaceId]);
+
+  const login = useCallback(
+    async (credentials: { email: string; password: string }) => {
+      setIsAuthLoading(true);
+      setAuthError(null);
+      try {
+        const res = await apiClient.login({
+          ...credentials,
+          workspaceId,
+        });
+
+        setIsAuthenticated(true);
+        setCurrentUser({
+          userId: res.user.userId,
+          email: res.user.email,
+          role: res.user.role,
+        });
+        setShowLoginModal(false);
+
+        // Fetch fresh workspace state for the authenticated session
+        if (res.workspace?.id) {
+          try {
+            const wsRes = await apiClient.getWorkspace(res.workspace.id);
+            if (wsRes.project) {
+              setProject(wsRes.project);
+              persistToLocalCache(res.workspace.id, wsRes.project);
+            }
+          } catch {
+            // keep current workspace
+          }
+        }
+        return { success: true };
+      } catch (err: any) {
+        const errorMsg = err?.message || 'Authentication failed. Please check your credentials.';
+        setAuthError(errorMsg);
+        return { success: false, error: errorMsg };
+      } finally {
+        setIsAuthLoading(false);
+      }
+    },
+    [workspaceId, persistToLocalCache]
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await apiClient.logout();
+    } catch {
+      // ignore
+    } finally {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setAuthError(null);
+      // Generate clean new anonymous demo workspace
+      const newWsId = `ws_anon_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      setWorkspaceId(newWsId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(WORKSPACE_COOKIE_KEY, newWsId);
+      }
+      setProject(INITIAL_PROJECT_DATA);
+      persistToLocalCache(newWsId, INITIAL_PROJECT_DATA);
+    }
+  }, [persistToLocalCache]);
 
   // Initialize or restore anonymous workspace on mount
   useEffect(() => {
@@ -1068,6 +1180,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         isProtectedWorkspace,
         demoPerspective,
         setDemoPerspective,
+        currentUser,
+        isAuthenticated,
+        isAuthLoading,
+        authError,
+        showLoginModal,
+        setShowLoginModal,
+        login,
+        logout,
         isLoading,
         isNavigating,
         isMobileNavOpen,

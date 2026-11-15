@@ -6,9 +6,11 @@ import { analysisRouter } from './analysis.ts';
 import { findingsRouter } from './findings.ts';
 import { conflictsRouter } from './conflicts.ts';
 import { handoversRouter } from './handovers.ts';
+import { authRouter } from './auth.ts';
 
 export const apiRouter = Router();
 
+apiRouter.use('/auth', authRouter);
 apiRouter.use('/workspaces', workspacesRouter);
 apiRouter.use('/projects', projectsRouter);
 apiRouter.use('/sources', sourcesRouter);

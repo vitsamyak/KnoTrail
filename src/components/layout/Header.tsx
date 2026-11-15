@@ -23,6 +23,10 @@ export function Header() {
     setShowCreateProjectModal,
     isMobileNavOpen,
     setIsMobileNavOpen,
+    currentUser,
+    isAuthenticated,
+    setShowLoginModal,
+    logout,
   } = useProject();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -78,28 +82,31 @@ export function Header() {
         </div>
       </div>
 
-      {/* Right Group: Role Switcher, Sync, Notifications, Workspace Profile */}
+      {/* Right Group: Role Switcher, Auth Buttons, Sync, Notifications, Workspace Profile */}
       <div className="flex items-center gap-2 sm:gap-space-md">
-        {/* Role & Demo Perspective Switcher Pill */}
-        <div
-          className="flex items-center gap-1.5 bg-surface-container-low px-2 sm:px-2.5 py-1 rounded-full border border-outline-variant/30 text-xs shadow-xs"
-          title={
-            isProtectedWorkspace
-              ? `Server-Verified Role: ${currentUserRole}`
-              : 'Demo Simulation Mode — Not an Authentication Boundary'
-          }
-        >
-          <span className="material-symbols-outlined text-[15px] text-primary shrink-0">
-            {isProtectedWorkspace ? 'verified_user' : 'shield_person'}
-          </span>
-          <span className="font-semibold text-on-surface text-[11px] uppercase tracking-wide hidden sm:inline">
-            {isProtectedWorkspace ? currentUserRole : 'Demo'}:
-          </span>
-          {isProtectedWorkspace ? (
-            <span className="text-[11px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+        {/* Authentication State Pill */}
+        {isAuthenticated && currentUser ? (
+          <div className="flex items-center gap-1.5 bg-surface-container-low px-2 sm:px-2.5 py-1 rounded-full border border-primary/30 text-xs shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></span>
+            <span className="font-mono text-[11px] text-on-surface truncate max-w-[120px] hidden md:inline">
+              {currentUser.email}
+            </span>
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase">
               {currentUserRole}
             </span>
-          ) : (
+          </div>
+        ) : (
+          /* Public Demo Badge & Role Switcher Pill */
+          <div
+            className="flex items-center gap-1.5 bg-surface-container-low px-2 sm:px-2.5 py-1 rounded-full border border-outline-variant/30 text-xs shadow-xs"
+            title="Public Demo Simulation Mode — Free Access Without Login"
+          >
+            <span className="material-symbols-outlined text-[15px] text-primary shrink-0">
+              shield_person
+            </span>
+            <span className="font-semibold text-on-surface text-[11px] uppercase tracking-wide hidden sm:inline">
+              Public Demo:
+            </span>
             <div className="flex items-center gap-0.5">
               {(['MANAGER', 'DEVELOPER', 'EXTERNAL'] as const).map((role) => (
                 <button
@@ -116,8 +123,29 @@ export function Header() {
                 </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Primary Auth Action: Sign In or Sign Out */}
+        {isAuthenticated ? (
+          <button
+            onClick={() => logout()}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container hover:text-error text-outline font-label-sm text-label-sm border border-outline-variant/20 transition-colors text-xs"
+            title="Sign Out of Demo Manager Account"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm shadow-xs transition-all text-xs"
+            title="Sign in with Demo Manager Account"
+          >
+            <span className="material-symbols-outlined text-[16px]">login</span>
+            <span className="hidden sm:inline">Sign In</span>
+          </button>
+        )}
 
         {/* Sync Button */}
         <button
@@ -242,31 +270,60 @@ export function Header() {
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-72 max-w-sm bg-surface-container-lowest rounded-xl shadow-[0_10px_30px_-4px_rgba(32,40,34,0.12)] border border-outline-variant/40 p-space-md z-50 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center gap-space-sm pb-space-sm border-b border-outline-variant/30">
-                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[24px]">shield_person</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-headline-sm text-headline-sm text-on-surface font-semibold leading-tight">
-                    Your Workspace
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">
+                    {isAuthenticated ? 'verified_user' : 'shield_person'}
                   </span>
-                  <span className="text-xs text-outline font-mono truncate max-w-[180px]">{workspaceId}</span>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-headline-sm text-headline-sm text-on-surface font-semibold leading-tight truncate">
+                    {isAuthenticated && currentUser ? currentUser.email : 'Public Demo Session'}
+                  </span>
+                  <span className="text-[11px] text-outline font-mono truncate">
+                    {isAuthenticated ? `Role: ${currentUserRole} (Verified)` : `Workspace: ${workspaceId}`}
+                  </span>
                 </div>
               </div>
               <div className="pt-space-xs pb-1 text-xs text-on-surface-variant space-y-1">
                 <p className="font-medium text-secondary">
-                  Zero-Auth Private Session
+                  {isAuthenticated ? 'Protected Authenticated Session' : 'Zero-Auth Public Demo'}
                 </p>
                 <p className="text-outline">
-                  Judges and reviewers have full access to create projects, upload documents, review findings, and certify handovers with zero login.
+                  {isAuthenticated
+                    ? 'Authenticated as workspace Manager with full permissions to certify handovers and manage members.'
+                    : 'Judges and reviewers can explore all screens without login. Sign in with the Manager demo account for protected workspace checks.'}
                 </p>
               </div>
               <div className="pt-2 border-t border-outline-variant/30 flex flex-col gap-1.5">
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      logout();
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full py-1 text-xs font-semibold text-error hover:underline text-left flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setShowLoginModal(true);
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full py-1 text-xs font-semibold text-primary hover:underline text-left flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">login</span>
+                    <span>Sign In to Demo Manager Account</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setShowCreateProjectModal(true);
                     setShowProfileMenu(false);
                   }}
-                  className="w-full py-1 text-xs font-medium text-primary hover:underline text-left flex items-center gap-1.5"
+                  className="w-full py-1 text-xs font-medium text-on-surface hover:text-primary hover:underline text-left flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[15px]">create_new_folder</span>
                   <span>Create New Project</span>
