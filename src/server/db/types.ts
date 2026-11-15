@@ -42,6 +42,33 @@ export interface DatabaseWorkspaceMemberRow {
   updated_at: string;
 }
 
+export interface DatabaseGitHubIntegrationRow {
+  id: string;
+  workspace_id: string;
+  installation_id: number | null;
+  repo_owner: string;
+  repo_name: string;
+  repo_id: number;
+  default_branch: string;
+  selected_branch: string;
+  sync_status: 'idle' | 'syncing' | 'synced' | 'error';
+  last_synced_at: string | null;
+  last_commit_sha: string | null;
+  error_message: string | null;
+  config: any;
+  metadata: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DatabaseGitHubWebhookEventRow {
+  event_id: string;
+  event_type: string;
+  repo_id: number;
+  payload_hash: string;
+  processed_at: string;
+}
+
 export interface HumanReviewActionRecord {
   id: string;
   projectId: string;

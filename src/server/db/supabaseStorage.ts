@@ -10,6 +10,7 @@ import type {
   HandoverShareRecord,
   UserRole,
   WorkspaceMemberRecord,
+  GitHubIntegration,
 } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { revalidateEditedFinding } from '../verification/verifier.ts';
@@ -1202,4 +1203,108 @@ export class SupabaseStorageRepository implements StorageRepository {
       .eq('user_id', userId);
     return !error;
   }
+
+  async getGitHubIntegration(workspaceId: string, repoId?: number): Promise<GitHubIntegration | null> {
+    if (!isValidWorkspaceId(workspaceId)) return null;
+    let query = this.client.from('github_integrations').select('*').eq('workspace_id', workspaceId);
+    if (repoId !== undefined) {
+      query = query.eq('repo_id', repoId);
+    }
+    const { data, error } = await query.maybeSingle();
+    if (error || !data) return null;
+    return mapDbRowToGitHubIntegration(data);
+  }
+
+  async saveGitHubIntegration(workspaceId: string, integration: GitHubIntegration): Promise<GitHubIntegration> {
+    const row = mapGitHubIntegrationToDbRow(workspaceId, integration);
+    const { data, error } = await this.client
+      .from('github_integrations')
+      .upsert(row, { onConflict: 'workspace_id,repo_id' })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapDbRowToGitHubIntegration(data);
+  }
+
+  async listGitHubIntegrations(workspaceId: string): Promise<GitHubIntegration[]> {
+    if (!isValidWorkspaceId(workspaceId)) return [];
+    const { data, error } = await this.client
+      .from('github_integrations')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false });
+    if (error || !data) return [];
+    return data.map(mapDbRowToGitHubIntegration);
+  }
+
+  async deleteGitHubIntegration(workspaceId: string, repoId: number): Promise<boolean> {
+    if (!isValidWorkspaceId(workspaceId)) return false;
+    const { error } = await this.client
+      .from('github_integrations')
+      .delete()
+      .eq('workspace_id', workspaceId)
+      .eq('repo_id', repoId);
+    return !error;
+  }
+
+  async recordWebhookDelivery(deliveryId: string, eventType: string, repoId: number, payloadHash: string): Promise<boolean> {
+    const { error } = await this.client.from('github_webhook_events').insert({
+      event_id: deliveryId,
+      event_type: eventType,
+      repo_id: repoId,
+      payload_hash: payloadHash,
+    });
+    return !error;
+  }
+
+  async isWebhookDeliveryProcessed(deliveryId: string): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('github_webhook_events')
+      .select('event_id')
+      .eq('event_id', deliveryId)
+      .maybeSingle();
+    if (error || !data) return false;
+    return true;
+  }
+}
+
+function mapDbRowToGitHubIntegration(row: any): GitHubIntegration {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    installationId: row.installation_id ? Number(row.installation_id) : null,
+    repoOwner: row.repo_owner,
+    repoName: row.repo_name,
+    repoId: Number(row.repo_id),
+    defaultBranch: row.default_branch,
+    selectedBranch: row.selected_branch,
+    syncStatus: row.sync_status,
+    lastSyncedAt: row.last_synced_at,
+    lastCommitSha: row.last_commit_sha,
+    errorMessage: row.error_message,
+    config: row.config || {},
+    metadata: row.metadata,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapGitHubIntegrationToDbRow(workspaceId: string, item: GitHubIntegration): any {
+  return {
+    id: item.id,
+    workspace_id: workspaceId,
+    installation_id: item.installationId || null,
+    repo_owner: item.repoOwner,
+    repo_name: item.repoName,
+    repo_id: item.repoId,
+    default_branch: item.defaultBranch || 'main',
+    selected_branch: item.selectedBranch || 'main',
+    sync_status: item.syncStatus || 'idle',
+    last_synced_at: item.lastSyncedAt || null,
+    last_commit_sha: item.lastCommitSha || null,
+    error_message: item.errorMessage || null,
+    config: item.config || {},
+    metadata: item.metadata || null,
+    updated_at: new Date().toISOString(),
+  };
 }

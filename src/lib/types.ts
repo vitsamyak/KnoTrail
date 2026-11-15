@@ -64,6 +64,10 @@ export interface EvidenceCitation {
   file: string;
   lineRange: string;
   commitSha?: string;
+  githubUrl?: string;
+  prNumber?: number;
+  issueNumber?: number;
+  gitHubProvenance?: GitHubEvidenceProvenance;
   author: string;
   timestamp: string;
   snippet: string;
@@ -180,6 +184,8 @@ export interface ProjectSource {
   privacyLevel: 'SYNTHETIC_DEMO' | 'LOCAL_READ_ONLY';
   isUploaded?: boolean;
   documentData?: ExtractedDocumentData;
+  githubMetadata?: GitHubRepositoryMetadata;
+  githubIntegrationId?: string;
 }
 
 export interface Stakeholder {
@@ -219,6 +225,7 @@ export interface ProjectData {
   handovers?: HandoverDocument[];
   currentHandover?: HandoverDocument;
   shareRecords?: HandoverShareRecord[];
+  githubIntegrations?: GitHubIntegration[];
 }
 
 // Phase G: Comprehensive Handover Document Models
@@ -380,3 +387,184 @@ export type ActiveView =
   | 'evidence' 
   | 'review' 
   | 'handover';
+
+// ============================================================================
+// Phase 2: GitHub Integration Types & Models
+// ============================================================================
+
+export type GitHubSyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
+
+export interface GitHubIntegrationConfig {
+  includeCommits: boolean;
+  includePullRequests: boolean;
+  includeIssues: boolean;
+  includeDocs: boolean;
+  maxCommits?: number;
+  maxPullRequests?: number;
+  maxIssues?: number;
+  branch?: string;
+}
+
+export interface GitHubRepositoryMetadata {
+  id: number;
+  nodeId?: string;
+  name: string;
+  fullName: string; // e.g. "vitsamyak/KnoTrail"
+  owner: string;
+  ownerType: 'User' | 'Organization';
+  htmlUrl: string;
+  description: string | null;
+  defaultBranch: string;
+  isPrivate: boolean;
+  isFork: boolean;
+  language: string | null;
+  topics?: string[];
+  starsCount?: number;
+  forksCount?: number;
+  openIssuesCount?: number;
+  updatedAt?: string;
+  pushedAt?: string;
+}
+
+export interface GitHubCommitAuthor {
+  name: string;
+  email: string;
+  date: string;
+  username?: string;
+  avatarUrl?: string;
+}
+
+export interface GitHubCommitFile {
+  filename: string;
+  status: 'added' | 'modified' | 'removed' | 'renamed';
+  additions: number;
+  deletions: number;
+  changes: number;
+  patch?: string;
+}
+
+export interface GitHubCommit {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: GitHubCommitAuthor;
+  committer?: GitHubCommitAuthor;
+  htmlUrl: string;
+  files?: GitHubCommitFile[];
+  stats?: {
+    total: number;
+    additions: number;
+    deletions: number;
+  };
+}
+
+export interface GitHubPullRequestReview {
+  id: number;
+  user: string;
+  state: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED';
+  submittedAt?: string;
+  body?: string;
+}
+
+export interface GitHubPullRequest {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed';
+  isMerged: boolean;
+  mergedAt: string | null;
+  mergeCommitSha: string | null;
+  htmlUrl: string;
+  author: string;
+  authorAvatarUrl?: string;
+  baseBranch: string;
+  headBranch: string;
+  createdAt: string;
+  updatedAt: string;
+  changedFilesCount?: number;
+  additions?: number;
+  deletions?: number;
+  reviews?: GitHubPullRequestReview[];
+  reviewCommentsCount?: number;
+  labels?: string[];
+}
+
+export interface GitHubIssueComment {
+  id: number;
+  author: string;
+  body: string;
+  createdAt: string;
+  htmlUrl?: string;
+}
+
+export interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed';
+  htmlUrl: string;
+  author: string;
+  authorAvatarUrl?: string;
+  assignees: string[];
+  labels: string[];
+  commentsCount: number;
+  comments?: GitHubIssueComment[];
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+  isPullRequest?: boolean;
+}
+
+export interface GitHubEvidenceProvenance {
+  repositoryId: number;
+  repositoryOwner: string;
+  repositoryName: string;
+  repositoryFullName: string;
+  branch: string;
+  commitSha?: string;
+  filePath?: string;
+  originalGitHubUrl: string;
+  diffHunk?: {
+    startLine?: number;
+    endLine?: number;
+    patchExcerpt?: string;
+  };
+  prNumber?: number;
+  prReviewId?: number;
+  issueNumber?: number;
+  author: string;
+  timestamp: string;
+  contentHash: string; // SHA-256 of the raw quote/diff
+  synthesizedLineNumber?: number;
+  synthesizedLineRange?: string;
+}
+
+export interface GitHubIntegration {
+  id: string; // e.g. "ghi_..."
+  workspaceId: string;
+  installationId?: number | null;
+  repoOwner: string;
+  repoName: string;
+  repoId: number;
+  defaultBranch: string;
+  selectedBranch: string;
+  syncStatus: GitHubSyncStatus;
+  lastSyncedAt?: string | null;
+  lastCommitSha?: string | null;
+  errorMessage?: string | null;
+  config: GitHubIntegrationConfig;
+  metadata?: GitHubRepositoryMetadata;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GitHubWebhookEvent {
+  eventId: string; // from X-GitHub-Delivery
+  eventType: string; // e.g. "push", "pull_request", "issues"
+  repoId: number;
+  payloadHash: string;
+  processedAt: string;
+}
+

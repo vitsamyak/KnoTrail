@@ -12,6 +12,7 @@ import type {
   HandoverShareRecord,
   UserRole,
   WorkspaceMemberRecord,
+  GitHubIntegration,
 } from '../../lib/types.ts';
 import { INITIAL_PROJECT_DATA } from '../../lib/demoData.ts';
 import { checkHandoverBlockStatus, generateHandoverMarkdown, generateHandoverJSON } from '../../lib/handoverFilter.ts';
@@ -101,6 +102,12 @@ export interface StorageRepository {
   removeWorkspaceMember(workspaceId: string, userId: string): Promise<boolean>;
   isWorkspaceProtected(workspaceId: string): Promise<boolean>;
   setWorkspaceProtected(workspaceId: string, isProtected: boolean, ownerId?: string): Promise<void>;
+  getGitHubIntegration(workspaceId: string, repoId?: number): Promise<GitHubIntegration | null>;
+  saveGitHubIntegration(workspaceId: string, integration: GitHubIntegration): Promise<GitHubIntegration>;
+  listGitHubIntegrations(workspaceId: string): Promise<GitHubIntegration[]>;
+  deleteGitHubIntegration(workspaceId: string, repoId: number): Promise<boolean>;
+  recordWebhookDelivery(deliveryId: string, eventType: string, repoId: number, payloadHash: string): Promise<boolean>;
+  isWebhookDeliveryProcessed(deliveryId: string): Promise<boolean>;
 }
 
 export function sanitizeProjectData(project: ProjectData): ProjectData {
@@ -1178,6 +1185,98 @@ export class DurableFileRepository implements StorageRepository {
     if (filtered.length === members.length) return false;
     await this.writeMemberships(workspaceId, filtered);
     return true;
+  }
+
+  private getIntegrationsFilePath(workspaceId: string): string {
+    return path.join(this.baseDir, `github_${workspaceId}.json`);
+  }
+
+  private getWebhooksFilePath(): string {
+    return path.join(this.baseDir, 'github_webhooks.json');
+  }
+
+  private async readIntegrations(workspaceId: string): Promise<GitHubIntegration[]> {
+    const filePath = this.getIntegrationsFilePath(workspaceId);
+    if (!fs.existsSync(filePath)) return [];
+    try {
+      const data = await fs.promises.readFile(filePath, 'utf-8');
+      return JSON.parse(data) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  private async writeIntegrations(workspaceId: string, items: GitHubIntegration[]): Promise<void> {
+    const filePath = this.getIntegrationsFilePath(workspaceId);
+    await fs.promises.writeFile(filePath, JSON.stringify(items, null, 2), 'utf-8');
+  }
+
+  async getGitHubIntegration(workspaceId: string, repoId?: number): Promise<GitHubIntegration | null> {
+    const list = await this.readIntegrations(workspaceId);
+    if (repoId !== undefined) {
+      return list.find((i) => i.repoId === repoId) || null;
+    }
+    return list[0] || null;
+  }
+
+  async saveGitHubIntegration(workspaceId: string, integration: GitHubIntegration): Promise<GitHubIntegration> {
+    const list = await this.readIntegrations(workspaceId);
+    const existingIdx = list.findIndex((i) => i.repoId === integration.repoId);
+    if (existingIdx !== -1) {
+      list[existingIdx] = { ...integration, updatedAt: new Date().toISOString() };
+    } else {
+      list.push(integration);
+    }
+    await this.writeIntegrations(workspaceId, list);
+    return integration;
+  }
+
+  async listGitHubIntegrations(workspaceId: string): Promise<GitHubIntegration[]> {
+    return this.readIntegrations(workspaceId);
+  }
+
+  async deleteGitHubIntegration(workspaceId: string, repoId: number): Promise<boolean> {
+    const list = await this.readIntegrations(workspaceId);
+    const filtered = list.filter((i) => i.repoId !== repoId);
+    if (filtered.length === list.length) return false;
+    await this.writeIntegrations(workspaceId, filtered);
+    return true;
+  }
+
+  async recordWebhookDelivery(deliveryId: string, eventType: string, repoId: number, payloadHash: string): Promise<boolean> {
+    const filePath = this.getWebhooksFilePath();
+    let events: any[] = [];
+    if (fs.existsSync(filePath)) {
+      try {
+        events = JSON.parse(await fs.promises.readFile(filePath, 'utf-8')) || [];
+      } catch {
+        events = [];
+      }
+    }
+    if (events.some((e) => e.eventId === deliveryId)) {
+      return false;
+    }
+    events.push({
+      eventId: deliveryId,
+      eventType,
+      repoId,
+      payloadHash,
+      processedAt: new Date().toISOString(),
+    });
+    if (events.length > 1000) events = events.slice(events.length - 1000);
+    await fs.promises.writeFile(filePath, JSON.stringify(events, null, 2), 'utf-8');
+    return true;
+  }
+
+  async isWebhookDeliveryProcessed(deliveryId: string): Promise<boolean> {
+    const filePath = this.getWebhooksFilePath();
+    if (!fs.existsSync(filePath)) return false;
+    try {
+      const events: any[] = JSON.parse(await fs.promises.readFile(filePath, 'utf-8')) || [];
+      return events.some((e) => e.eventId === deliveryId);
+    } catch {
+      return false;
+    }
   }
 }
 
