@@ -75,30 +75,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 3. MAIN APPLICATION SHELL (With navigation rail and header)
+  // 3. ENTERPRISE APPLICATION SHELL (Docked sidebar, edge-to-edge sticky topbar, aligned main content)
   return (
-    <div className="min-h-screen bg-background font-body-md text-on-surface antialiased relative">
-      {/* Subtle Top Route Progress Indicator for fast, tactile navigation feedback */}
+    <div className="min-h-screen bg-background font-body-md text-on-surface antialiased flex flex-col">
+      {/* Route Progress Indicator */}
       {isNavigating && (
         <div
           role="progressbar"
           aria-label="Navigating view"
-          className="fixed top-0 left-0 right-0 h-[2.5px] z-50 bg-gradient-to-r from-primary/30 via-primary to-primary-container shadow-[0_0_8px_rgba(65,99,82,0.4)] transition-opacity duration-200"
+          className="fixed top-0 left-0 right-0 h-[2px] z-50 bg-primary transition-opacity duration-200"
         />
       )}
 
-      {/* Floating Left Navigation Rail / Responsive Mobile Drawer */}
+      {/* Docked Left Sidebar (Desktop) + Mobile Drawer */}
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="lg:pl-[17rem] pl-0 transition-all">
-        {/* Fixed Top Header */}
+      {/* Main Content Area (Offset by sidebar width on desktop) */}
+      <div className="lg:pl-64 flex flex-col flex-1 min-w-0 transition-all">
+        {/* Docked Sticky Top Header */}
         <Header />
 
-        {/* Dynamic View Content with smooth fade-in */}
+        {/* Page Content Container with Consistent Horizontal & Vertical Padding */}
         <main
           key={activeView}
-          className="relative pt-20 sm:pt-24 px-3 sm:px-6 lg:pr-6 lg:pl-0 pb-space-2xl min-h-screen animate-in fade-in duration-200"
+          className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 transition-opacity duration-150 animate-in fade-in"
         >
           {children}
         </main>
@@ -106,8 +106,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Live AI Sync Modal with KnoTrail Knowledge Trail */}
       {isSyncing && (
-        <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-surface-container-lowest max-w-md w-full rounded-2xl p-space-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-outline-variant/40 flex flex-col items-center text-center">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-surface max-w-md w-full rounded-2xl p-6 shadow-xl border border-outline-variant/40 flex flex-col items-center text-center">
             <KnowledgeTrailLoader
               variant="section"
               message="Synthesizing Engineering State"

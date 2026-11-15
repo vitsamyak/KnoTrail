@@ -249,71 +249,31 @@ export function ReviewView() {
   };
 
   return (
-    <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
-        <div className="flex flex-col max-w-2xl">
-          <div className="flex items-center gap-1.5 text-xs text-secondary">
-            <span
-              onClick={() => setActiveView('workspace')}
-              className="hover:text-primary cursor-pointer transition-colors"
-            >
-              {project.name}
-            </span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-semibold">Review Center</span>
+    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+      {/* Standardized Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-on-surface font-semibold">Review Center</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
-            Human Review &amp; Approval
+          <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
+            Human Review Center
           </h1>
           <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
-            Validate AI findings, resolve cross-document contradictions, and certify handover facts before final package generation.
+            Validate extracted findings, resolve cross-document contradictions, and certify handover facts before delivery.
           </p>
         </div>
 
-        {/* Active Reviewer Identity */}
-        <div className="flex items-center gap-2.5 bg-surface-container-low/60 px-3.5 py-2 rounded-xl border border-outline-variant/40 shrink-0">
-          <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[11px]">
-            {signerName.substring(0, 2).toUpperCase()}
+        {/* Reviewer Identity & Actions */}
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/30 text-xs">
+            <span className="material-symbols-outlined text-primary text-[16px]">verified_user</span>
+            <span className="text-on-surface font-medium">{signerName}</span>
+            <span className="text-[10px] text-secondary font-mono">({currentUserRole})</span>
           </div>
-          <div className="flex flex-col text-left text-xs">
-            <span className="text-xs text-on-surface font-semibold leading-tight">
-              {signerName}
-            </span>
-            <span className="text-[10px] text-secondary font-mono leading-tight">
-              Reviewer ({currentUserRole})
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* Prominent Governance Warning Banner */}
-      <div className="bg-surface-container-low/50 rounded-xl p-4 sm:p-5 border border-outline-variant/40 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-            <span className="material-symbols-outlined text-[20px]">verified_user</span>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-on-surface">
-                Human Review Invariant
-              </span>
-              <span className="bg-surface-container-low text-secondary border border-outline-variant/40 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
-                Mandatory Sign-off
-              </span>
-            </div>
-            <p className="text-xs text-secondary mt-0.5 max-w-xl leading-relaxed">
-              AI proposes findings, but humans make the final determination. Only approved findings appear in the certified handover document.
-            </p>
-          </div>
-        </div>
-
-        {/* Real-time Approval Progress & Certification Action */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between md:justify-end gap-3 shrink-0 self-stretch md:self-center w-full md:w-auto">
-          <div className="flex items-center justify-between sm:flex-col sm:items-end">
-            <span className="text-[11px] text-secondary font-medium uppercase tracking-wider">Progress</span>
-            <span className="text-xl font-bold text-on-surface">{stats.certificationProgressPercent}%</span>
-          </div>
           <button
             onClick={() => setShowCertifyConfirm(true)}
             disabled={!stats.canCertifyHandover || currentUserRole !== 'MANAGER'}
@@ -322,7 +282,7 @@ export function ReviewView() {
                 ? `Certification requires Manager permissions (current role: ${currentUserRole}).`
                 : undefined
             }
-            className={`w-full sm:w-auto justify-center px-4 h-9 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs ${
+            className={`px-3.5 h-9 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shadow-2xs ${
               !stats.canCertifyHandover || currentUserRole !== 'MANAGER'
                 ? 'bg-surface-container-low text-secondary cursor-not-allowed border border-outline-variant/40 opacity-60'
                 : 'bg-primary text-on-primary hover:bg-primary-hover'
@@ -333,18 +293,47 @@ export function ReviewView() {
             </span>
             <span>
               {currentUserRole !== 'MANAGER'
-                ? 'Manager Role Required to Certify'
+                ? 'Manager Role Required'
                 : hasBlockingConflicts
-                ? 'Resolve Conflicts to Certify'
+                ? 'Resolve Conflicts'
                 : stats.needsCorrectionCount > 0
-                ? `Revalidate Corrections (${stats.needsCorrectionCount} pending)`
+                ? `Revalidate (${stats.needsCorrectionCount})`
                 : stats.unreviewedCount > 0
-                ? `Review All Claims to Certify (${stats.unreviewedCount} pending)`
+                ? `Review All (${stats.unreviewedCount} left)`
                 : project.handoverCertified
                 ? 'Re-certify Handover'
-                : 'Certify & Approve Handover'}
+                : 'Certify Handover'}
             </span>
           </button>
+        </div>
+      </div>
+
+      {/* Prominent Governance Warning Banner */}
+      <div className="bg-surface rounded-xl p-4 sm:p-5 border border-outline-variant/40 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+            <span className="material-symbols-outlined text-[18px]">verified_user</span>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-on-surface">
+                Human Review Invariant
+              </span>
+              <span className="bg-surface-container-low text-secondary border border-outline-variant/30 text-[10px] px-2 py-0.2 rounded-full uppercase tracking-wider font-mono font-medium">
+                Mandatory Sign-off
+              </span>
+            </div>
+            <p className="text-xs text-secondary mt-0.5 max-w-xl leading-relaxed">
+              AI proposes findings from source files, but human reviewers retain final approval. Only approved findings are compiled into official handover packages.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-right">
+            <span className="text-[10px] text-secondary font-mono uppercase block">Certification Progress</span>
+            <span className="text-lg font-bold text-on-surface">{stats.certificationProgressPercent}%</span>
+          </div>
         </div>
       </div>
 

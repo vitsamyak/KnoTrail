@@ -18,26 +18,27 @@ export function DashboardView() {
   const hasSources = project.sources.length > 0;
 
   return (
-    <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
-      {/* Top Banner / Project Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
-        <div className="flex flex-col max-w-2xl">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-primary shrink-0 animate-pulse"></span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">
-              {isProjectCreated ? `Project Handover • ${project.name}` : 'Knowledge Handover Workspace'}
-            </span>
+    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+      {/* ─────────────────────────────────────────────────────────────────────────
+          1. UNIFIED PAGE HEADER
+      ───────────────────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-on-surface font-semibold">Dashboard</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
-            Project Overview
+          <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
+            Dashboard Overview
           </h1>
           <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
-            Preserve and reconstruct operational context across documents, important decisions, pending tasks, and dependencies.
+            Preserve and reconstruct operational context across repositories, decisions, tasks, and team handovers.
           </p>
         </div>
 
         {/* Action Group */}
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
           <button
             onClick={() => setShowCreateProjectModal(true)}
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium transition-colors border border-outline-variant/40"
@@ -48,7 +49,7 @@ export function DashboardView() {
           </button>
           <button
             onClick={() => setActiveView('sources')}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium transition-colors shadow-xs"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium transition-colors shadow-2xs"
             type="button"
           >
             <span className="material-symbols-outlined text-[17px]">upload_file</span>
@@ -71,21 +72,23 @@ export function DashboardView() {
             type="button"
           >
             <span className="material-symbols-outlined text-[17px]">description</span>
-            <span>Handover Report</span>
+            <span>Handover Dossier</span>
           </button>
         </div>
       </div>
 
-      {/* 4 SUMMARY METRIC CARDS */}
+      {/* ─────────────────────────────────────────────────────────────────────────
+          2. FOUR SUMMARY METRIC TILES
+      ───────────────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Card 1: Connected Sources */}
         <div
           onClick={() => setActiveView('sources')}
-          className="bg-surface-container-lowest rounded-xl p-5 shadow-xs hover:border-outline-variant/70 border border-outline-variant/40 transition-all flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold">
+              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Connected Sources
               </span>
               <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
@@ -94,7 +97,7 @@ export function DashboardView() {
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold tracking-tight text-on-surface">{stats.totalSources}</span>
-              <span className="text-xs text-secondary">Uploaded</span>
+              <span className="text-xs text-secondary">Document(s)</span>
             </div>
             <p className="text-xs text-secondary mt-1">
               {stats.totalSources === 0
@@ -113,11 +116,11 @@ export function DashboardView() {
         {/* Card 2: Important Decisions */}
         <div
           onClick={() => setActiveView('analysis')}
-          className="bg-surface-container-lowest rounded-xl p-5 shadow-xs hover:border-outline-variant/70 border border-outline-variant/40 transition-all flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold">
+              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Important Decisions
               </span>
               <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
@@ -145,11 +148,11 @@ export function DashboardView() {
         {/* Card 3: Pending Tasks */}
         <div
           onClick={() => setActiveView('workspace')}
-          className="bg-surface-container-lowest rounded-xl p-5 shadow-xs hover:border-outline-variant/70 border border-outline-variant/40 transition-all flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold">
+              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Pending Tasks
               </span>
               <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
@@ -158,7 +161,7 @@ export function DashboardView() {
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold tracking-tight text-on-surface">{stats.tasksCount}</span>
-              <span className="text-xs text-secondary">Found</span>
+              <span className="text-xs text-secondary">Recorded</span>
             </div>
             <p className="text-xs text-secondary mt-1">
               {stats.tasksCount === 0
@@ -177,11 +180,11 @@ export function DashboardView() {
         {/* Card 4: Human Review Progress */}
         <div
           onClick={() => setActiveView('review')}
-          className="bg-surface-container-lowest rounded-xl p-5 shadow-xs hover:border-outline-variant/70 border border-outline-variant/40 transition-all flex flex-col justify-between group cursor-pointer"
+          className="bg-surface rounded-xl p-4 sm:p-5 shadow-2xs hover:border-outline-variant/70 border border-outline-variant/40 transition-colors flex flex-col justify-between group cursor-pointer"
         >
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold">
+              <span className="text-[11px] text-secondary uppercase tracking-wider font-semibold font-mono">
                 Review Progress
               </span>
               <div className="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
@@ -213,19 +216,21 @@ export function DashboardView() {
         </div>
       </div>
 
-      {/* EMPTY STATE (When no documents and no findings exist) */}
+      {/* ─────────────────────────────────────────────────────────────────────────
+          3. EMPTY STATE (When no documents and no findings exist)
+      ───────────────────────────────────────────────────────────────────────── */}
       {!hasFindings && !hasSources && (
-        <div className="bg-surface-container-lowest rounded-xl p-8 sm:p-12 border border-outline-variant/40 shadow-xs flex flex-col items-center text-center max-w-xl mx-auto my-4">
-          <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center mb-4">
-            <span className="material-symbols-outlined text-[28px]">folder_open</span>
+        <div className="bg-surface rounded-xl p-6 sm:p-8 border border-outline-variant/40 shadow-xs flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-xl bg-surface-container-low text-primary flex items-center justify-center mb-3">
+            <span className="material-symbols-outlined text-[26px]">folder_open</span>
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-on-surface tracking-tight">
+          <h2 className="text-base sm:text-lg font-bold text-on-surface tracking-tight">
             Start Your Knowledge Handover
           </h2>
-          <p className="text-xs sm:text-sm text-secondary mt-1.5 max-w-md leading-relaxed">
-            Upload your project documents to extract important decisions, pending tasks, risks, and dependencies with source-grounded evidence.
+          <p className="text-xs text-secondary mt-1 max-w-md leading-relaxed">
+            Upload your project documents or connect a GitHub repository to extract decisions, pending tasks, risks, and dependencies with source evidence.
           </p>
-          <div className="flex items-center gap-2.5 mt-6">
+          <div className="flex items-center gap-2.5 mt-5">
             <button
               onClick={() => setShowCreateProjectModal(true)}
               className="inline-flex items-center gap-1.5 px-3.5 h-9 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg text-xs font-medium transition-colors border border-outline-variant/40"
@@ -235,7 +240,7 @@ export function DashboardView() {
             </button>
             <button
               onClick={() => setActiveView('sources')}
-              className="inline-flex items-center gap-1.5 px-4 h-9 bg-primary hover:bg-primary-hover text-on-primary rounded-lg text-xs font-medium shadow-xs transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 h-9 bg-primary hover:bg-primary-hover text-on-primary rounded-lg text-xs font-medium shadow-2xs transition-colors"
             >
               <span className="material-symbols-outlined text-[17px]">upload_file</span>
               <span>Upload Documents</span>
@@ -244,14 +249,16 @@ export function DashboardView() {
         </div>
       )}
 
-      {/* MID SECTION: RECENT ACTIVITY & PROJECT STATUS */}
+      {/* ─────────────────────────────────────────────────────────────────────────
+          4. MID SECTION: HANDOVER STATUS & RECENT FINDINGS
+      ───────────────────────────────────────────────────────────────────────── */}
       {(hasFindings || hasSources) && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Left: Handover Status Card */}
-          <div className="lg:col-span-5 bg-surface-container-lowest rounded-xl p-5 sm:p-6 flex flex-col justify-between shadow-xs border border-outline-variant/40">
+          <div className="lg:col-span-5 bg-surface rounded-xl p-5 sm:p-6 flex flex-col justify-between shadow-2xs border border-outline-variant/40">
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] uppercase tracking-wider text-secondary font-semibold">
+                <span className="text-[11px] uppercase tracking-wider text-secondary font-semibold font-mono">
                   Handover Status
                 </span>
                 <span
@@ -264,7 +271,7 @@ export function DashboardView() {
                   {project.handoverCertified ? 'Certified' : 'In Progress'}
                 </span>
               </div>
-              <h3 className="text-base font-semibold text-on-surface">
+              <h3 className="text-base font-bold text-on-surface">
                 {project.name}
               </h3>
               <p className="text-secondary text-xs leading-relaxed line-clamp-2">
@@ -272,7 +279,7 @@ export function DashboardView() {
               </p>
 
               {/* Progress Summary */}
-              <div className="space-y-2 mt-2 text-xs border-t border-outline-variant/30 pt-3">
+              <div className="space-y-2 mt-1 text-xs border-t border-outline-variant/30 pt-3">
                 <div className="flex items-center justify-between py-0.5">
                   <span className="text-secondary">Sources Uploaded:</span>
                   <span className="font-medium text-on-surface">{stats.totalSources} document(s)</span>
@@ -302,7 +309,7 @@ export function DashboardView() {
               <span className="text-xs text-secondary font-mono">Target: {project.targetExitDate}</span>
               <button
                 onClick={() => setActiveView('review')}
-                className="w-full sm:w-auto justify-center px-3.5 h-8 bg-primary hover:bg-primary-hover text-on-primary rounded-lg text-xs font-medium transition-colors shadow-xs flex items-center gap-1.5"
+                className="w-full sm:w-auto justify-center px-3.5 h-8 bg-primary hover:bg-primary-hover text-on-primary rounded-lg text-xs font-medium transition-colors shadow-2xs flex items-center gap-1.5"
               >
                 <span>Review Center</span>
                 <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -310,16 +317,16 @@ export function DashboardView() {
             </div>
           </div>
 
-          {/* Right: Recent Activity Feed */}
-          <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl p-5 sm:p-6 shadow-xs border border-outline-variant/40 flex flex-col justify-between">
+          {/* Right: Recent Knowledge Findings Feed */}
+          <div className="lg:col-span-7 bg-surface rounded-xl p-5 sm:p-6 shadow-2xs border border-outline-variant/40 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-on-surface">
+                  <span className="text-sm font-bold text-on-surface">
                     Recent Knowledge Findings
                   </span>
-                  <span className="text-[11px] bg-surface-container-low text-secondary border border-outline-variant/40 px-2 py-0.5 rounded-full font-mono">
-                    {stats.totalFindings} Finding(s)
+                  <span className="text-[11px] bg-surface-container-low text-secondary border border-outline-variant/40 px-2 py-0.5 rounded-full font-mono font-medium">
+                    {stats.totalFindings} Findings
                   </span>
                 </div>
                 <button
@@ -333,7 +340,7 @@ export function DashboardView() {
 
               {/* Finding List */}
               {project.findings.length === 0 ? (
-                <div className="p-8 text-center text-xs text-secondary bg-surface-container-low/50 rounded-lg border border-outline-variant/30">
+                <div className="p-8 text-center text-xs text-secondary bg-surface-container-low/40 rounded-lg border border-outline-variant/30">
                   No findings yet. Run AI Analysis on your uploaded documents to extract decisions and tasks.
                 </div>
               ) : (
@@ -342,7 +349,7 @@ export function DashboardView() {
                     <div
                       key={f.id}
                       onClick={() => setActiveView('evidence')}
-                      className="p-3 bg-surface-container-lowest hover:bg-surface-container-low/60 rounded-lg border border-outline-variant/30 transition-all cursor-pointer flex items-start justify-between gap-3 group"
+                      className="p-3 bg-surface hover:bg-surface-container-low/50 rounded-lg border border-outline-variant/30 transition-colors cursor-pointer flex items-start justify-between gap-3 group"
                     >
                       <div className="flex items-start gap-2.5 min-w-0">
                         <span
@@ -380,7 +387,7 @@ export function DashboardView() {
                           <p className="text-xs text-secondary line-clamp-1 mt-0.5">
                             {f.summary}
                           </p>
-                          <div className="flex items-center gap-2.5 mt-1 text-[11px] text-secondary">
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-secondary">
                             <span className="font-mono text-[10px]">{f.category}</span>
                             <span>•</span>
                             <span>{f.citations.length} citation(s)</span>
@@ -398,56 +405,58 @@ export function DashboardView() {
 
             <div className="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between text-xs text-secondary">
               <span className="font-mono text-[11px]">Last analysed: {project.lastAnalysed}</span>
-              <span className="text-primary font-medium text-[11px]">Backed by original documents</span>
+              <span className="text-primary font-medium text-[11px]">100% Evidence Grounded</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* QUICK NAVIGATION TILES */}
+      {/* ─────────────────────────────────────────────────────────────────────────
+          5. QUICK NAVIGATION TILES
+      ───────────────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button
           onClick={() => setActiveView('workspace')}
-          className="p-4 bg-surface-container-lowest hover:bg-surface-container-low/60 rounded-xl border border-outline-variant/40 text-left transition-all shadow-xs group"
+          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[22px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
             folder_open
           </span>
-          <p className="text-xs font-semibold text-on-surface">Project Workspace</p>
-          <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">View project details and findings</p>
+          <p className="text-xs font-bold text-on-surface">Projects Workspace</p>
+          <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">Manage project details and artifacts</p>
         </button>
 
         <button
           onClick={() => setActiveView('sources')}
-          className="p-4 bg-surface-container-lowest hover:bg-surface-container-low/60 rounded-xl border border-outline-variant/40 text-left transition-all shadow-xs group"
+          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[22px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
             dataset
           </span>
-          <p className="text-xs font-semibold text-on-surface">Sources</p>
-          <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">Upload and manage project documents</p>
+          <p className="text-xs font-bold text-on-surface">Sources &amp; GitHub</p>
+          <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">Ingest repositories and files</p>
         </button>
 
         <button
           onClick={() => setActiveView('review')}
-          className="p-4 bg-surface-container-lowest hover:bg-surface-container-low/60 rounded-xl border border-outline-variant/40 text-left transition-all shadow-xs group"
+          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[22px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
             rule
           </span>
-          <p className="text-xs font-semibold text-on-surface">Review Center</p>
+          <p className="text-xs font-bold text-on-surface">Review Center</p>
           <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">Review, edit, and approve findings</p>
         </button>
 
         <button
           onClick={() => setActiveView('handover')}
-          className="p-4 bg-surface-container-lowest hover:bg-surface-container-low/60 rounded-xl border border-outline-variant/40 text-left transition-all shadow-xs group"
+          className="p-4 bg-surface hover:bg-surface-container-low/50 rounded-xl border border-outline-variant/40 text-left transition-colors shadow-2xs group"
         >
-          <span className="material-symbols-outlined text-[22px] text-primary mb-2 block group-hover:scale-105 transition-transform">
+          <span className="material-symbols-outlined text-[20px] text-primary mb-2 block group-hover:scale-105 transition-transform">
             description
           </span>
-          <p className="text-xs font-semibold text-on-surface">Handover Report</p>
-          <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">View and export approved handover</p>
+          <p className="text-xs font-bold text-on-surface">Handover Dossier</p>
+          <p className="text-[11px] text-secondary mt-0.5 line-clamp-1">Generate certified 12-section dossier</p>
         </button>
       </div>
     </div>

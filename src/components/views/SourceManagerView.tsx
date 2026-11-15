@@ -132,29 +132,24 @@ export function SourceManagerView() {
 
   return (
     <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
-        <div className="flex flex-col max-w-2xl">
-          <div className="flex items-center gap-1.5 text-xs text-secondary">
-            <span
-              onClick={() => setActiveView('workspace')}
-              className="hover:text-primary cursor-pointer transition-colors"
-            >
-              {project.name}
-            </span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-semibold">Sources</span>
+      {/* Standardized Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-on-surface font-semibold">Sources &amp; GitHub</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
-            Project Documents &amp; Sources
+          <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
+            Source Manager
           </h1>
           <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
-            Ingest PDF, Markdown, and text specifications. KnoTrail indexes line ranges and page coordinates to anchor all findings to immutable evidence.
+            Connect code repositories and ingest architecture specifications, runbooks, and meeting notes.
           </p>
         </div>
 
         {/* Action Group */}
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
           <button
             onClick={() => {
               if (currentUserRole === 'EXTERNAL') return;
@@ -164,11 +159,11 @@ export function SourceManagerView() {
             }}
             disabled={currentUserRole === 'EXTERNAL'}
             title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot upload documents' : undefined}
-            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg text-xs font-medium shadow-xs transition-colors ${
+            className={`inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg text-xs font-medium shadow-2xs transition-colors ${
               currentUserRole === 'EXTERNAL'
                 ? 'bg-surface-container-low text-secondary opacity-50 cursor-not-allowed border border-outline-variant/40'
                 : 'bg-primary hover:bg-primary-hover text-on-primary'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[17px]">
               {currentUserRole === 'EXTERNAL' ? 'lock' : 'upload_file'}
@@ -178,7 +173,7 @@ export function SourceManagerView() {
 
           <button
             onClick={() => setShowGitHubModal(true)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
           >
             <span className="material-symbols-outlined text-[17px] text-primary">
               {currentUserRole === 'EXTERNAL' ? 'lock' : 'hub'}
@@ -193,7 +188,7 @@ export function SourceManagerView() {
             }}
             disabled={currentUserRole === 'EXTERNAL'}
             title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot add source notes' : undefined}
-            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors ${
+            className={`inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors ${
               currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -206,7 +201,7 @@ export function SourceManagerView() {
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors disabled:opacity-60"
           >
             <span className={`material-symbols-outlined text-[17px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
               sync
@@ -248,11 +243,10 @@ export function SourceManagerView() {
         {/* Sync Feedback Toast / Banner */}
         {syncFeedback && (
           <div
-            className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-2 animate-in fade-in duration-150 ${
-              syncFeedback.success
+            className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-2 animate-in fade-in duration-150 ${syncFeedback.success
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                 : 'bg-rose-50 border-rose-200 text-rose-800'
-            }`}
+              }`}
           >
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[16px]">
@@ -310,15 +304,14 @@ export function SourceManagerView() {
 
                       <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border border-outline-variant/30 shrink-0">
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            integ.syncStatus === 'synced'
+                          className={`w-1.5 h-1.5 rounded-full ${integ.syncStatus === 'synced'
                               ? 'bg-emerald-600'
                               : integ.syncStatus === 'syncing' || isCurrentlySyncing
-                              ? 'bg-primary animate-pulse'
-                              : integ.syncStatus === 'error'
-                              ? 'bg-error'
-                              : 'bg-secondary'
-                          }`}
+                                ? 'bg-primary animate-pulse'
+                                : integ.syncStatus === 'error'
+                                  ? 'bg-error'
+                                  : 'bg-secondary'
+                            }`}
                         ></span>
                         <span className="capitalize text-secondary">
                           {isCurrentlySyncing ? 'Syncing...' : integ.syncStatus}
@@ -444,21 +437,19 @@ export function SourceManagerView() {
         <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg border border-outline-variant/30 text-xs">
           <button
             onClick={() => setSourceFilter('ALL')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-              sourceFilter === 'ALL'
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sourceFilter === 'ALL'
                 ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold'
                 : 'text-secondary hover:text-on-surface'
-            }`}
+              }`}
           >
             All Sources ({project.sources.length})
           </button>
           <button
             onClick={() => setSourceFilter('UPLOADED')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-              sourceFilter === 'UPLOADED'
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sourceFilter === 'UPLOADED'
                 ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold'
                 : 'text-secondary hover:text-on-surface'
-            }`}
+              }`}
           >
             Uploaded Documents ({uploadedCount})
           </button>
@@ -475,22 +466,20 @@ export function SourceManagerView() {
         {filteredSources.map((source) => (
           <div
             key={source.id}
-            className={`bg-surface-container-lowest rounded-xl p-5 shadow-xs border flex flex-col justify-between hover:border-outline-variant/70 transition-all group ${
-              source.isUploaded
+            className={`bg-surface-container-lowest rounded-xl p-5 shadow-xs border flex flex-col justify-between hover:border-outline-variant/70 transition-all group ${source.isUploaded
                 ? 'border-primary/30'
                 : 'border-outline-variant/40'
-            }`}
+              }`}
           >
             <div>
               {/* Card Top: Icon, Type, Status */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                      source.isUploaded
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${source.isUploaded
                         ? 'bg-primary/10 text-primary'
                         : 'bg-surface-container-low text-primary group-hover:bg-primary/10'
-                    }`}
+                      }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">{source.icon}</span>
                   </div>
@@ -511,13 +500,12 @@ export function SourceManagerView() {
 
                 <div className="flex items-center gap-1.5 bg-surface-container-low px-2 py-0.5 rounded-full border border-outline-variant/30">
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      source.status === 'error'
+                    className={`w-1.5 h-1.5 rounded-full ${source.status === 'error'
                         ? 'bg-error'
                         : source.documentData?.isScannedPdf
-                        ? 'bg-warning'
-                        : 'bg-primary animate-pulse'
-                    }`}
+                          ? 'bg-warning'
+                          : 'bg-primary animate-pulse'
+                      }`}
                   ></span>
                   <span className="text-[10px] font-medium text-primary capitalize">
                     {source.documentData?.isScannedPdf ? 'Scanned PDF' : source.status}
@@ -540,8 +528,8 @@ export function SourceManagerView() {
                 {source.documentData?.pageCount
                   ? `${source.documentData.pageCount} pages (${source.documentData.fileSizeFormatted})`
                   : source.documentData?.lineCount
-                  ? `${source.documentData.lineCount} lines (${source.documentData.fileSizeFormatted})`
-                  : `${source.recordCount.toLocaleString()} records`}
+                    ? `${source.documentData.lineCount} lines (${source.documentData.fileSizeFormatted})`
+                    : `${source.recordCount.toLocaleString()} records`}
               </span>
 
               <div className="flex items-center gap-2">
@@ -756,11 +744,10 @@ export function SourceManagerView() {
               onDragOver={handleDrag}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-center cursor-pointer transition-all ${
-                dragActive
+              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-center cursor-pointer transition-all ${dragActive
                   ? 'border-primary bg-primary/5 scale-[0.99]'
                   : 'border-outline-variant/60 hover:border-primary/50 bg-surface-container-low/30'
-              }`}
+                }`}
             >
               <input
                 ref={fileInputRef}
@@ -801,11 +788,10 @@ export function SourceManagerView() {
                   return (
                     <div
                       key={idx}
-                      className={`flex items-center justify-between p-2 rounded-lg text-xs border ${
-                        hasError
+                      className={`flex items-center justify-between p-2 rounded-lg text-xs border ${hasError
                           ? 'bg-error/10 border-error/30 text-on-surface'
                           : 'bg-surface-container-low border-outline-variant/30 text-on-surface'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2 truncate">
                         <span className="material-symbols-outlined text-[16px] text-primary">
@@ -846,17 +832,15 @@ export function SourceManagerView() {
                 {uploadResults.map((res, i) => (
                   <div
                     key={i}
-                    className={`flex items-center justify-between p-2 rounded-lg border ${
-                      res.success
+                    className={`flex items-center justify-between p-2 rounded-lg border ${res.success
                         ? 'bg-success/10 border-success/20 text-on-surface'
                         : 'bg-error/10 border-error/30 text-on-surface'
-                    }`}
+                      }`}
                   >
                     <span className="font-medium truncate">{res.filename}</span>
                     <span
-                      className={`font-semibold text-[11px] flex items-center gap-1 ${
-                        res.success ? 'text-success' : 'text-error'
-                      }`}
+                      className={`font-semibold text-[11px] flex items-center gap-1 ${res.success ? 'text-success' : 'text-error'
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[14px]">
                         {res.success ? 'check_circle' : 'error'}

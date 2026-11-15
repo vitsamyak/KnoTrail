@@ -49,39 +49,43 @@ export function EvidenceView() {
   };
 
   return (
-    <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
-        <div className="flex flex-col max-w-2xl">
-          <div className="flex items-center gap-1.5 text-xs text-secondary">
-            <span
-              onClick={() => setActiveView('workspace')}
-              className="hover:text-primary cursor-pointer transition-colors"
-            >
-              {project.name}
-            </span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-semibold">Evidence Explorer</span>
+    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+      {/* Standardized Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-on-surface font-semibold">Evidence Explorer</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
             Evidence Explorer
           </h1>
           <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
-            Inspect verbatim quotes, exact page numbers, and line coordinates from source files verifying each extracted finding.
+            Inspect verbatim quotes, exact line coordinates, and commit SHAs verifying each extracted finding.
           </p>
         </div>
 
-        {/* Global Summary Badge */}
-        <div className="flex items-center gap-2.5 bg-surface-container-low/60 px-4 py-2.5 rounded-xl border border-outline-variant/40 shrink-0">
-          <span className="material-symbols-outlined text-primary text-[20px]">fact_check</span>
-          <div className="flex flex-col text-xs">
-            <span className="font-semibold text-on-surface">
-              {stats.verifiedCount} of {stats.totalFindings} Claims Verified
-            </span>
-            <span className="text-secondary font-mono text-[11px]">
-              {stats.groundedPercent}% Grounded • {totalCitationsCount} Citations
-            </span>
+        {/* Global Summary Badge & Actions */}
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="flex items-center gap-2.5 bg-surface-container-low px-3.5 py-1.5 rounded-lg border border-outline-variant/30 text-xs">
+            <span className="material-symbols-outlined text-primary text-[18px]">fact_check</span>
+            <div className="flex flex-col">
+              <span className="font-semibold text-on-surface text-[11px]">
+                {stats.verifiedCount} of {stats.totalFindings} Claims Verified
+              </span>
+              <span className="text-secondary font-mono text-[10px]">
+                {stats.groundedPercent}% Grounded • {totalCitationsCount} Citations
+              </span>
+            </div>
           </div>
+          <button
+            onClick={() => setActiveView('review')}
+            className="inline-flex items-center gap-1.5 px-3.5 h-9 bg-primary hover:bg-primary-hover text-on-primary rounded-lg text-xs font-medium shadow-2xs transition-colors"
+          >
+            <span>Review Center</span>
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </button>
         </div>
       </div>
 

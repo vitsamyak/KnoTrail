@@ -9,6 +9,7 @@ export function Header() {
     searchQuery,
     setSearchQuery,
     stats,
+    activeView,
     setActiveView,
     isSyncing,
     runAiSync,
@@ -46,10 +47,31 @@ export function Header() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const getViewTitle = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return 'Dashboard';
+      case 'workspace':
+        return 'Projects';
+      case 'sources':
+        return 'Sources';
+      case 'analysis':
+        return 'AI Analysis';
+      case 'evidence':
+        return 'Evidence';
+      case 'review':
+        return 'Review Center';
+      case 'handover':
+        return 'Handover';
+      default:
+        return 'Workspace';
+    }
+  };
+
   return (
-    <header className="fixed top-3 left-3 sm:left-4 lg:left-[17rem] right-3 sm:right-4 h-14 bg-surface/95 backdrop-blur-md rounded-xl shadow-xs border border-outline-variant/40 z-40 flex items-center justify-between px-3 sm:px-4 transition-all">
-      {/* ─── LEFT: Mobile Toggle + Workspace Indicator + Search ─── */}
-      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+    <header className="sticky top-0 z-20 w-full h-14 bg-surface/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-4 sm:px-6 transition-all">
+      {/* ─── LEFT: Mobile Menu Toggle + Breadcrumbs & Project Context ─── */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {/* Mobile Navigation Drawer Toggle */}
         <button
           onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
@@ -59,54 +81,58 @@ export function Header() {
           <span className="material-symbols-outlined text-[18px]">menu</span>
         </button>
 
-        {/* Compact Workspace Context Pill */}
-        <button
-          onClick={() => setActiveView('workspace')}
-          className="flex items-center gap-2 bg-surface-container-low/70 hover:bg-surface-container px-2.5 h-8 rounded-lg border border-outline-variant/30 transition-colors text-on-surface shrink-0 min-w-0"
-          title="Open Workspace Overview"
-        >
-          <span className="material-symbols-outlined text-[16px] text-primary shrink-0">
-            folder_open
+        {/* Breadcrumb Context */}
+        <div className="flex items-center gap-1.5 text-xs text-secondary truncate">
+          <button
+            onClick={() => setActiveView('workspace')}
+            className="flex items-center gap-1 font-medium hover:text-on-surface transition-colors truncate max-w-[140px] sm:max-w-[200px]"
+            title="Switch Workspace"
+          >
+            <span className="material-symbols-outlined text-[16px] text-primary shrink-0">
+              folder
+            </span>
+            <span className="truncate">{isProjectCreated ? project.name : 'Workspace'}</span>
+          </button>
+          <span className="text-outline-variant/60">/</span>
+          <span className="font-semibold text-on-surface whitespace-nowrap">
+            {getViewTitle()}
           </span>
-          <span className="text-xs font-semibold text-on-surface truncate max-w-[120px] sm:max-w-[170px] md:max-w-[210px] whitespace-nowrap">
-            {isProjectCreated ? project.name : 'Your Workspace'}
-          </span>
-        </button>
-
-        {/* Global Search Bar */}
-        <div className="relative hidden md:flex items-center">
-          <span className="material-symbols-outlined absolute left-2.5 text-secondary text-[15px] pointer-events-none">
-            search
-          </span>
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search decisions, tasks, evidence..."
-            className="bg-surface-container-low/60 text-on-surface text-xs pl-8 pr-8 h-8 rounded-lg w-40 lg:w-56 xl:w-64 border border-outline-variant/30 focus:border-primary/40 focus:bg-surface focus:outline-none focus:ring-1 focus:ring-primary/20 placeholder:text-secondary/70 transition-all"
-          />
-          {searchQuery ? (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2 text-secondary hover:text-on-surface text-xs"
-              title="Clear search"
-            >
-              <span className="material-symbols-outlined text-[13px]">close</span>
-            </button>
-          ) : (
-            <kbd className="absolute right-2 hidden xl:inline-flex items-center px-1 text-[9px] font-mono text-secondary/80 bg-surface-container/70 rounded border border-outline-variant/40">
-              ⌘K
-            </kbd>
-          )}
         </div>
       </div>
 
-      {/* ─── RIGHT: Autosave + Sync + Access Status + Notifications + Menu ─── */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Subtle Autosave Indicator */}
+      {/* ─── CENTER: Search Bar with ⌘K ─── */}
+      <div className="relative hidden md:flex items-center mx-4 flex-1 max-w-sm">
+        <span className="material-symbols-outlined absolute left-2.5 text-secondary text-[15px] pointer-events-none">
+          search
+        </span>
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search decisions, tasks, evidence..."
+          className="w-full bg-surface-container-low/60 text-on-surface text-xs pl-8 pr-8 h-8 rounded-lg border border-outline-variant/30 focus:border-primary/40 focus:bg-surface focus:outline-none focus:ring-1 focus:ring-primary/20 placeholder:text-secondary/70 transition-all"
+        />
+        {searchQuery ? (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-2 text-secondary hover:text-on-surface text-xs"
+            title="Clear search"
+          >
+            <span className="material-symbols-outlined text-[13px]">close</span>
+          </button>
+        ) : (
+          <kbd className="absolute right-2 hidden xl:inline-flex items-center px-1 text-[9px] font-mono text-secondary/80 bg-surface-container/70 rounded border border-outline-variant/40">
+            ⌘K
+          </kbd>
+        )}
+      </div>
+
+      {/* ─── RIGHT: Save Status + Sync + Role Perspective + Notifications + Profile ─── */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Autosave Status */}
         <div
-          className="hidden xl:flex items-center gap-1 text-[11px] text-secondary px-2 h-8 whitespace-nowrap"
+          className="hidden xl:flex items-center gap-1 text-[11px] text-secondary px-1 h-8 whitespace-nowrap"
           title={`Autosaving active for ${workspaceId}`}
         >
           <span
@@ -138,8 +164,8 @@ export function Header() {
           </span>
         </button>
 
-        {/* Subtle Vertical Divider */}
-        <div className="h-4 w-px bg-outline-variant/40 mx-0.5 hidden sm:block" />
+        {/* Vertical Divider */}
+        <div className="h-4 w-px bg-outline-variant/40 hidden sm:block" />
 
         {/* Authentication / Access State */}
         {isAuthenticated && currentUser ? (

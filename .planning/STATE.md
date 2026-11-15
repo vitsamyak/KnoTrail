@@ -71,12 +71,18 @@ Progress: [██████████] 100% (Improvement 3 Complete)
    - Source Manager: Activity button, slide-out `UpdateHistoryDrawer` with pagination, loading/empty/partial/failed states.
    - Handover View: Outdated invalidation alert banner, re-review count, commit SHA badge, certified badge suppression when uncertified.
    - Material Design 3 soft-green visual identity (`emerald-500/600`), dark mode compatibility, and responsive mobile layouts.
-5. **Complete Website UI/UX Refinement**:
-   - Redesigned Top Navigation Header with disciplined three-part architecture: Left (compact brand + tagline), Center (How It Works, Round 3 Updates, Capabilities, Workflow, Our Mission), Right (GitHub link, Sign In, Explore Live Demo).
-   - Added responsive mobile navigation drawer for landing page with zero-auth demo access.
-   - Refined Internal Navigation (`Sidebar.tsx` and `Header.tsx`): consistent 56px height, vertically centered alignment, brand-primary active states, and streamlined search and access controls.
-   - Unified color tokens and status badges (`emerald`, `amber`, `rose`) across all major views (`DashboardView`, `WorkspaceView`, `SourceManagerView`, `EvidenceView`, `ReviewView`, `AnalysisView`, `HandoverView`).
-   - Clean, professional SaaS typography and component sizing without oversized headings or unnecessary decorative elements.
+5. **Complete Website UI/UX Refinement & Internal Application Overhaul**:
+   - **Landing Page Header**: Three-part architecture: Left (compact brand + tagline), Center (navigation anchors), Right (GitHub link, Sign In, Explore Live Demo). (LandingView body preserved untouched as required).
+   - **Application Shell Architecture (`AppShell.tsx`, `Sidebar.tsx`, `Header.tsx`)**: Replaced floating margins and asymmetric padding with docked left rail (`fixed inset-y-0 left-0 w-64`), docked edge-to-edge sticky topbar (`sticky top-0 z-20 h-14 bg-surface/95 border-b border-outline-variant/40 px-4 sm:px-6`), and symmetrical container (`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8`).
+   - **Sidebar Navigation**: Aligned top brand section to 56px (`h-14`), categorized items into `WORKSPACE`, `KNOWLEDGE ENGINE`, `GOVERNANCE & DELIVERY`, standardized active states to canonical `bg-primary text-on-primary font-medium shadow-2xs`, and integrated Workspace Health mini-progress bar, role pill, version, and clean workspace reset.
+   - **Internal Topbar (`Header.tsx`)**: Unified breadcrumbs (`folder` icon + project + view), ⌘K global search bar, real-time autosave status, sync trigger, role perspective selector, review notifications popover, and workspace options menu.
+   - **Projects / Workspace View (`WorkspaceView.tsx`)**: Completely eliminated the isolated empty-card bug. Structured onboarding dashboard with 3 metric cards, 3 starter templates ("Start From Scratch", "Load Demo", "Connect GitHub/Docs"), and 4-step workflow guide. Populated state features master project card, team roster, search bar, category filter tabs, and 2-column finding cards.
+   - **Dashboard Overview (`DashboardView.tsx`)**: Unified `PageHeader`, 4 metric cards (`Connected Sources`, `Important Decisions`, `Pending Tasks`, `Review Progress`), 5-col Handover Status card, and 7-col Recent Knowledge Findings feed.
+   - **Source Manager (`SourceManagerView.tsx`)**: Standard `PageHeader`, unified repository sync indicators, document format tags, clean upload dropzone, and responsive update activity drawer.
+   - **AI Analysis (`AnalysisView.tsx`)**: Standard `PageHeader`, category filter tabs, verified claim pills, extraction status cards.
+   - **Evidence Explorer (`EvidenceView.tsx`)**: Standard `PageHeader`, 4 badge filter pills (`VERIFIED`, `UNCERTAIN`, `CONFLICTING`, `MISSING`), citation cards, and inspection modal.
+   - **Human Review Center (`ReviewView.tsx`)**: Standard `PageHeader`, reviewer identity badge, amber "Needs Re-Review" tags, governance warning banner, and manager-only approval controls.
+   - **Engineering Handover Dossier (`HandoverView.tsx`)**: Standard `PageHeader` across all states (empty, locked, ready to compile, generated), offset sticky quick-jump navigation (`sticky top-16 z-10`), standardized 12 sections (Sections A-L) with clean card padding, verified badges, and high-contrast audit seal.
 6. **Test Coverage & Build Results**:
    - Total Tests: 289 tests across 22 test files (289 passed, 0 failed, 100% pass rate).
    - TypeScript Check: 0 errors (`npx tsc --noEmit`).

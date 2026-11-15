@@ -90,30 +90,25 @@ export function AnalysisView() {
   });
 
   return (
-    <div className="flex flex-col w-full gap-5 animate-in fade-in duration-200">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 sm:p-6 rounded-xl shadow-xs border border-outline-variant/40">
-        <div className="flex flex-col max-w-2xl">
-          <div className="flex items-center gap-1.5 text-xs text-secondary">
-            <span
-              onClick={() => setActiveView('workspace')}
-              className="hover:text-primary cursor-pointer transition-colors"
-            >
-              {project.name}
-            </span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-semibold">AI Analysis</span>
+    <div className="flex flex-col w-full gap-6 animate-in fade-in duration-150">
+      {/* Standardized Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/30">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-secondary mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-on-surface font-semibold">AI Analysis</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-on-surface tracking-tight mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
             AI Project Analysis
           </h1>
           <p className="text-xs sm:text-sm text-secondary mt-0.5 leading-relaxed">
-            KnoTrail synthesizes operational context from uploaded documents to reconstruct decisions, tasks, risks, and responsibilities, backed by immutable citations.
+            Synthesize operational context from uploaded documents to reconstruct decisions, tasks, risks, and responsibilities.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
           <button
             onClick={() => {
               if (currentUserRole === 'EXTERNAL') return;
@@ -121,7 +116,7 @@ export function AnalysisView() {
             }}
             disabled={isAnalysing || isSyncing || isVerifying || currentUserRole === 'EXTERNAL'}
             title={currentUserRole === 'EXTERNAL' ? 'Read-only access: External members cannot trigger AI extraction' : undefined}
-            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors disabled:opacity-60 ${
+            className={`inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-2xs transition-colors disabled:opacity-60 ${
               currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -146,7 +141,7 @@ export function AnalysisView() {
               handleRunVerification();
             }}
             disabled={isAnalysing || isSyncing || isVerifying || project.findings.length === 0 || currentUserRole === 'EXTERNAL'}
-            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium transition-colors border border-outline-variant/40 disabled:opacity-50 ${
+            className={`inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium transition-colors border border-outline-variant/40 disabled:opacity-50 ${
               currentUserRole === 'EXTERNAL' ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             title={
@@ -165,7 +160,7 @@ export function AnalysisView() {
                 <span className="material-symbols-outlined text-[17px] text-primary">
                   {currentUserRole === 'EXTERNAL' ? 'lock' : 'fact_check'}
                 </span>
-                <span>{currentUserRole === 'EXTERNAL' ? 'Read-Only (External)' : 'Verify Quotes & Conflicts'}</span>
+                <span>{currentUserRole === 'EXTERNAL' ? 'Read-Only (External)' : 'Verify Claims'}</span>
               </>
             )}
           </button>
@@ -173,7 +168,7 @@ export function AnalysisView() {
           <button
             onClick={() => runAiSync()}
             disabled={isSyncing || isAnalysing || isVerifying}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors disabled:opacity-60"
             title="Synchronize workspace with server"
           >
             <span className={`material-symbols-outlined text-[17px] text-primary ${isSyncing ? 'animate-spin' : ''}`}>
