@@ -1,3 +1,18 @@
+import fs from 'fs';
+
+// Safely load local environment file in Node 20+ runtime if not already loaded by CLI flags
+if (typeof process.loadEnvFile === 'function') {
+  try {
+    if (fs.existsSync('.env.local')) {
+      process.loadEnvFile('.env.local');
+    } else if (fs.existsSync('.env')) {
+      process.loadEnvFile('.env');
+    }
+  } catch {
+    // Ignore if environment file is missing or already loaded
+  }
+}
+
 import { app } from './app.ts';
 
 const PORT = parseInt(process.env.PORT || '4000', 10);

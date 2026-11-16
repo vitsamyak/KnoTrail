@@ -39,7 +39,7 @@ export class GitHubApiError extends Error {
 
   constructor(message: string, statusCode: number = 500, statusText: string = 'Internal Server Error', endpoint: string = '', data?: any) {
     // Sanitize message to guarantee no bearer tokens or keys are leaked
-    const sanitizedMessage = message.replace(/(ghp_[a-zA-Z0-9]+|ghs_[a-zA-Z0-9]+|Bearer\s+[^\s]+)/gi, '[REDACTED_CREDENTIAL]');
+    const sanitizedMessage = message.replace(/(ghp_[a-zA-Z0-9]+|ghs_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|Bearer\s+[^\s]+)/gi, '[REDACTED_CREDENTIAL]');
     super(sanitizedMessage);
     this.name = 'GitHubApiError';
     this.statusCode = statusCode;
@@ -396,12 +396,21 @@ export class GitHubService {
       return `Bearer ${token}`;
     }
 
-    // Development-only PAT fallback
-    if (options?.useDevPatIfAvailable && this.devPat) {
-      return `Bearer ${this.devPat}`;
+    // Development-only PAT fallback (evaluates instance devPat or dynamic process.env fallback)
+    const effectiveDevPat = this.devPat || process.env.GITHUB_DEV_PAT || process.env.GITHUB_TOKEN;
+    if (options?.useDevPatIfAvailable && effectiveDevPat) {
+      return `Bearer ${effectiveDevPat}`;
     }
 
     return undefined;
+  }
+
+  public getDevPat(): string | undefined {
+    return this.devPat || process.env.GITHUB_DEV_PAT || process.env.GITHUB_TOKEN;
+  }
+
+  public setDevPat(token?: string): void {
+    this.devPat = token;
   }
 
   public getRateLimitState(): GitHubRateLimitState {

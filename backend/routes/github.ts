@@ -192,7 +192,7 @@ githubRouter.post(
   async (req: Request, res: Response) => {
     try {
       const workspaceId = req.workspaceAuth!.workspaceId;
-      const { repoOwner, repoName, installationId, selectedBranch, config } = req.body || {};
+      const { repoOwner, repoName, installationId, selectedBranch, config, authToken } = req.body || {};
 
       // 1. Validate Input
       if (!repoOwner || typeof repoOwner !== 'string' || !repoName || typeof repoName !== 'string') {
@@ -219,6 +219,8 @@ githubRouter.post(
       // 2. Verify repository existence and access via GitHub Service
       const repoMeta = await activeService.getRepository(trimmedOwner, trimmedRepo, {
         installationId: installationId ? Number(installationId) : undefined,
+        authToken: (authToken && typeof authToken === 'string') ? authToken.trim() : undefined,
+        useDevPatIfAvailable: true,
       });
 
       const storage = getStorage();
