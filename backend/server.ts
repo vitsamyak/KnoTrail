@@ -23,6 +23,24 @@ const server = app.listen(PORT, HOST, () => {
   console.log(`[KnoTrail Backend] Health liveness: http://${HOST}:${PORT}/health/live`);
   console.log(`[KnoTrail Backend] Health readiness: http://${HOST}:${PORT}/health/ready`);
   console.log(`[KnoTrail Backend] Storage backend: ${process.env.STORAGE_BACKEND || 'file'}`);
+
+  // Proactive non-blocking schema check on startup when Supabase is active
+  if ((process.env.STORAGE_BACKEND || '').toLowerCase() === 'supabase') {
+    import('./routes/health.ts').then(({ probeDatabaseSchema }) => {
+      probeDatabaseSchema().then(probe => {
+        console.log(`[KnoTrail Backend] Remote Supabase Connected: ${probe.supabaseHost || 'Unknown'}`);
+        console.log(`[KnoTrail Backend] Database Tables Audit:`, JSON.stringify(probe.tables));
+        if (!probe.allTablesReady) {
+          console.warn(`[KnoTrail Backend] ⚠️ WARNING: Unapplied database migrations detected! Missing tables: ${probe.missingTables.join(', ')}`);
+          console.warn(`[KnoTrail Backend] Run supabase/migrations/20261116000001_knotrail_github_integrations_hotfix.sql in Supabase SQL Editor.`);
+        } else {
+          console.log(`[KnoTrail Backend] ✅ All 5 PostgreSQL tables verified in Supabase.`);
+        }
+      }).catch(err => {
+        console.warn('[KnoTrail Backend] Startup schema check warning:', err?.message || err);
+      });
+    }).catch(() => {});
+  }
 });
 
 server.on('error', (err: NodeJS.ErrnoException) => {

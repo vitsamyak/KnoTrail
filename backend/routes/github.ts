@@ -290,6 +290,14 @@ githubRouter.post(
         return;
       }
 
+      if (error?.message?.includes('github_integrations') || error?.message?.includes('schema cache')) {
+        res.status(503).json({
+          error: "Database table 'public.github_integrations' is missing from the Supabase schema cache. Please apply supabase/migrations/20261116000001_knotrail_github_integrations_hotfix.sql in your Supabase SQL Editor.",
+          hint: "Execute the hotfix migration script to provision github_integrations and reload the PostgREST schema cache.",
+        });
+        return;
+      }
+
       console.error('[GitHub API Error] POST /api/github/integrations:', error?.message || error);
       res.status(error?.statusCode || 500).json({
         error: error?.message || 'Failed to connect GitHub repository.',
