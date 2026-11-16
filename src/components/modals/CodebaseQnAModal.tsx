@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
+import { GitHubLogo } from '../ui/GitHubLogo';
 import type {
   GitHubIntegration,
   CodebaseIntelligence,
@@ -120,8 +121,8 @@ export function CodebaseQnAModal({ isOpen, onClose, integration }: CodebaseQnAMo
         {/* Top Header */}
         <div className="px-5 py-4 border-b border-outline-variant/30 flex items-start justify-between gap-4 bg-surface-container-low/40">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-              <span className="material-symbols-outlined text-[24px]">terminal</span>
+            <div className="w-10 h-10 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5">
+              <GitHubLogo className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

@@ -5,6 +5,7 @@ import { useProject } from '../../context/ProjectContext';
 import { ProjectSource, GitHubIntegration } from '../../lib/types';
 import { formatBytes, isAllowedFile, MAX_FILE_SIZE_BYTES, MAX_FILES_PER_BATCH } from '../../server/documents/extractor';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
+import { GitHubLogo } from '../ui/GitHubLogo';
 import { ConnectGitHubModal } from '../modals/ConnectGitHubModal';
 import { UpdateHistoryDrawer } from '../modals/UpdateHistoryDrawer';
 import { CodebaseQnAModal } from '../modals/CodebaseQnAModal';
@@ -175,11 +176,13 @@ export function SourceManagerView() {
 
           <button
             onClick={() => setShowGitHubModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-3.5 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/40 transition-colors shadow-2xs"
           >
-            <span className="material-symbols-outlined text-[17px] text-primary">
-              {currentUserRole === 'EXTERNAL' ? 'lock' : 'hub'}
-            </span>
+            {currentUserRole === 'EXTERNAL' ? (
+              <span className="material-symbols-outlined text-[17px]">lock</span>
+            ) : (
+              <GitHubLogo className="w-4 h-4 text-on-surface shrink-0" />
+            )}
             <span>Connect GitHub</span>
           </button>
 
@@ -214,16 +217,16 @@ export function SourceManagerView() {
       </div>
 
       {/* CONNECTED GITHUB REPOSITORIES SECTION */}
-      <div className="bg-surface-container-lowest rounded-xl p-5 sm:p-6 border border-outline-variant/40 shadow-xs flex flex-col gap-4">
+      <div className="bg-surface-container-lowest rounded-2xl p-5 sm:p-6 border border-outline-variant/40 shadow-xs flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px]">hub</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5">
+              <GitHubLogo className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-on-surface flex items-center gap-2">
+              <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
                 <span>Connected GitHub Repositories</span>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-low text-primary text-[11px] font-mono font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-surface-container text-primary text-[11px] font-mono font-bold border border-outline-variant/30">
                   {gitHubIntegrations.length}
                 </span>
               </h2>
@@ -235,9 +238,9 @@ export function SourceManagerView() {
 
           <button
             onClick={() => setShowGitHubModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-xs font-medium shadow-xs transition-colors self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-3.5 h-8.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-xs font-semibold shadow-xs transition-colors self-start sm:self-auto"
           >
-            <span className="material-symbols-outlined text-[15px]">add</span>
+            <GitHubLogo className="w-3.5 h-3.5" />
             <span>Add Repository</span>
           </button>
         </div>
@@ -245,9 +248,9 @@ export function SourceManagerView() {
         {/* Sync Feedback Toast / Banner */}
         {syncFeedback && (
           <div
-            className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-2 animate-in fade-in duration-150 ${syncFeedback.success
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border-rose-200 text-rose-800'
+            className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 animate-in fade-in duration-150 ${syncFeedback.success
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300'
+                : 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300'
               }`}
           >
             <div className="flex items-center gap-2">
@@ -267,8 +270,8 @@ export function SourceManagerView() {
 
         {/* Rate-Limit or Error Banner */}
         {gitHubError && (
-          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-amber-700 shrink-0">warning</span>
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px] text-amber-700 dark:text-amber-400 shrink-0">warning</span>
             <span>{gitHubError}</span>
           </div>
         )}
@@ -281,123 +284,189 @@ export function SourceManagerView() {
               const matchingSource = project.sources.find(
                 (s) => s.githubIntegrationId === integ.id || s.id === `src_gh_${integ.repoId}`
               );
+              const intel = integ.codebaseIntelligence || matchingSource?.codebaseIntelligence;
+              const repoUrl = `https://github.com/${integ.repoOwner}/${integ.repoName}`;
 
               return (
                 <div
                   key={integ.id}
-                  className="bg-surface-container-low/40 rounded-xl p-4 border border-outline-variant/40 flex flex-col justify-between hover:border-outline-variant/70 transition-all gap-3"
+                  className="group bg-surface-container-lowest hover:bg-surface-container-low/30 rounded-2xl p-4 sm:p-5 border border-outline-variant/40 hover:border-outline-variant/70 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
                 >
-                  <div>
-                    {/* Top Row: Owner/Repo & Status Badge */}
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-primary text-[20px] shrink-0">folder_git</span>
+                  <div className="space-y-3">
+                    {/* Top Row: GitHub Logo, Repo Name & Sync Status */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5">
+                          <GitHubLogo className="w-5 h-5 text-white" />
+                        </div>
                         <div className="min-w-0">
-                          <h3 className="text-xs font-bold text-on-surface truncate font-mono" title={`${integ.repoOwner}/${integ.repoName}`}>
-                            {integ.repoOwner}/{integ.repoName}
-                          </h3>
-                          <div className="flex items-center gap-1.5 text-[10px] text-secondary mt-0.5">
-                            <span className="bg-surface-container px-1.5 py-0.2 rounded font-mono font-medium">
-                              branch: {integ.selectedBranch || integ.defaultBranch}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[11px] font-medium text-secondary truncate">
+                              {integ.repoOwner}
                             </span>
+                            <span className="text-secondary/40 text-[10px]">/</span>
+                            <a
+                              href={repoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs sm:text-sm font-bold text-on-surface hover:text-primary transition-colors truncate inline-flex items-center gap-1 group/link"
+                              title={`Open ${integ.repoOwner}/${integ.repoName} on GitHub`}
+                            >
+                              <span>{integ.repoName}</span>
+                              <span className="material-symbols-outlined text-[13px] text-secondary opacity-0 group-hover/link:opacity-100 transition-opacity">
+                                open_in_new
+                              </span>
+                            </a>
+                          </div>
+
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-[10px] font-mono font-medium text-secondary border border-outline-variant/30">
+                              <span className="material-symbols-outlined text-[12px] text-secondary">fork_right</span>
+                              <span>{integ.selectedBranch || integ.defaultBranch || 'main'}</span>
+                            </span>
+                            {matchingSource?.recordCount !== undefined && (
+                              <span className="text-[10px] font-mono text-secondary">
+                                {matchingSource.recordCount} items
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border border-outline-variant/30 shrink-0">
+                      {/* Clean Status Badge */}
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border shrink-0 ${
+                          integ.syncStatus === 'synced'
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                            : integ.syncStatus === 'syncing' || isCurrentlySyncing
+                            ? 'bg-primary/10 text-primary border-primary/30 animate-pulse'
+                            : integ.syncStatus === 'error'
+                            ? 'bg-error/10 text-error border-error/30'
+                            : 'bg-surface-container text-secondary border-outline-variant/30'
+                        }`}
+                      >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${integ.syncStatus === 'synced'
-                              ? 'bg-emerald-600'
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            integ.syncStatus === 'synced'
+                              ? 'bg-emerald-600 dark:bg-emerald-400'
                               : integ.syncStatus === 'syncing' || isCurrentlySyncing
-                                ? 'bg-primary animate-pulse'
-                                : integ.syncStatus === 'error'
-                                  ? 'bg-error'
-                                  : 'bg-secondary'
-                            }`}
-                        ></span>
-                        <span className="capitalize text-secondary">
+                              ? 'bg-primary'
+                              : integ.syncStatus === 'error'
+                              ? 'bg-error'
+                              : 'bg-secondary'
+                          }`}
+                        />
+                        <span className="capitalize">
                           {isCurrentlySyncing ? 'Syncing...' : integ.syncStatus}
                         </span>
                       </div>
                     </div>
 
-                    {/* Scope Badges */}
-                    <div className="flex items-center gap-1 flex-wrap text-[10px] text-secondary mb-2">
-                      {integ.config.includeCommits && (
-                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">commits</span>
-                      )}
-                      {integ.config.includePullRequests && (
-                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">PRs</span>
-                      )}
-                      {integ.config.includeIssues && (
-                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">issues</span>
-                      )}
-                      {integ.config.includeDocs && (
-                        <span className="px-1.5 py-0.2 rounded bg-surface-container font-mono">docs</span>
+                    {/* Scope Pills & Sync Metadata */}
+                    <div className="flex items-center justify-between gap-2 flex-wrap pt-1">
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {integ.config.includeCommits && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                            <span className="material-symbols-outlined text-[11px]">commit</span>
+                            commits
+                          </span>
+                        )}
+                        {integ.config.includePullRequests && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                            <span className="material-symbols-outlined text-[11px]">merge</span>
+                            PRs
+                          </span>
+                        )}
+                        {integ.config.includeIssues && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                            <span className="material-symbols-outlined text-[11px]">adjust</span>
+                            issues
+                          </span>
+                        )}
+                        {integ.config.includeDocs && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                            <span className="material-symbols-outlined text-[11px]">description</span>
+                            docs
+                          </span>
+                        )}
+                      </div>
+
+                      {integ.lastCommitSha && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-secondary">
+                          <span className="text-[10px] uppercase text-secondary/60">SHA</span>
+                          <span className="font-bold text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">
+                            {integ.lastCommitSha.slice(0, 7)}
+                          </span>
+                        </span>
                       )}
                     </div>
 
-                    {/* Telemetry info */}
-                    <div className="text-[11px] text-secondary flex flex-col gap-0.5 font-mono">
-                      {integ.lastCommitSha && (
-                        <span className="truncate">
-                          Latest SHA: <strong className="text-primary">{integ.lastCommitSha.slice(0, 7)}</strong>
-                        </span>
-                      )}
-                      <span>
-                        Last Synced: {integ.lastSyncedAt ? new Date(integ.lastSyncedAt).toLocaleTimeString() : 'Never'}
+                    {/* Telemetry Line */}
+                    <div className="flex items-center justify-between text-[11px] text-secondary font-mono border-t border-outline-variant/20 pt-2">
+                      <span className="inline-flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px] text-secondary/70">schedule</span>
+                        <span>{integ.lastSyncedAt ? new Date(integ.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Never'}</span>
                       </span>
                       {matchingSource && (
-                        <span className="text-primary font-semibold">
-                          {matchingSource.recordCount} records indexed
-                        </span>
-                      )}
-                      {integ.errorMessage && (
-                        <span className="text-error text-[10px] line-clamp-1" title={integ.errorMessage}>
-                          Error: {integ.errorMessage}
+                        <span className="font-semibold text-primary inline-flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">database</span>
+                          <span>{matchingSource.recordCount} records indexed</span>
                         </span>
                       )}
                     </div>
 
-                    {/* Codebase Intelligence Badge */}
-                    {(() => {
-                      const intel = integ.codebaseIntelligence || matchingSource?.codebaseIntelligence;
-                      if (!intel) return null;
-                      return (
-                        <div className="mt-2 p-2 rounded-lg bg-surface-container/60 border border-outline-variant/30 flex flex-col gap-1 text-[11px]">
-                          <div className="flex items-center justify-between text-secondary">
-                            <span className="font-semibold text-on-surface flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[13px] text-primary">terminal</span>
-                              Codebase Intelligence
-                            </span>
-                            <span className="font-mono text-[10px]">
-                              {intel.stats?.totalFilesDiscovered || intel.inventory?.length || 0} files · {intel.stats?.totalLinesOfCode?.toLocaleString() || 0} LOC
-                            </span>
+                    {integ.errorMessage && (
+                      <div className="p-2.5 rounded-xl bg-error/10 border border-error/20 text-error text-[11px] flex items-start gap-1.5">
+                        <span className="material-symbols-outlined text-[14px] shrink-0 mt-0.5">error</span>
+                        <span className="line-clamp-2 leading-tight">{integ.errorMessage}</span>
+                      </div>
+                    )}
+
+                    {/* Codebase Intelligence Box */}
+                    {intel && (
+                      <div className="p-3 rounded-xl bg-surface-container/40 hover:bg-surface-container/60 transition-colors border border-outline-variant/40 flex flex-col gap-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 font-semibold text-xs text-on-surface">
+                            <span className="material-symbols-outlined text-[15px] text-primary">terminal</span>
+                            <span>Codebase Intelligence</span>
                           </div>
-                          {intel.blueprint && (
-                            <div className="flex items-center gap-1 flex-wrap text-[10px]">
-                              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-primary font-semibold">
+                          <span className="font-mono text-[10px] text-secondary bg-surface-container-high px-2 py-0.5 rounded-md font-medium border border-outline-variant/30">
+                            {intel.stats?.totalFilesDiscovered || intel.inventory?.length || 0} files · {intel.stats?.totalLinesOfCode ? intel.stats.totalLinesOfCode.toLocaleString() : 0} LOC
+                          </span>
+                        </div>
+
+                        {intel.blueprint && (
+                          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                            {intel.blueprint.frontend?.framework && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-semibold border border-primary/20">
+                                <span className="material-symbols-outlined text-[11px]">web</span>
                                 {intel.blueprint.frontend.framework}
                               </span>
-                              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface">
+                            )}
+                            {intel.blueprint.backend?.framework && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface text-[10px] font-medium border border-outline-variant/40">
+                                <span className="material-symbols-outlined text-[11px]">dns</span>
                                 {intel.blueprint.backend.framework}
                               </span>
-                              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-secondary">
+                            )}
+                            {intel.blueprint.database?.type && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-high text-secondary text-[10px] font-medium border border-outline-variant/40">
+                                <span className="material-symbols-outlined text-[11px]">database</span>
                                 {intel.blueprint.database.type.split(' ')[0]}
                               </span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Bottom Actions */}
-                  <div className="pt-2 border-t border-outline-variant/30 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2.5 flex-wrap">
+                  {/* Bottom Action Toolbar */}
+                  <div className="pt-2.5 border-t border-outline-variant/30 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <button
                         onClick={() => setQnaModalRepo(integ)}
-                        className="inline-flex items-center gap-1 text-primary hover:text-primary-hover font-semibold text-[11px] transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-semibold text-[11px] transition-colors"
                         title="Ask Codebase Q&A and inspect Architecture Blueprint"
                       >
                         <span className="material-symbols-outlined text-[14px]">chat</span>
@@ -423,22 +492,22 @@ export function SourceManagerView() {
                           }
                         }}
                         disabled={isCurrentlySyncing || isGitHubLoading || currentUserRole === 'EXTERNAL'}
-                        className="inline-flex items-center gap-1 text-primary hover:text-primary-hover font-semibold text-[11px] disabled:opacity-50 transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface font-medium text-[11px] border border-outline-variant/30 disabled:opacity-50 transition-colors"
                         title="Synchronize repository context"
                       >
                         <span className={`material-symbols-outlined text-[14px] ${isCurrentlySyncing ? 'animate-spin' : ''}`}>
                           sync
                         </span>
-                        <span>{isCurrentlySyncing ? 'Syncing...' : 'Sync Now'}</span>
+                        <span>{isCurrentlySyncing ? 'Syncing...' : 'Sync'}</span>
                       </button>
 
                       <button
                         onClick={() => setSelectedHistoryRepo(integ)}
-                        className="inline-flex items-center gap-1 text-secondary hover:text-on-surface font-medium text-[11px] transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface font-medium text-[11px] transition-colors"
                         title="View continuous update activity history"
                       >
                         <span className="material-symbols-outlined text-[14px]">history</span>
-                        <span>Activity</span>
+                        <span className="hidden sm:inline">Activity</span>
                       </button>
                     </div>
 
@@ -446,10 +515,11 @@ export function SourceManagerView() {
                       <button
                         onClick={() => setDisconnectConfirmRepo(integ)}
                         disabled={isCurrentlySyncing || isGitHubLoading}
-                        className="text-error/70 hover:text-error hover:underline text-[11px] font-medium transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-error/70 hover:text-error hover:bg-error/10 text-[11px] font-medium transition-colors"
                         title="Disconnect repository"
                       >
-                        Disconnect
+                        <span className="material-symbols-outlined text-[13px]">link_off</span>
+                        <span>Disconnect</span>
                       </button>
                     )}
                   </div>
@@ -458,18 +528,20 @@ export function SourceManagerView() {
             })}
           </div>
         ) : (
-          <div className="p-4 bg-surface-container-low/40 rounded-xl border border-dashed border-outline-variant/50 text-center flex flex-col items-center justify-center gap-1.5 py-6">
-            <span className="material-symbols-outlined text-secondary text-[24px]">hub</span>
-            <span className="text-xs font-semibold text-on-surface">No GitHub repositories connected yet</span>
-            <p className="text-[11px] text-secondary max-w-sm leading-relaxed">
+          <div className="p-6 bg-surface-container-low/30 rounded-2xl border border-dashed border-outline-variant/60 text-center flex flex-col items-center justify-center gap-2 py-8">
+            <div className="w-12 h-12 rounded-2xl bg-[#24292f] text-white flex items-center justify-center shadow-xs">
+              <GitHubLogo className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-sm font-bold text-on-surface">No GitHub repositories connected yet</span>
+            <p className="text-xs text-secondary max-w-md leading-relaxed">
               Connect public GitHub repositories to automatically index commit history, pull request debates, and issues with full cryptographic evidence citations.
             </p>
             <button
               onClick={() => setShowGitHubModal(true)}
-              className="mt-1 inline-flex items-center gap-1.5 px-3 h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-medium text-xs border border-outline-variant/40 transition-colors"
+              className="mt-2 inline-flex items-center gap-2 px-4 h-9 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs shadow-xs transition-colors"
             >
-              <span className="material-symbols-outlined text-[14px]">add_link</span>
-              <span>Connect Sample Repository</span>
+              <GitHubLogo className="w-4 h-4" />
+              <span>Connect First Repository</span>
             </button>
           </div>
         )}

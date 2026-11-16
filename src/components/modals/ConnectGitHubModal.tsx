@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
+import { GitHubLogo } from '../ui/GitHubLogo';
 import type { CodebaseIntelligence, GitHubIntegration } from '../../lib/types';
 
 interface ConnectGitHubModalProps {
@@ -330,8 +331,8 @@ export function ConnectGitHubModal({
         {/* Header */}
         <div className="flex items-start justify-between pb-3 border-b border-outline-variant/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 font-bold border border-primary/20">
-              <span className="material-symbols-outlined text-[22px]">hub</span>
+            <div className="w-10 h-10 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5">
+              <GitHubLogo className="w-5 h-5 text-white" />
             </div>
             <div>
               <h2
@@ -689,7 +690,7 @@ export function ConnectGitHubModal({
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[16px]">add_link</span>
+                      <GitHubLogo className="w-4 h-4 text-white shrink-0" />
                       <span>Connect Repository</span>
                     </>
                   )}

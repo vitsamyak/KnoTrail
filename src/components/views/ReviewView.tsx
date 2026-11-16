@@ -10,6 +10,7 @@ import {
   getFindingReviewStatus,
 } from '../../lib/types';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
+import { GitHubLogo } from '../ui/GitHubLogo';
 import { apiClient } from '../../lib/api-client';
 
 export function ReviewView() {
@@ -775,9 +776,13 @@ export function ReviewView() {
                         >
                           <div className="flex items-center justify-between gap-1.5 w-full">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="material-symbols-outlined text-primary text-[14px] shrink-0">
-                                {c.sourceType === 'github' ? 'code' : 'description'}
-                              </span>
+                              {c.sourceType === 'github' ? (
+                                <GitHubLogo className="w-3.5 h-3.5 text-on-surface shrink-0" />
+                              ) : (
+                                <span className="material-symbols-outlined text-primary text-[14px] shrink-0">
+                                  description
+                                </span>
+                              )}
                               <span className="font-mono text-xs font-semibold text-on-surface truncate">
                                 {c.file || c.sourceName}
                               </span>

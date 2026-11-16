@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
+import { GitHubLogo } from '../ui/GitHubLogo';
 
 export function LandingView() {
   const { setActiveView, setShowLoginModal, isAuthenticated, currentUser } = useProject();
@@ -525,8 +526,8 @@ export function LandingView() {
                     <span className="px-2 py-0.5 rounded bg-surface-container text-[10px] font-mono font-bold text-on-surface uppercase tracking-wider border border-outline-variant/30">
                       Improvement 1
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[18px]">integration_instructions</span>
+                    <div className="w-8 h-8 rounded-lg bg-[#24292f] text-white flex items-center justify-center shadow-xs">
+                      <GitHubLogo className="w-4 h-4 text-white" />
                     </div>
                   </div>
 

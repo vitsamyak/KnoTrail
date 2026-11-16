@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { FindingType } from '../../lib/types';
+import { GitHubLogo } from '../ui/GitHubLogo';
 
 export function WorkspaceView() {
   const {
@@ -208,8 +209,8 @@ export function WorkspaceView() {
             {/* Option 3: Ingest Documents */}
             <div className="bg-surface rounded-xl p-4 sm:p-4.5 border border-outline-variant/40 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-2xs">
               <div>
-                <div className="w-9 h-9 rounded-lg bg-surface-container-low text-primary flex items-center justify-center mb-2.5">
-                  <span className="material-symbols-outlined text-[20px]">hub</span>
+                <div className="w-9 h-9 rounded-xl bg-[#24292f] text-white flex items-center justify-center mb-2.5 shadow-2xs">
+                  <GitHubLogo className="w-4.5 h-4.5 text-white" />
                 </div>
                 <h3 className="text-sm font-bold text-on-surface mb-1">
                   Connect GitHub &amp; Documents

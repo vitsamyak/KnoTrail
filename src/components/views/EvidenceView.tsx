@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { EvidenceCitation, EvidenceStatus, KnowledgeFinding } from '../../lib/types';
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
+import { GitHubLogo } from '../ui/GitHubLogo';
 
 export function EvidenceView() {
   const {
@@ -502,9 +503,11 @@ export function EvidenceView() {
                               <span>Target Evidence</span>
                             </span>
                           )}
-                          <span className="material-symbols-outlined text-primary text-[15px]">
-                            {citation.sourceType === 'github' ? 'terminal' : 'description'}
-                          </span>
+                          {citation.sourceType === 'github' ? (
+                            <GitHubLogo className="w-3.5 h-3.5 text-on-surface shrink-0" />
+                          ) : (
+                            <span className="material-symbols-outlined text-primary text-[15px]">description</span>
+                          )}
                           <strong className="text-on-surface font-mono text-xs">{citation.file}</strong>
                           <span className="bg-surface-container-low px-1.5 py-0.2 rounded font-mono text-on-surface text-[10px] border border-outline-variant/30">
                             L:{citation.lineRange}
@@ -633,7 +636,7 @@ export function EvidenceView() {
                   <span className="text-secondary uppercase text-[10px] font-semibold block">Source Stream</span>
                   <span className="font-medium text-on-surface flex items-center gap-1.5">
                     {activeInspectorCitation.sourceType === 'github' && (
-                      <span className="material-symbols-outlined text-primary text-[14px]">terminal</span>
+                      <GitHubLogo className="w-3.5 h-3.5 text-on-surface shrink-0" />
                     )}
                     {activeInspectorCitation.sourceName}
                   </span>
@@ -666,7 +669,7 @@ export function EvidenceView() {
                 <div className="p-3 bg-surface-container-low/60 rounded-lg border border-primary/25 flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[15px]">code</span>
+                      <GitHubLogo className="w-3.5 h-3.5" />
                       GitHub Repository Grounding
                     </span>
                     {activeInspectorCitation.githubUrl && (
