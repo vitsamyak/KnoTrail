@@ -50,7 +50,7 @@ export async function probeDatabaseSchema(): Promise<{
 
   for (const table of tablesToCheck) {
     try {
-      const { error } = await client.from(table).select('*', { count: 'exact', head: true });
+      const { error } = await client.from(table).select('*').limit(1);
       if (!error) {
         tableStatuses[table] = 'ready';
       } else if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
