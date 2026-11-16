@@ -287,42 +287,46 @@ export function SourceManagerView() {
               const intel = integ.codebaseIntelligence || matchingSource?.codebaseIntelligence;
               const repoUrl = `https://github.com/${integ.repoOwner}/${integ.repoName}`;
 
-              // 4 uniform scope badges
+              // 4 uniform scope badges in a disciplined 2x2 grid (eliminating any truncation)
               const statsBadges = [
-                { key: 'commits', icon: 'commit', label: 'commits', title: 'Git Commits', active: integ.config?.includeCommits !== false },
-                { key: 'prs', icon: 'merge', label: 'PRs', title: 'Pull Requests', active: integ.config?.includePullRequests !== false },
-                { key: 'issues', icon: 'adjust', label: 'issues', title: 'Issues & Resolutions', active: integ.config?.includeIssues !== false },
-                { key: 'docs', icon: 'description', label: 'docs', title: 'Documentation', active: integ.config?.includeDocs !== false },
+                { key: 'commits', icon: 'commit', label: 'Commits', title: 'Git Commits', active: integ.config?.includeCommits !== false },
+                { key: 'prs', icon: 'merge', label: 'Pull Requests', title: 'Pull Requests', active: integ.config?.includePullRequests !== false },
+                { key: 'issues', icon: 'adjust', label: 'Issues', title: 'Issues & Resolutions', active: integ.config?.includeIssues !== false },
+                { key: 'docs', icon: 'description', label: 'Documentation', title: 'Documentation', active: integ.config?.includeDocs !== false },
               ];
               const activeStats = statsBadges.filter(b => b.active);
-              const gridColsClass = activeStats.length === 4 ? 'grid-cols-4' : activeStats.length === 3 ? 'grid-cols-3' : activeStats.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
+              const gridColsClass = activeStats.length <= 2 ? 'grid-cols-2' : 'grid-cols-2';
 
-              // Codebase Intelligence technology cards
+              // Codebase Intelligence technology cards: symmetrical grid with equal widths & heights
               const techCards = [
                 intel?.blueprint?.frontend?.framework && {
                   name: intel.blueprint.frontend.framework.split(' ')[0],
                   fullName: intel.blueprint.frontend.framework,
+                  category: 'Frontend',
                   icon: 'web',
                   tone: 'primary',
                 },
                 intel?.blueprint?.backend?.framework && {
                   name: intel.blueprint.backend.framework.split(' ')[0],
                   fullName: intel.blueprint.backend.framework,
+                  category: 'Backend',
                   icon: 'dns',
                   tone: 'surface',
                 },
                 intel?.blueprint?.database?.type && {
                   name: intel.blueprint.database.type.split(' ')[0],
                   fullName: intel.blueprint.database.type,
+                  category: 'Database',
                   icon: 'database',
                   tone: 'surface',
                 },
-              ].filter(Boolean) as { name: string; fullName: string; icon: string; tone: string }[];
+              ].filter(Boolean) as { name: string; fullName: string; category: string; icon: string; tone: string }[];
+              const techColsClass = techCards.length === 3 ? 'grid-cols-3' : techCards.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
 
               return (
                 <div
                   key={integ.id}
-                  className="group bg-surface-container-lowest hover:bg-surface-container-low/30 rounded-2xl p-4 sm:p-5 border border-outline-variant/40 hover:border-outline-variant/70 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3.5"
+                  className="group bg-surface-container-lowest hover:bg-surface-container-low/30 rounded-2xl p-4 border border-outline-variant/40 hover:border-outline-variant/70 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3.5"
                 >
                   <div className="space-y-3">
                     {/* 1. Repository Header Grid */}
@@ -351,18 +355,16 @@ export function SourceManagerView() {
                             </a>
                           </div>
 
-                          {/* Branch & Short Commit SHA */}
-                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          {/* Branch & Short Commit SHA (Matched Disciplined Pills) */}
+                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-[10.5px] font-mono font-medium text-secondary border border-outline-variant/30 shrink-0">
                               <span className="material-symbols-outlined text-[11px] text-secondary">fork_right</span>
                               <span>{integ.selectedBranch || integ.defaultBranch || 'main'}</span>
                             </span>
                             {integ.lastCommitSha && (
-                              <span className="inline-flex items-center gap-1 text-[10.5px] font-mono text-secondary shrink-0">
-                                <span className="text-secondary/50 font-sans uppercase text-[9px] font-medium tracking-wider">SHA</span>
-                                <span className="font-semibold text-on-surface bg-surface-container px-1.5 py-0.5 rounded-md border border-outline-variant/30">
-                                  {integ.lastCommitSha.slice(0, 7)}
-                                </span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-[10.5px] font-mono font-medium text-secondary border border-outline-variant/30 shrink-0">
+                                <span className="text-secondary/50 font-sans uppercase text-[9px] font-bold tracking-wider">SHA</span>
+                                <span className="font-semibold text-on-surface">{integ.lastCommitSha.slice(0, 7)}</span>
                               </span>
                             )}
                           </div>
@@ -398,15 +400,15 @@ export function SourceManagerView() {
                       </div>
                     </div>
 
-                    {/* 2. Repository Statistics: 4 uniform, equally styled compact badges */}
+                    {/* 2. Repository Statistics: Disciplined 2x2 Grid (No Truncation) */}
                     <div className={`grid ${gridColsClass} gap-1.5 pt-0.5`}>
                       {activeStats.map((badge) => (
                         <div
                           key={badge.key}
-                          className="h-7 px-1.5 rounded-lg bg-surface-container-low text-secondary text-[10.5px] font-mono font-medium border border-outline-variant/30 flex items-center justify-center gap-1 min-w-0"
+                          className="h-7 px-2.5 rounded-lg bg-surface-container-low text-secondary text-[11px] font-mono font-medium border border-outline-variant/30 flex items-center justify-center gap-1.5 min-w-0 transition-colors"
                           title={badge.title}
                         >
-                          <span className="material-symbols-outlined text-[12px] text-secondary/70 shrink-0">{badge.icon}</span>
+                          <span className="material-symbols-outlined text-[13px] text-secondary/70 shrink-0">{badge.icon}</span>
                           <span className="truncate">{badge.label}</span>
                         </div>
                       ))}
@@ -435,35 +437,35 @@ export function SourceManagerView() {
                       </div>
                     )}
 
-                    {/* 4. Codebase Intelligence Section */}
+                    {/* 4. Codebase Intelligence Section (Disciplined Symmetrical Layout) */}
                     {intel && (
-                      <div className="p-3 rounded-xl bg-surface-container/40 hover:bg-surface-container/60 transition-colors border border-outline-variant/30 flex flex-col gap-2.5">
-                        {/* Section Header: Title on Left, Metrics Badge on Right */}
-                        <div className="flex items-center justify-between gap-2 min-w-0">
-                          <div className="flex items-center gap-1.5 font-bold text-xs text-on-surface whitespace-nowrap shrink-0">
+                      <div className="p-3 rounded-xl bg-surface-container/30 hover:bg-surface-container/50 transition-colors border border-outline-variant/30 flex flex-col gap-2.5 overflow-hidden">
+                        {/* Section Header: Title on Left, Metrics Badge on Right (Guaranteed Containment) */}
+                        <div className="flex items-center justify-between gap-1.5 min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
                             <span className="material-symbols-outlined text-[15px] text-primary shrink-0">terminal</span>
-                            <span>Codebase Intelligence</span>
+                            <span className="font-bold text-xs text-on-surface truncate">Codebase Intelligence</span>
                           </div>
-                          <span className="font-mono text-[10px] text-secondary bg-surface-container-high px-2 py-0.5 rounded-md font-medium border border-outline-variant/30 whitespace-nowrap shrink-0">
+                          <span className="font-mono text-[10px] text-secondary bg-surface-container-high/90 px-2 py-0.5 rounded-md font-medium border border-outline-variant/30 shrink-0 whitespace-nowrap">
                             {intel.stats?.totalFilesDiscovered || intel.inventory?.length || 0} files · {(intel.stats?.totalLinesOfCode || 0).toLocaleString()} LOC
                           </span>
                         </div>
 
-                        {/* Technology Stack Cards: Equal height (h-7), uniform icons, responsive widths without clipping */}
+                        {/* Technology Stack: Symmetrical Equal-Width 3-Column Grid */}
                         {techCards.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                          <div className={`grid ${techColsClass} gap-1.5 pt-0.5`}>
                             {techCards.map((tech, idx) => (
                               <div
                                 key={idx}
-                                className={`h-7 px-2.5 rounded-lg border text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors flex-1 min-w-fit ${
+                                className={`py-1.5 px-1 rounded-lg border text-center flex flex-col items-center justify-center min-w-0 transition-colors ${
                                   tech.tone === 'primary'
-                                    ? 'bg-primary/10 text-primary border-primary/25 font-semibold'
-                                    : 'bg-surface-container-high text-on-surface border-outline-variant/40'
+                                    ? 'bg-primary/10 text-primary border-primary/25'
+                                    : 'bg-surface-container-high/70 text-on-surface border-outline-variant/40'
                                 }`}
                                 title={tech.fullName}
                               >
-                                <span className="material-symbols-outlined text-[13px] shrink-0 opacity-80">{tech.icon}</span>
-                                <span className="whitespace-nowrap">{tech.name}</span>
+                                <span className="material-symbols-outlined text-[14px] shrink-0 opacity-80 mb-0.5">{tech.icon}</span>
+                                <span className="text-[10.5px] font-semibold truncate w-full tracking-tight">{tech.name}</span>
                               </div>
                             ))}
                           </div>
