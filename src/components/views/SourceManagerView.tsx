@@ -290,20 +290,18 @@ export function SourceManagerView() {
               return (
                 <div
                   key={integ.id}
-                  className="group bg-surface-container-lowest hover:bg-surface-container-low/30 rounded-2xl p-4 sm:p-5 border border-outline-variant/40 hover:border-outline-variant/70 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
+                  className="group bg-surface-container-lowest hover:bg-surface-container-low/30 rounded-2xl p-4 sm:p-5 border border-outline-variant/40 hover:border-outline-variant/70 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3.5"
                 >
                   <div className="space-y-3">
                     {/* Top Row: GitHub Logo, Repo Name & Sync Status */}
                     <div className="flex items-start justify-between gap-2.5">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5">
+                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                        <div className="w-9 h-9 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5 mt-0.5">
                           <GitHubLogo className="w-5 h-5 text-white" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[11px] font-medium text-secondary truncate">
-                              {integ.repoOwner}
-                            </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="text-[11px] font-medium text-secondary truncate">{integ.repoOwner}</span>
                             <span className="text-secondary/40 text-[10px]">/</span>
                             <a
                               href={repoUrl}
@@ -312,21 +310,24 @@ export function SourceManagerView() {
                               className="text-xs sm:text-sm font-bold text-on-surface hover:text-primary transition-colors truncate inline-flex items-center gap-1 group/link"
                               title={`Open ${integ.repoOwner}/${integ.repoName} on GitHub`}
                             >
-                              <span>{integ.repoName}</span>
-                              <span className="material-symbols-outlined text-[13px] text-secondary opacity-0 group-hover/link:opacity-100 transition-opacity">
+                              <span className="truncate">{integ.repoName}</span>
+                              <span className="material-symbols-outlined text-[13px] text-secondary opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0">
                                 open_in_new
                               </span>
                             </a>
                           </div>
 
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-[10px] font-mono font-medium text-secondary border border-outline-variant/30">
-                              <span className="material-symbols-outlined text-[12px] text-secondary">fork_right</span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-container text-[10px] font-mono font-medium text-secondary border border-outline-variant/30 shrink-0">
+                              <span className="material-symbols-outlined text-[11px] text-secondary">fork_right</span>
                               <span>{integ.selectedBranch || integ.defaultBranch || 'main'}</span>
                             </span>
-                            {matchingSource?.recordCount !== undefined && (
-                              <span className="text-[10px] font-mono text-secondary">
-                                {matchingSource.recordCount} items
+                            {integ.lastCommitSha && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-secondary shrink-0">
+                                <span className="text-secondary/50 font-sans uppercase text-[9px]">SHA</span>
+                                <span className="font-bold text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">
+                                  {integ.lastCommitSha.slice(0, 7)}
+                                </span>
                               </span>
                             )}
                           </div>
@@ -362,53 +363,42 @@ export function SourceManagerView() {
                       </div>
                     </div>
 
-                    {/* Scope Pills & Sync Metadata */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap pt-1">
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {integ.config.includeCommits && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                            <span className="material-symbols-outlined text-[11px]">commit</span>
-                            commits
-                          </span>
-                        )}
-                        {integ.config.includePullRequests && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                            <span className="material-symbols-outlined text-[11px]">merge</span>
-                            PRs
-                          </span>
-                        )}
-                        {integ.config.includeIssues && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                            <span className="material-symbols-outlined text-[11px]">adjust</span>
-                            issues
-                          </span>
-                        )}
-                        {integ.config.includeDocs && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container/70 text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                            <span className="material-symbols-outlined text-[11px]">description</span>
-                            docs
-                          </span>
-                        )}
-                      </div>
-
-                      {integ.lastCommitSha && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-secondary">
-                          <span className="text-[10px] uppercase text-secondary/60">SHA</span>
-                          <span className="font-bold text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">
-                            {integ.lastCommitSha.slice(0, 7)}
-                          </span>
+                    {/* Scope Pills Row */}
+                    <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
+                      {integ.config.includeCommits && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                          <span className="material-symbols-outlined text-[11px] text-secondary/70">commit</span>
+                          commits
+                        </span>
+                      )}
+                      {integ.config.includePullRequests && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                          <span className="material-symbols-outlined text-[11px] text-secondary/70">merge</span>
+                          PRs
+                        </span>
+                      )}
+                      {integ.config.includeIssues && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                          <span className="material-symbols-outlined text-[11px] text-secondary/70">adjust</span>
+                          issues
+                        </span>
+                      )}
+                      {integ.config.includeDocs && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
+                          <span className="material-symbols-outlined text-[11px] text-secondary/70">description</span>
+                          docs
                         </span>
                       )}
                     </div>
 
                     {/* Telemetry Line */}
                     <div className="flex items-center justify-between text-[11px] text-secondary font-mono border-t border-outline-variant/20 pt-2">
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex items-center gap-1.5">
                         <span className="material-symbols-outlined text-[13px] text-secondary/70">schedule</span>
                         <span>{integ.lastSyncedAt ? new Date(integ.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Never'}</span>
                       </span>
                       {matchingSource && (
-                        <span className="font-semibold text-primary inline-flex items-center gap-1">
+                        <span className="font-semibold text-primary inline-flex items-center gap-1.5">
                           <span className="material-symbols-outlined text-[13px]">database</span>
                           <span>{matchingSource.recordCount} records indexed</span>
                         </span>
@@ -425,35 +415,46 @@ export function SourceManagerView() {
                     {/* Codebase Intelligence Box */}
                     {intel && (
                       <div className="p-3 rounded-xl bg-surface-container/40 hover:bg-surface-container/60 transition-colors border border-outline-variant/40 flex flex-col gap-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5 font-semibold text-xs text-on-surface">
-                            <span className="material-symbols-outlined text-[15px] text-primary">terminal</span>
+                        {/* Box Header: Title on Left, Metrics on Right — whitespace-nowrap prevents line breaks */}
+                        <div className="flex items-center justify-between gap-2 min-w-0">
+                          <div className="flex items-center gap-1.5 font-bold text-xs text-on-surface whitespace-nowrap shrink-0">
+                            <span className="material-symbols-outlined text-[15px] text-primary shrink-0">terminal</span>
                             <span>Codebase Intelligence</span>
                           </div>
-                          <span className="font-mono text-[10px] text-secondary bg-surface-container-high px-2 py-0.5 rounded-md font-medium border border-outline-variant/30">
-                            {intel.stats?.totalFilesDiscovered || intel.inventory?.length || 0} files · {intel.stats?.totalLinesOfCode ? intel.stats.totalLinesOfCode.toLocaleString() : 0} LOC
+                          <span className="font-mono text-[10px] text-secondary bg-surface-container-high px-2 py-0.5 rounded-md font-medium border border-outline-variant/30 whitespace-nowrap shrink-0">
+                            {intel.stats?.totalFilesDiscovered || intel.inventory?.length || 0} files · {(intel.stats?.totalLinesOfCode || 0).toLocaleString()} LOC
                           </span>
                         </div>
 
+                        {/* Tech Stack Chips: 3-column equal grid to guarantee neat, symmetrical alignment */}
                         {intel.blueprint && (
-                          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                          <div className="grid grid-cols-3 gap-1.5 pt-0.5 text-[10px]">
                             {intel.blueprint.frontend?.framework && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-semibold border border-primary/20">
-                                <span className="material-symbols-outlined text-[11px]">web</span>
-                                {intel.blueprint.frontend.framework}
-                              </span>
+                              <div
+                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary font-semibold border border-primary/20 min-w-0 overflow-hidden"
+                                title={intel.blueprint.frontend.framework}
+                              >
+                                <span className="material-symbols-outlined text-[12px] shrink-0">web</span>
+                                <span className="truncate">{intel.blueprint.frontend.framework.split(' ')[0]}</span>
+                              </div>
                             )}
                             {intel.blueprint.backend?.framework && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface text-[10px] font-medium border border-outline-variant/40">
-                                <span className="material-symbols-outlined text-[11px]">dns</span>
-                                {intel.blueprint.backend.framework}
-                              </span>
+                              <div
+                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-surface-container-high text-on-surface font-medium border border-outline-variant/40 min-w-0 overflow-hidden"
+                                title={intel.blueprint.backend.framework}
+                              >
+                                <span className="material-symbols-outlined text-[12px] shrink-0">dns</span>
+                                <span className="truncate">{intel.blueprint.backend.framework}</span>
+                              </div>
                             )}
                             {intel.blueprint.database?.type && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-high text-secondary text-[10px] font-medium border border-outline-variant/40">
-                                <span className="material-symbols-outlined text-[11px]">database</span>
-                                {intel.blueprint.database.type.split(' ')[0]}
-                              </span>
+                              <div
+                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-surface-container-high text-secondary font-medium border border-outline-variant/40 min-w-0 overflow-hidden"
+                                title={intel.blueprint.database.type}
+                              >
+                                <span className="material-symbols-outlined text-[12px] shrink-0">database</span>
+                                <span className="truncate">{intel.blueprint.database.type.split(' ')[0]}</span>
+                              </div>
                             )}
                           </div>
                         )}
@@ -462,14 +463,15 @@ export function SourceManagerView() {
                   </div>
 
                   {/* Bottom Action Toolbar */}
-                  <div className="pt-2.5 border-t border-outline-variant/30 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="pt-2.5 border-t border-outline-variant/30 flex flex-col gap-2">
+                    {/* Row 1: Primary Actions (Codebase Q&A + Sync) */}
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => setQnaModalRepo(integ)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-semibold text-[11px] transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs shadow-2xs transition-colors"
                         title="Ask Codebase Q&A and inspect Architecture Blueprint"
                       >
-                        <span className="material-symbols-outlined text-[14px]">chat</span>
+                        <span className="material-symbols-outlined text-[15px]">chat</span>
                         <span>Codebase Q&amp;A</span>
                       </button>
 
@@ -492,7 +494,7 @@ export function SourceManagerView() {
                           }
                         }}
                         disabled={isCurrentlySyncing || isGitHubLoading || currentUserRole === 'EXTERNAL'}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface font-medium text-[11px] border border-outline-variant/30 disabled:opacity-50 transition-colors"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs border border-outline-variant/40 disabled:opacity-50 transition-colors"
                         title="Synchronize repository context"
                       >
                         <span className={`material-symbols-outlined text-[14px] ${isCurrentlySyncing ? 'animate-spin' : ''}`}>
@@ -500,28 +502,31 @@ export function SourceManagerView() {
                         </span>
                         <span>{isCurrentlySyncing ? 'Syncing...' : 'Sync'}</span>
                       </button>
+                    </div>
 
+                    {/* Row 2: Secondary Utilities (Activity History on Left, Disconnect on Right) */}
+                    <div className="flex items-center justify-between text-xs pt-0.5">
                       <button
                         onClick={() => setSelectedHistoryRepo(integ)}
-                        className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface font-medium text-[11px] transition-colors"
+                        className="inline-flex items-center gap-1 text-secondary hover:text-on-surface font-medium text-xs transition-colors"
                         title="View continuous update activity history"
                       >
                         <span className="material-symbols-outlined text-[14px]">history</span>
-                        <span className="hidden sm:inline">Activity</span>
+                        <span>Activity History</span>
                       </button>
-                    </div>
 
-                    {currentUserRole === 'MANAGER' && (
-                      <button
-                        onClick={() => setDisconnectConfirmRepo(integ)}
-                        disabled={isCurrentlySyncing || isGitHubLoading}
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-error/70 hover:text-error hover:bg-error/10 text-[11px] font-medium transition-colors"
-                        title="Disconnect repository"
-                      >
-                        <span className="material-symbols-outlined text-[13px]">link_off</span>
-                        <span>Disconnect</span>
-                      </button>
-                    )}
+                      {currentUserRole === 'MANAGER' && (
+                        <button
+                          onClick={() => setDisconnectConfirmRepo(integ)}
+                          disabled={isCurrentlySyncing || isGitHubLoading}
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-error/70 hover:text-error hover:bg-error/10 text-xs font-medium transition-colors"
+                          title="Disconnect repository"
+                        >
+                          <span className="material-symbols-outlined text-[13px]">link_off</span>
+                          <span>Disconnect</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
