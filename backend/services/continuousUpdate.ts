@@ -250,9 +250,22 @@ export async function executeContinuousUpdate(
     project.handoverCertified = false;
     record.handoverInvalidated = true;
 
-    // 7. Incremental AI Knowledge Extraction
+    // 7. Incremental AI Knowledge Extraction & Codebase Findings
     let findingsAdded = 0;
     let updatedFindings = [...(project.findings || [])];
+
+    // Merge grounded codebase intelligence findings (always available)
+    if (ingestionResult.codebaseFindings && ingestionResult.codebaseFindings.length > 0) {
+      const unapprovedCodeFindings = ingestionResult.codebaseFindings.map((f) => ({
+        ...f,
+        approved: false,
+        rejected: false,
+        reviewStatus: 'PENDING_REVIEW' as const,
+      }));
+      const beforeCount = updatedFindings.length;
+      updatedFindings = deduplicateFindings([...unapprovedCodeFindings, ...updatedFindings]);
+      findingsAdded += Math.max(0, updatedFindings.length - beforeCount);
+    }
 
     if (shouldRunAi) {
       try {
@@ -268,7 +281,7 @@ export async function executeContinuousUpdate(
 
           const beforeCount = updatedFindings.length;
           updatedFindings = deduplicateFindings([...unapprovedFindings, ...updatedFindings]);
-          findingsAdded = Math.max(0, updatedFindings.length - beforeCount);
+          findingsAdded += Math.max(0, updatedFindings.length - beforeCount);
         }
 
         record.knowledgeStatus = 'completed';
@@ -285,7 +298,7 @@ export async function executeContinuousUpdate(
       }
     } else {
       record.knowledgeStatus = 'skipped';
-      integration.knowledgeStatus = 'idle';
+      integration.knowledgeStatus = 'skipped';
     }
 
     // 8. Evidence Drift Detection & Selective Approval Invalidation
@@ -334,6 +347,7 @@ export async function executeContinuousUpdate(
 
     // 10. Persist Integration State
     integration.syncStatus = 'synced';
+    integration.codebaseIntelligence = ingestionResult.codebaseIntelligence || integration.codebaseIntelligence;
     integration.lastSyncedAt = new Date().toISOString();
     integration.lastCommitSha = ingestionResult.lastCommitSha;
     integration.updatedAt = new Date().toISOString();

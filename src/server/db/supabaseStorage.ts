@@ -1240,11 +1240,24 @@ export class SupabaseStorageRepository implements StorageRepository {
       query = query.eq('repo_id', repoId);
     }
     const { data, error } = await query.maybeSingle();
-    if (error || !data) return null;
+    if (error) {
+      if (error.code !== 'PGRST116') {
+        console.warn(`[Supabase Storage] Error querying GitHub integration for workspace ${workspaceId}:`, error?.message || error);
+      }
+      return null;
+    }
+    if (!data) return null;
     return mapDbRowToGitHubIntegration(data);
   }
 
   async saveGitHubIntegration(workspaceId: string, integration: GitHubIntegration): Promise<GitHubIntegration> {
+    // Defense-in-depth: Ensure workspace exists in workspaces table before persisting integration
+    // to strictly prevent foreign key constraint violations (github_integrations_workspace_id_fkey)
+    const existingWorkspace = await this.getWorkspace(workspaceId);
+    if (!existingWorkspace) {
+      await this.createWorkspace(workspaceId);
+    }
+
     const row = mapGitHubIntegrationToDbRow(workspaceId, integration);
     const { data, error } = await this.client
       .from('github_integrations')
@@ -1262,7 +1275,11 @@ export class SupabaseStorageRepository implements StorageRepository {
       .select('*')
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false });
-    if (error || !data) return [];
+    if (error) {
+      console.warn(`[Supabase Storage] Error listing GitHub integrations for workspace ${workspaceId}:`, error?.message || error);
+      return [];
+    }
+    if (!data) return [];
     return data.map(mapDbRowToGitHubIntegration);
   }
 

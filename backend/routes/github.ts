@@ -26,6 +26,7 @@ import {
   executeContinuousUpdate,
   retryContinuousUpdateJob,
 } from '../services/continuousUpdate.ts';
+import { answerCodebaseQuestion } from '../services/codebaseAiExtractor.ts';
 import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
 import type {
   GitHubIntegration,
@@ -672,6 +673,120 @@ githubRouter.get(
     } catch (error: any) {
       console.error('[GitHub API Error] GET /api/github/integrations/:repoId/history:', error?.message || error);
       res.status(500).json({ error: error?.message || 'Failed to retrieve update history.' });
+    }
+  }
+);
+
+/**
+ * GET /api/github/integrations/:repoId/intelligence?workspaceId=...
+ * Retrieves the deep Codebase Intelligence analysis (inventory, blueprint, LOC, and progress).
+ * Accessible to MANAGER, DEVELOPER, and EXTERNAL roles.
+ */
+githubRouter.get(
+  '/integrations/:repoId/intelligence',
+  requireWorkspaceAccess,
+  requireRole(['MANAGER', 'DEVELOPER', 'EXTERNAL']),
+  async (req: Request, res: Response) => {
+    try {
+      const workspaceId = req.workspaceAuth!.workspaceId;
+      const repoIdParam = Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId;
+      const repoId = parseInt(repoIdParam, 10);
+
+      if (isNaN(repoId) || repoId <= 0) {
+        res.status(400).json({ error: 'Valid numeric repoId parameter is required.' });
+        return;
+      }
+
+      const storage = getStorage();
+      const integration = await storage.getGitHubIntegration(workspaceId, repoId);
+      if (!integration) {
+        res.status(404).json({ error: `GitHub integration for repoId ${repoId} not found.` });
+        return;
+      }
+
+      let intelligence = integration.codebaseIntelligence;
+      if (!intelligence) {
+        const project = await storage.getWorkspace(workspaceId);
+        const source = project?.sources?.find(
+          (s) => s.githubIntegrationId === integration.id || s.id === `src_gh_${repoId}`
+        );
+        if (source?.codebaseIntelligence) {
+          intelligence = source.codebaseIntelligence;
+        }
+      }
+
+      res.status(200).json({
+        intelligence: intelligence || null,
+        status: 'success',
+      });
+    } catch (error: any) {
+      console.error('[GitHub API Error] GET /api/github/integrations/:repoId/intelligence:', error?.message || error);
+      res.status(500).json({ error: error?.message || 'Failed to retrieve codebase intelligence.' });
+    }
+  }
+);
+
+/**
+ * POST /api/github/integrations/:repoId/ask
+ * Ask an architectural, security, or implementation question about the connected codebase.
+ * Returns grounded answer with exact file paths, line ranges, and verbatim quotes.
+ * Accessible to MANAGER, DEVELOPER, and EXTERNAL roles.
+ */
+githubRouter.post(
+  '/integrations/:repoId/ask',
+  requireWorkspaceAccess,
+  requireRole(['MANAGER', 'DEVELOPER', 'EXTERNAL']),
+  async (req: Request, res: Response) => {
+    try {
+      const workspaceId = req.workspaceAuth!.workspaceId;
+      const repoIdParam = Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId;
+      const repoId = parseInt(repoIdParam, 10);
+
+      if (isNaN(repoId) || repoId <= 0) {
+        res.status(400).json({ error: 'Valid numeric repoId parameter is required.' });
+        return;
+      }
+
+      const { question } = req.body || {};
+      if (!question || typeof question !== 'string' || question.trim().length === 0) {
+        res.status(400).json({ error: 'A valid non-empty question string is required.' });
+        return;
+      }
+
+      const storage = getStorage();
+      const integration = await storage.getGitHubIntegration(workspaceId, repoId);
+      if (!integration) {
+        res.status(404).json({ error: `GitHub integration for repoId ${repoId} not found.` });
+        return;
+      }
+
+      const project = await storage.getWorkspace(workspaceId);
+      const source = project?.sources?.find(
+        (s) => s.githubIntegrationId === integration.id || s.id === `src_gh_${repoId}`
+      );
+      const intelligence = integration.codebaseIntelligence || source?.codebaseIntelligence;
+
+      if (!intelligence) {
+        res.status(400).json({
+          error: 'Codebase intelligence has not been generated for this repository yet. Please synchronize the repository first.',
+        });
+        return;
+      }
+
+      const response = await answerCodebaseQuestion(
+        intelligence.blueprint,
+        intelligence.inventory,
+        project?.findings || [],
+        question.trim()
+      );
+
+      res.status(200).json({
+        response,
+        status: 'success',
+      });
+    } catch (error: any) {
+      console.error('[GitHub API Error] POST /api/github/integrations/:repoId/ask:', error?.message || error);
+      res.status(500).json({ error: error?.message || 'Failed to answer codebase question.' });
     }
   }
 );

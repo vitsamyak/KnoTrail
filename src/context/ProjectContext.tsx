@@ -14,6 +14,8 @@ import {
   UserRole,
   GitHubIntegration,
   GitHubIntegrationConfig,
+  CodebaseIntelligence,
+  CodebaseQuestionResponse,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
@@ -125,6 +127,8 @@ interface ProjectContextType {
   }) => Promise<{ success: boolean; error?: string; integration?: GitHubIntegration }>;
   syncGitHubRepo: (repoId: number) => Promise<{ success: boolean; error?: string; recordCounts?: any; isChanged?: boolean }>;
   disconnectGitHubRepo: (repoId: number) => Promise<{ success: boolean; error?: string }>;
+  getCodebaseIntelligence: (repoId: number) => Promise<{ success: boolean; data?: CodebaseIntelligence | null; error?: string }>;
+  askCodebaseQuestion: (repoId: number, question: string) => Promise<{ success: boolean; data?: CodebaseQuestionResponse; error?: string }>;
   stats: {
     totalSources: number;
     totalFindings: number;
@@ -1274,6 +1278,24 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const getCodebaseIntelligence = async (repoId: number) => {
+    try {
+      const res = await apiClient.getCodebaseIntelligence(workspaceId, repoId);
+      return { success: true, data: res.intelligence };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to fetch codebase intelligence' };
+    }
+  };
+
+  const askCodebaseQuestion = async (repoId: number, question: string) => {
+    try {
+      const res = await apiClient.askCodebaseQuestion(workspaceId, repoId, question);
+      return { success: true, data: res.response };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to ask codebase question' };
+    }
+  };
+
   const syncGitHubRepo = async (repoId: number) => {
     if (syncingRepoId !== null) {
       return { success: false, error: 'A repository sync is already in progress.' };
@@ -1431,6 +1453,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         connectGitHubRepo,
         syncGitHubRepo,
         disconnectGitHubRepo,
+        getCodebaseIntelligence,
+        askCodebaseQuestion,
         stats: {
           totalSources,
           totalFindings,

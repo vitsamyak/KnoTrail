@@ -13,6 +13,8 @@ import type {
   ContinuousUpdateRecord,
   ContinuousUpdateHistoryResponse,
   ContinuousUpdateRetryResponse,
+  CodebaseIntelligence,
+  CodebaseQuestionResponse,
 } from './types.ts';
 
 // In-memory auth token and demo perspective state
@@ -753,5 +755,23 @@ export const apiClient = {
     workspaceId: string
   ): Promise<{ rateLimit: any; status: string }> {
     return request(`/api/github/rate-limit?workspaceId=${encodeURIComponent(workspaceId)}`);
+  },
+
+  async getCodebaseIntelligence(
+    workspaceId: string,
+    repoId: number
+  ): Promise<{ intelligence: CodebaseIntelligence | null; status: string }> {
+    return request(`/api/github/integrations/${encodeURIComponent(repoId)}/intelligence?workspaceId=${encodeURIComponent(workspaceId)}`);
+  },
+
+  async askCodebaseQuestion(
+    workspaceId: string,
+    repoId: number,
+    question: string
+  ): Promise<{ response: CodebaseQuestionResponse; status: string }> {
+    return request(`/api/github/integrations/${encodeURIComponent(repoId)}/ask`, {
+      method: 'POST',
+      body: JSON.stringify({ workspaceId, question }),
+    });
   },
 };

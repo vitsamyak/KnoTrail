@@ -10,17 +10,32 @@
  */
 
 import crypto from 'crypto';
+import path from 'path';
 import {
   gitHubService,
   GitHubService,
   type GitHubRequestOptions,
 } from './github.ts';
+import {
+  scanRepositoryCodebase,
+  type CodebaseScanResult,
+} from './codebaseScanner.ts';
+import {
+  analyzeCodebaseArchitecture,
+} from './codebaseAnalyzer.ts';
+import {
+  extractDeterministicCodebaseFindings,
+} from './codebaseAiExtractor.ts';
 import type {
+  CodebaseArchitectureBlueprint,
+  CodebaseIngestionProgress,
+  CodebaseIntelligence,
   GitHubCommit,
   GitHubEvidenceProvenance,
   GitHubIssue,
   GitHubPullRequest,
   GitHubRepositoryMetadata,
+  KnowledgeFinding,
   ProjectSource,
 } from '../../src/lib/types.ts';
 
@@ -33,13 +48,16 @@ export interface GitHubIngestionOptions {
   maxCommits?: number; // Capped at 100, default 30
   maxPullRequests?: number; // Capped at 50, default 20
   maxIssues?: number; // Capped at 50, default 20
+  maxFilesToRead?: number; // Capped at 150, default 60
   includeCommits?: boolean;
   includePullRequests?: boolean;
   includeIssues?: boolean;
   includeDocs?: boolean;
+  includeCodebase?: boolean;
   authToken?: string;
   installationId?: number;
   integrationId?: string;
+  onProgress?: (progress: Partial<CodebaseIngestionProgress>) => void;
 }
 
 export interface GitHubIngestionRecordCounts {
@@ -47,6 +65,7 @@ export interface GitHubIngestionRecordCounts {
   pullRequests: number;
   issues: number;
   docs: number;
+  codebaseFiles?: number;
   total: number;
 }
 
@@ -59,6 +78,8 @@ export interface GitHubIngestionResult {
   recordCounts: GitHubIngestionRecordCounts;
   provenanceItems: GitHubEvidenceProvenance[];
   compiledText: string;
+  codebaseIntelligence?: CodebaseIntelligence;
+  codebaseFindings?: KnowledgeFinding[];
 }
 
 // ============================================================================
@@ -117,7 +138,12 @@ export async function ingestGitHubRepository(
   const shouldFetchIssues = options.includeIssues !== false;
   const shouldFetchDocs = options.includeDocs !== false;
 
-  // 2. Concurrently fetch requested entities
+  // 2. Concurrently fetch requested entities and scan codebase
+  const shouldScanCodebase = options.includeCodebase !== false;
+  let scanResult: CodebaseScanResult | null = null;
+  let architectureBlueprint: CodebaseArchitectureBlueprint | null = null;
+  let codebaseFindings: KnowledgeFinding[] = [];
+
   const [commits, pullRequests, issues, readmeContent] = await Promise.all([
     shouldFetchCommits
       ? service
@@ -153,6 +179,61 @@ export async function ingestGitHubRepository(
       : Promise.resolve(null),
   ]);
 
+  const lastCommitSha = commits[0]?.sha || selectedBranch;
+  const sourceId = existingSource?.id || `src_gh_${repoMeta.id}`;
+
+  // 2b. Execute Codebase Scanning & Deep Architecture Inference
+  if (shouldScanCodebase) {
+    try {
+      options.onProgress?.({
+        phase: 2,
+        phaseName: 'Fetching repository tree via Git Trees API',
+        percent: 15,
+      });
+
+      scanResult = await scanRepositoryCodebase(owner, repo, selectedBranch, {
+        requestOptions,
+        existingInventory: existingSource?.codebaseIntelligence?.inventory,
+        maxFilesToRead: options.maxFilesToRead || 70,
+        onProgress: options.onProgress,
+        customService: service,
+      });
+
+      options.onProgress?.({
+        phase: 5,
+        phaseName: 'Analyzing architecture, frameworks, and dependency relationships',
+        percent: 75,
+        analyzedCount: scanResult.filesRead,
+      });
+
+      architectureBlueprint = analyzeCodebaseArchitecture(scanResult.inventory, scanResult.fileContents);
+
+      options.onProgress?.({
+        phase: 6,
+        phaseName: 'Extracting grounded technical decisions, tasks, and invariants',
+        percent: 85,
+        analyzedCount: scanResult.filesRead,
+      });
+
+      codebaseFindings = extractDeterministicCodebaseFindings(
+        repoMeta.fullName,
+        sourceId,
+        lastCommitSha,
+        scanResult.fileContents,
+        architectureBlueprint
+      );
+
+      options.onProgress?.({
+        phase: 7,
+        phaseName: `Grounded ${codebaseFindings.length} findings with verified line coordinates`,
+        percent: 92,
+        findingsCount: codebaseFindings.length,
+      });
+    } catch (scanErr: any) {
+      console.warn(`[GitHub Ingestion] Codebase scanning encountered non-fatal error: ${scanErr?.message || scanErr}`);
+    }
+  }
+
   // 3. Compile structured Markdown document & track provenance
   const lines: string[] = [];
   const provenanceItems: GitHubEvidenceProvenance[] = [];
@@ -171,6 +252,138 @@ export async function ingestGitHubRepository(
     addLine(`Description: ${repoMeta.description}`);
   }
   addLine();
+
+  // ── SECTION 0: CODEBASE ARCHITECTURE BLUEPRINT ────────────────────────
+  if (architectureBlueprint) {
+    const archLineStart = lines.length + 1;
+    addLine('## Section 0: System Architecture & Technical Blueprint');
+    addLine('---');
+    addLine(`- Frontend: ${architectureBlueprint.frontend.framework} | UI: ${architectureBlueprint.frontend.uiLibrary} | Routing: ${architectureBlueprint.frontend.routing}`);
+    addLine(`- Backend: ${architectureBlueprint.backend.framework} (${architectureBlueprint.backend.runtime}) | API: ${architectureBlueprint.backend.apiType}`);
+    addLine(`- Database: ${architectureBlueprint.database.type} | Tables: ${architectureBlueprint.database.tables.join(', ') || 'Auto-migrated'}`);
+    addLine(`- Features: ${architectureBlueprint.database.features.join(', ') || 'Standard'}`);
+    if (architectureBlueprint.externalIntegrations.length > 0) {
+      addLine(`- External Integrations: ${architectureBlueprint.externalIntegrations.join(', ')}`);
+    }
+    addLine(`- Deployment Platforms: ${architectureBlueprint.deployment.platforms.join(', ')}`);
+    addLine();
+
+    addLine('### Key Discovered Workflows:');
+    for (const wf of architectureBlueprint.keyWorkflows) {
+      addLine(`  * ${wf}`);
+    }
+    addLine();
+
+    if (architectureBlueprint.moduleRelationships.length > 0) {
+      addLine('### Code Relationships & Data Flow:');
+      for (const rel of architectureBlueprint.moduleRelationships) {
+        addLine(`  * [${rel.relation}] ${rel.from} -> ${rel.to}`);
+      }
+      addLine();
+    }
+
+    const archLineEnd = lines.length;
+    provenanceItems.push(
+      service.buildEvidenceProvenance({
+        repositoryId: repoMeta.id,
+        repositoryOwner: repoMeta.owner,
+        repositoryName: repoMeta.name,
+        branch: selectedBranch,
+        commitSha: lastCommitSha,
+        filePath: 'architecture.blueprint',
+        author: 'KnoTrail Architecture Analyzer',
+        timestamp: new Date().toISOString(),
+        rawSnippet: `Architecture: ${architectureBlueprint.frontend.framework} / ${architectureBlueprint.backend.framework} / ${architectureBlueprint.database.type}`,
+        synthesizedLineNumber: archLineStart,
+        synthesizedLineRange: `${archLineStart}-${archLineEnd}`,
+      })
+    );
+  }
+
+  // ── SECTION 1: REPOSITORY FILE INVENTORY ──────────────────────────────
+  if (scanResult && scanResult.inventory.length > 0) {
+    const invLineStart = lines.length + 1;
+    addLine(`## Section 1: Complete Repository Inventory (${scanResult.totalDiscovered} discovered files, ${scanResult.filesRead} read)`);
+    addLine('---');
+    addLine();
+
+    // Group files by category
+    const categoriesMap: Record<string, typeof scanResult.inventory> = {};
+    for (const item of scanResult.inventory) {
+      if (!categoriesMap[item.category]) categoriesMap[item.category] = [];
+      categoriesMap[item.category].push(item);
+    }
+
+    for (const [cat, files] of Object.entries(categoriesMap)) {
+      addLine(`### Category: ${cat.toUpperCase().replace(/_/g, ' ')} (${files.length} files)`);
+      for (const f of files.slice(0, 20)) {
+        const statusStr = f.isRead ? `${f.linesCount} lines` : `SKIPPED: ${f.skipReason || 'Non-essential'}`;
+        addLine(`  - \`${f.path}\` (${f.language}) [${formatBytes(f.size)}] - ${statusStr}`);
+      }
+      if (files.length > 20) {
+        addLine(`  - ... and ${files.length - 20} additional files in this category`);
+      }
+      addLine();
+    }
+
+    const invLineEnd = lines.length;
+    provenanceItems.push(
+      service.buildEvidenceProvenance({
+        repositoryId: repoMeta.id,
+        repositoryOwner: repoMeta.owner,
+        repositoryName: repoMeta.name,
+        branch: selectedBranch,
+        commitSha: lastCommitSha,
+        filePath: 'repository.inventory',
+        author: 'KnoTrail Codebase Scanner',
+        timestamp: new Date().toISOString(),
+        rawSnippet: `Discovered: ${scanResult.totalDiscovered} files, read: ${scanResult.filesRead}`,
+        synthesizedLineNumber: invLineStart,
+        synthesizedLineRange: `${invLineStart}-${invLineEnd}`,
+      })
+    );
+  }
+
+  // ── SECTION 2: AUTHORITATIVE SOURCE CODE EXCERPTS ─────────────────────
+  if (scanResult && scanResult.fileContents.size > 0) {
+    addLine('## Section 2: Core Source Code Implementations');
+    addLine('---');
+    addLine();
+
+    // Priority sample files to include in compiled document
+    const sampleFiles = Array.from(scanResult.fileContents.entries()).slice(0, 15);
+    for (const [filePath, content] of sampleFiles) {
+      const codeLineStart = lines.length + 1;
+      const fileLines = content.split('\n');
+      const excerpt = fileLines.slice(0, 50).join('\n'); // First 50 lines
+
+      addLine(`### Source File: \`${filePath}\` (${fileLines.length} lines)`);
+      addLine('```' + (path.extname(filePath).slice(1) || 'text'));
+      addLine(excerpt);
+      if (fileLines.length > 50) {
+        addLine(`// ... [${fileLines.length - 50} more lines in repository file]`);
+      }
+      addLine('```');
+      addLine();
+
+      const codeLineEnd = lines.length;
+      provenanceItems.push(
+        service.buildEvidenceProvenance({
+          repositoryId: repoMeta.id,
+          repositoryOwner: repoMeta.owner,
+          repositoryName: repoMeta.name,
+          branch: selectedBranch,
+          commitSha: lastCommitSha,
+          filePath,
+          author: 'Core Engineering',
+          timestamp: new Date().toISOString(),
+          rawSnippet: excerpt.slice(0, 300),
+          synthesizedLineNumber: codeLineStart,
+          synthesizedLineRange: `${codeLineStart}-${codeLineEnd}`,
+        })
+      );
+    }
+  }
 
   // ── SECTION A: COMMITS ──────────────────────────────────────────────────
   if (commits.length > 0) {
@@ -351,19 +564,56 @@ export async function ingestGitHubRepository(
   // Check if content changed since last sync
   const isChanged = !existingSource || existingSource.documentData?.contentHash !== contentHash;
 
-  const lastCommitSha = commits[0]?.sha;
-  const totalRecords = commits.length + pullRequests.length + issues.length + docsCount;
+  const codebaseFilesCount = scanResult ? scanResult.filesRead : 0;
+  const totalRecords = commits.length + pullRequests.length + issues.length + docsCount + codebaseFilesCount;
 
   const recordCounts: GitHubIngestionRecordCounts = {
     commits: commits.length,
     pullRequests: pullRequests.length,
     issues: issues.length,
     docs: docsCount,
+    codebaseFiles: codebaseFilesCount,
     total: totalRecords,
   };
 
+  // Build Codebase Intelligence Model
+  const codebaseIntelligence: CodebaseIntelligence | undefined =
+    scanResult && architectureBlueprint
+      ? {
+          treeSha: scanResult.treeSha,
+          commitSha: lastCommitSha,
+          branch: selectedBranch,
+          inventory: scanResult.inventory,
+          blueprint: architectureBlueprint,
+          progress: {
+            phase: 9,
+            phaseName: 'Ingestion completed',
+            percent: 100,
+            status: 'completed',
+            discoveredCount: scanResult.totalDiscovered,
+            readCount: scanResult.filesRead,
+            skippedCount: scanResult.filesSkipped,
+            analyzedCount: scanResult.filesRead,
+            findingsCount: codebaseFindings.length,
+            errorCount: 0,
+            errors: [],
+            completedAt: new Date().toISOString(),
+          },
+          stats: {
+            totalFilesDiscovered: scanResult.totalDiscovered,
+            totalFilesRead: scanResult.filesRead,
+            totalFilesSkipped: scanResult.filesSkipped,
+            totalLinesOfCode: scanResult.totalLinesOfCode,
+            totalFindings: codebaseFindings.length,
+            skippedByReason: scanResult.skippedSummary,
+            languages: scanResult.languages,
+            categories: scanResult.categories,
+          },
+          lastIngestedAt: new Date().toISOString(),
+        }
+      : undefined;
+
   // 5. Build ProjectSource Object
-  const sourceId = existingSource?.id || `src_gh_${repoMeta.id}`;
   const source: ProjectSource = {
     id: sourceId,
     name: `GitHub: ${repoMeta.fullName}`,
@@ -372,7 +622,9 @@ export async function ingestGitHubRepository(
     lastSync: new Date().toISOString(),
     recordCount: totalRecords,
     icon: 'commit',
-    description: `Ingested ${commits.length} commits, ${pullRequests.length} pull requests, ${issues.length} issues, and ${docsCount} doc(s) from ${repoMeta.fullName} (${selectedBranch}).`,
+    description: scanResult
+      ? `Ingested complete codebase (${scanResult.totalDiscovered} files discovered, ${scanResult.filesRead} read, ${scanResult.totalLinesOfCode} lines of code), ${commits.length} commits, ${pullRequests.length} pull requests, and ${issues.length} issues from ${repoMeta.fullName} (${selectedBranch}).`
+      : `Ingested ${commits.length} commits, ${pullRequests.length} pull requests, ${issues.length} issues, and ${docsCount} doc(s) from ${repoMeta.fullName} (${selectedBranch}).`,
     privacyLevel: 'LOCAL_READ_ONLY',
     isUploaded: false,
     documentData: {
@@ -386,6 +638,7 @@ export async function ingestGitHubRepository(
     },
     githubMetadata: repoMeta,
     githubIntegrationId: options.integrationId,
+    codebaseIntelligence,
   };
 
   return {
@@ -397,5 +650,7 @@ export async function ingestGitHubRepository(
     recordCounts,
     provenanceItems,
     compiledText,
+    codebaseIntelligence,
+    codebaseFindings,
   };
 }

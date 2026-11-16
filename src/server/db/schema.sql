@@ -239,5 +239,14 @@ BEGIN
         GRANT ALL ON TABLE github_integrations TO service_role;
         GRANT ALL ON TABLE github_webhook_events TO service_role;
     END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgres') THEN
+        GRANT ALL ON TABLE github_integrations TO postgres;
+        GRANT ALL ON TABLE github_webhook_events TO postgres;
+    END IF;
 END $$;
+
+-- 8. Reload PostgREST Schema Cache
+-- Explicitly signal PostgREST listener on PostgreSQL notification channel 'pgrst'
+-- to immediately refresh its schema cache without requiring server reboot.
+NOTIFY pgrst, 'reload schema';
 

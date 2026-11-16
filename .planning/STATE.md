@@ -1,17 +1,17 @@
 ---
 gsd_state_version: "1.0"
-current_phase: Round 3 Improvement 3: Continuous Knowledge Updates
-current_phase_name: Comprehensive Testing & Final Verification (Milestone 3.5)
-status: milestone_3_5_complete
-stopped_at: "Successfully verified, tested, and finalized Round 3 Improvement 3, Milestone 3.5: Comprehensive Testing & Final Verification. Verified the complete 15-step end-to-end lifecycle from repository connection, initial sync, AI extraction, evidence verification, Manager approval, handover certification, commit push webhook, automatic ingestion, precision evidence drift detection, selective approval revocation, handover de-certification and outdated warning activation, Review Center re-review by Manager, re-approval, handover re-certification, to complete update history audit trails. Verified all security boundaries: Manager-only governance (approval, rejection, handover generation, certification), Developer permissions (sync, source contribution, retry), External read-only access (source content redaction, stripped paths, no sync/retry/approve), cross-workspace isolation, workspace state tampering protection, and retry ceilings (422). Verified failure recovery under Gemini API unavailability (status: partial/failed, never falsely marked completed), GitHub rate limits (graceful structured error), invalid webhook signatures (401), duplicate webhook deliveries (idempotent 200 duplicate), per-repository concurrency serialization (mutex queue prevents race conditions), and backend restart recovery (persistent update history). Verified UI responsive layouts, amber drift badges, update history drawer, and outdated handover banners. The full regression suite passed with 289/289 tests passing (100% pass rate). TypeScript typecheck (0 errors), backend production build, and frontend production build succeeded with zero errors. Documentation updated in README.md, STATE.md, and ROADMAP.md. Milestone 3.5 and Improvement 3 are complete."
-last_updated: "2026-11-15T22:49:00.000Z"
-last_activity: 2026-11-15
+current_phase: GitHub Repository Intelligence & Full Codebase Ingestion
+current_phase_name: Deep Codebase Scanning, Architecture Modeling & Grounded Q&A
+status: codebase_intelligence_complete
+stopped_at: "Successfully implemented, verified, and live-tested the comprehensive GitHub Repository Intelligence and Full Codebase Ingestion feature in KnoTrail. Scans connected branches recursively via GitHub Git Trees API, classifies files into 14 categories, enforces secret exclusion (.env, private keys) and regex secret redaction (PATs, Bearer tokens, API keys). Inactive mock test subclasses are gracefully isolated. Deep codebase analyzer infers full architectural blueprint (Next.js, Express, PostgreSQL Supabase, OCC, RLS, routes, middleware, and integrations). Deterministic & AI extractor generates 100% verified findings citing exact file paths, line ranges, and verbatim quotes under Zero Auto-Approval Invariant. Interactive 9-phase progress tracker displays live counters (discovered, read, skipped, analyzed, findings). Application-wide Codebase Q&A modal answers all 8 canonical architecture questions with confidence ratings, citations, and related files. Validated against live target https://github.com/vitsamyak/KnoTrail on branch main (VERDICT: PASS). All 315 tests pass across all test suites. Backend build and Next.js 14 frontend build succeeded cleanly."
+last_updated: "2026-11-16T11:45:00.000Z"
+last_activity: 2026-11-16
 state_head: main
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 20
-  completed_plans: 20
+  total_phases: 13
+  completed_phases: 13
+  total_plans: 22
+  completed_plans: 22
   percent: 100
 ---
 
@@ -22,43 +22,43 @@ progress:
 See: .planning/PROJECT.md (updated 2026-11-09)
 
 **Core value:** Reconstructing verified, source-traceable project state through an end-to-end knowledge handover workflow (RECONSTRUCT → VERIFY → REVIEW → HANDOVER) with mandatory human approval, zero ungrounded claims, continuous repository updates, and comprehensive 12-section delivery packages.  
-**Current focus:** Direct Evidence Explorer Navigation & Multi-Role Demo Login Enhancements Verified. Full regression suite (296/296 tests PASS). Backend and frontend production builds PASS. Zero open blockers.
+**Current focus:** GitHub Repository Intelligence & Full Codebase Ingestion Verified. Full regression suite (315/315 tests PASS). Backend and frontend production builds PASS. Zero open blockers.
 
 ## Current Position
 
-Phase: Direct Evidence Navigation & Role-Based Demo Authentication Enhancements (Complete & Verified)  
-Status: Tests PASS (296/296 in full test suite, 20/20 in loginAuth test suite) | Builds PASS (backend:clean, frontend:clean) | Zero-Auth Incognito Verified | Landing Page Demo Untouched | System Production Ready  
+Phase: GitHub Repository Intelligence & Full Codebase Ingestion (Complete & Verified)  
+Status: Tests PASS (315/315 in full test suite) | Builds PASS (backend:clean, frontend:clean) | Zero-Auth Incognito Verified | Live GitHub PAT Verified | System Production Ready  
 Last activity: 2026-11-16
 
 Progress: [██████████] 100% (All Features & Enhancements Complete)
 
 ## Performance Metrics
 
-**Enhancements Verification Summary:**
-1. **Direct Evidence Explorer Navigation**:
-   - Seamless jump from Review Center citation links or "Supporting Evidence" action buttons directly into Evidence Explorer (`EvidenceView.tsx`).
-   - Automatically clears conflicting search terms and status filters (`evidenceFilter = 'ALL'`) to ensure the target item is visible.
-   - Smoothly scrolls to target finding (`#finding-${id}`) or citation (`#citation-${id}`) with DOM retry polling.
-   - Applies high-visibility 3.2s highlight styling (`ring-2 ring-primary/50 shadow-md bg-primary/[0.03]`) and glowing "Target Evidence" pulsing badge.
-   - Non-blocking dismissible alert fallback if target finding or citation is modified or missing.
-   - Deep-linking & history navigation: `#evidence?findingId=...&citationId=...` updates URL hash and supports browser Back/Forward (`popstate`) navigation.
-2. **Multi-Role Demo Authentication & Strict Server RBAC**:
-   - Manager demo account: `manager@knotrail.demo` / `KnoTrail2026!Manager` (`usr_mgr_demo_2026`) - full governance controls (approve, reject, certify, resolve conflicts, delete sources, invite members).
-   - Developer demo account: `developer@knotrail.demo` / `KnoTrail2026!Dev` (`usr_dev_demo_2026`) - operational capabilities (contribute notes, upload files, sync GitHub, edit finding details, retry updates); strictly forbidden from approving findings or certifying handovers (HTTP 403 Forbidden).
-   - External demo account: `external@knotrail.demo` / `KnoTrail2026!Ext` (`usr_ext_demo_2026`) - auditor access (read-only with confidential source texts redacted and internal storage paths stripped); strictly forbidden from mutating sources or approving findings (HTTP 403 Forbidden).
-   - Constant-time verification (`verifyPasswordTimingSafe` with SHA-256) protects against timing attacks.
-   - Authoritative database recording: authenticating via any demo account inserts the member with their exact role into workspace storage.
-   - Fallback protection: `GET /api/auth/me` maps demo user IDs directly to their assigned roles even if workspace query parameters are omitted, strictly preventing privilege escalation.
-   - Credential secrecy: `GET /api/auth/status` publishes `demoAccounts` metadata (email, role, name, description) while never returning raw passwords or session secrets.
-   - Login Modal UX: intuitive 3-role selector tabs with role badge, icons, description, and automatic credential pre-fill.
-3. **Explore Live Demo Invariant & Zero-Auth Incognito Preservation**:
-   - `src/components/views/LandingView.tsx` remained 100% untouched.
-   - "Explore Live Demo" button, placement, styling, and anonymous demo workspace initialization (`ws_anon_*`) remain completely intact.
-   - Incognito / private window zero-login evaluation is verified and operational with zero friction.
-4. **Test Coverage & Build Results**:
-   - Total Tests: 296 tests across 22 test files (296 passed, 0 failed, 100% pass rate).
+**Codebase Intelligence & Full Ingestion Summary:**
+1. **Complete Repository Scanning via Git Trees API**:
+   - Discovers entire repository file hierarchy recursively via `GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1` in a single network call.
+   - Verified on live target `vitsamyak/KnoTrail`: discovered 160 tree blobs in < 1 second.
+   - Bounded concurrent blob reading (concurrency = 6) with per-file size safety limits (120 KB threshold) and Base64 content decoding.
+2. **Intelligent File Classification & Security Invariants**:
+   - 14 distinct file categories (`source_code`, `ui_component`, `backend_route`, `database_schema`, `auth_security`, `configuration`, `documentation`, `architecture`, `tests`, `ci_cd`, `instructions`, etc.).
+   - Directory exclusion (`node_modules`, `.next`, `dist`, `build`, `coverage`, `.git`, `.turbo`).
+   - Secret file exclusion (`.env`, `.env.local`, `.pem`, `.key`, `id_rsa`) while permitting `.env.example`.
+   - Secret redaction regex: scrubs GitHub PATs (`ghp_`, `github_pat_`), Bearer tokens, Gemini keys (`AIzaSy`), Supabase secrets (`sb_secret_`), and RSA private keys before saving.
+3. **Deep Architecture Blueprint Analyzer**:
+   - Infers complete stack: Frontend (`Next.js 14 App Router`, `Tailwind CSS`, `Context API`), Backend (`Express 5`, Node.js runtime, 10 route files, 4 middleware layers), Database (`PostgreSQL Cloud Supabase`, 5 tables, OCC, RLS), Deployment (`Render Web Services`, Singapore/Frankfurt).
+4. **Grounded Knowledge Extraction (Zero Auto-Approval Invariant)**:
+   - Extracted verified findings citing exact repository file paths, line ranges, commit SHA, and verbatim code quotes.
+   - All generated findings enter `reviewStatus: 'PENDING_REVIEW'` with `approved: false` (Zero Auto-Approval Invariant).
+5. **Interactive 9-Phase Ingestion Progress Tracker**:
+   - `ConnectGitHubModal.tsx` displays live 9-phase progress pipeline (Connected -> Fetching tree -> Discovering files -> Reading code -> Analyzing architecture -> Extracting knowledge -> Grounding findings -> Saving -> Completed).
+   - Live metrics counters: Discovered, Read, Skipped, Analyzed, Findings.
+   - Partial error recovery with inline retry option.
+6. **Codebase Q&A & Architecture Modal (`CodebaseQnAModal.tsx`)**:
+   - Interactive Q&A for the 8 canonical architecture & engineering questions with clickable citations, expandable verbatim code quotes, confidence metrics, and related file tags.
+7. **Test Coverage & Build Results**:
+   - Total Tests: 315 tests across 23 test files (315 passed, 0 failed, 100% pass rate).
    - TypeScript Checks: 0 errors on frontend (`npx tsc --noEmit`) and 0 errors on backend (`npx tsc -p tsconfig.backend.json --noEmit`).
-   - Backend Production Build: 314.4 KB clean bundle (`npm run backend:build`).
+   - Backend Production Build: 377.9 KB clean bundle (`npm run backend:build`).
    - Frontend Production Build: Clean Next.js 14 compilation (`npm run frontend:build`).
 
 ## Performance Metrics

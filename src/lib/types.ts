@@ -189,6 +189,7 @@ export interface ProjectSource {
   documentData?: ExtractedDocumentData;
   githubMetadata?: GitHubRepositoryMetadata;
   githubIntegrationId?: string;
+  codebaseIntelligence?: CodebaseIntelligence;
 }
 
 export interface Stakeholder {
@@ -403,9 +404,11 @@ export interface GitHubIntegrationConfig {
   includePullRequests: boolean;
   includeIssues: boolean;
   includeDocs: boolean;
+  includeCodebase?: boolean;
   maxCommits?: number;
   maxPullRequests?: number;
   maxIssues?: number;
+  maxFiles?: number;
   branch?: string;
 }
 
@@ -562,6 +565,7 @@ export interface GitHubIntegration {
   metadata?: GitHubRepositoryMetadata;
   knowledgeStatus?: ContinuousKnowledgeStatus;
   lastProcessedCommitSha?: string | null;
+  codebaseIntelligence?: CodebaseIntelligence;
   createdAt: string;
   updatedAt: string;
 }
@@ -572,6 +576,126 @@ export interface GitHubWebhookEvent {
   repoId: number;
   payloadHash: string;
   processedAt: string;
+}
+
+// ============================================================================
+// Codebase Intelligence & Full Repository Scanner Models
+// ============================================================================
+
+export type CodebaseFileCategory =
+  | 'source_code'
+  | 'ui_component'
+  | 'backend_route'
+  | 'api_impl'
+  | 'database_schema'
+  | 'data_model'
+  | 'auth_security'
+  | 'configuration'
+  | 'documentation'
+  | 'architecture'
+  | 'tests'
+  | 'ci_cd'
+  | 'instructions'
+  | 'other';
+
+export interface CodebaseFileItem {
+  path: string;
+  extension: string;
+  language: string;
+  category: CodebaseFileCategory;
+  size: number;
+  blobSha: string;
+  linesCount: number;
+  isRead: boolean;
+  skipReason?: string;
+  excerpt?: string;
+}
+
+export interface CodebaseArchitectureBlueprint {
+  frontend: {
+    framework: string;
+    uiLibrary?: string;
+    routing: string;
+    stateManagement: string[];
+    keyComponents: string[];
+  };
+  backend: {
+    runtime: string;
+    framework: string;
+    apiType: string;
+    endpointsCount: number;
+    keyRoutes: string[];
+    middleware: string[];
+  };
+  database: {
+    type: string;
+    tables: string[];
+    hasMigrations: boolean;
+    features: string[];
+  };
+  externalIntegrations: string[];
+  deployment: {
+    platforms: string[];
+    hasCiCd: boolean;
+    containerized: boolean;
+  };
+  keyWorkflows: string[];
+  moduleRelationships: Array<{
+    from: string;
+    to: string;
+    relation: 'imports' | 'calls_api' | 'queries_db' | 'configures';
+  }>;
+}
+
+export interface CodebaseIngestionProgress {
+  phase: number; // 1 to 9
+  phaseName: string;
+  percent: number; // 0 to 100
+  status: 'idle' | 'running' | 'completed' | 'error';
+  discoveredCount: number;
+  readCount: number;
+  skippedCount: number;
+  analyzedCount: number;
+  findingsCount: number;
+  errorCount: number;
+  errors: string[];
+  currentFile?: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+export interface CodebaseIntelligence {
+  treeSha: string;
+  commitSha: string;
+  branch: string;
+  inventory: CodebaseFileItem[];
+  blueprint: CodebaseArchitectureBlueprint;
+  progress: CodebaseIngestionProgress;
+  stats: {
+    totalFilesDiscovered: number;
+    totalFilesRead: number;
+    totalFilesSkipped: number;
+    totalLinesOfCode: number;
+    totalFindings: number;
+    skippedByReason: Record<string, number>;
+    languages: Record<string, number>;
+    categories: Record<string, number>;
+  };
+  lastIngestedAt: string;
+}
+
+export interface CodebaseQuestionRequest {
+  question: string;
+  workspaceId: string;
+}
+
+export interface CodebaseQuestionResponse {
+  answer: string;
+  confidence: number;
+  category: string;
+  citations: EvidenceCitation[];
+  relatedFiles: string[];
+  status: 'success' | 'partial' | 'error';
 }
 
 // ============================================================================

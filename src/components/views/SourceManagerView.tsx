@@ -7,6 +7,7 @@ import { formatBytes, isAllowedFile, MAX_FILE_SIZE_BYTES, MAX_FILES_PER_BATCH } 
 import { KnowledgeTrailLoader } from '../ui/KnowledgeTrailLoader';
 import { ConnectGitHubModal } from '../modals/ConnectGitHubModal';
 import { UpdateHistoryDrawer } from '../modals/UpdateHistoryDrawer';
+import { CodebaseQnAModal } from '../modals/CodebaseQnAModal';
 
 export function SourceManagerView() {
   const {
@@ -31,6 +32,7 @@ export function SourceManagerView() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPasteModal, setShowPasteModal] = useState(false);
   const [showGitHubModal, setShowGitHubModal] = useState(false);
+  const [qnaModalRepo, setQnaModalRepo] = useState<GitHubIntegration | null>(null);
   const [selectedHistoryRepo, setSelectedHistoryRepo] = useState<GitHubIntegration | null>(null);
   const [disconnectConfirmRepo, setDisconnectConfirmRepo] = useState<GitHubIntegration | null>(null);
   const [syncFeedback, setSyncFeedback] = useState<{ repoId: number; success: boolean; message: string } | null>(null);
@@ -356,11 +358,52 @@ export function SourceManagerView() {
                         </span>
                       )}
                     </div>
+
+                    {/* Codebase Intelligence Badge */}
+                    {(() => {
+                      const intel = integ.codebaseIntelligence || matchingSource?.codebaseIntelligence;
+                      if (!intel) return null;
+                      return (
+                        <div className="mt-2 p-2 rounded-lg bg-surface-container/60 border border-outline-variant/30 flex flex-col gap-1 text-[11px]">
+                          <div className="flex items-center justify-between text-secondary">
+                            <span className="font-semibold text-on-surface flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[13px] text-primary">terminal</span>
+                              Codebase Intelligence
+                            </span>
+                            <span className="font-mono text-[10px]">
+                              {intel.stats?.totalFilesDiscovered || intel.inventory?.length || 0} files · {intel.stats?.totalLinesOfCode?.toLocaleString() || 0} LOC
+                            </span>
+                          </div>
+                          {intel.blueprint && (
+                            <div className="flex items-center gap-1 flex-wrap text-[10px]">
+                              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-primary font-semibold">
+                                {intel.blueprint.frontend.framework}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface">
+                                {intel.blueprint.backend.framework}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-secondary">
+                                {intel.blueprint.database.type.split(' ')[0]}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Bottom Actions */}
                   <div className="pt-2 border-t border-outline-variant/30 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <button
+                        onClick={() => setQnaModalRepo(integ)}
+                        className="inline-flex items-center gap-1 text-primary hover:text-primary-hover font-semibold text-[11px] transition-colors"
+                        title="Ask Codebase Q&A and inspect Architecture Blueprint"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">chat</span>
+                        <span>Codebase Q&amp;A</span>
+                      </button>
+
                       <button
                         onClick={async () => {
                           setSyncFeedback(null);
@@ -1124,14 +1167,22 @@ export function SourceManagerView() {
       <ConnectGitHubModal
         isOpen={showGitHubModal}
         onClose={() => setShowGitHubModal(false)}
+        onOpenQnA={(integ) => setQnaModalRepo(integ)}
         onSuccess={() => {
           setShowGitHubModal(false);
           setSyncFeedback({
             repoId: 0,
             success: true,
-            message: 'Repository connected successfully. Use "Sync Now" to index activity.',
+            message: 'Repository connected and codebase ingested successfully with full source grounding.',
           });
         }}
+      />
+
+      {/* MODAL 5B: CODEBASE INTELLIGENCE & QNA MODAL */}
+      <CodebaseQnAModal
+        isOpen={Boolean(qnaModalRepo)}
+        onClose={() => setQnaModalRepo(null)}
+        integration={qnaModalRepo}
       />
 
       {/* MODAL 6: CONFIRM DISCONNECT GITHUB REPOSITORY */}

@@ -29,6 +29,8 @@ import { exportHandoverMarkdown, exportHandoverJson } from '../lib/handoverFilte
 function createMockSupabaseClient() {
   const workspacesTable = new Map(); // id -> DatabaseWorkspaceRow
   const handoverSharesTable = new Map(); // token_hash -> DatabaseHandoverShareRow
+  const githubIntegrationsTable = new Map(); // `${workspace_id}:${repo_id}` -> row
+  const webhookEventsTable = new Map(); // event_id -> row
   const storageBuckets = new Map(); // bucketName -> Map(path, { buffer, contentType })
 
   // Initialize private bucket
@@ -37,6 +39,8 @@ function createMockSupabaseClient() {
   const client = {
     _workspaces: workspacesTable,
     _shares: handoverSharesTable,
+    _githubIntegrations: githubIntegrationsTable,
+    _webhookEvents: webhookEventsTable,
     _storage: storageBuckets,
 
     from(table) {
@@ -191,6 +195,118 @@ function createMockSupabaseClient() {
                 };
               },
             };
+          },
+        };
+      }
+
+      if (table === 'github_integrations') {
+        return {
+          select(columns) {
+            let filterWs = null;
+            let filterRepo = null;
+            const builder = {
+              eq(col, val) {
+                if (col === 'workspace_id') filterWs = val;
+                if (col === 'repo_id') filterRepo = Number(val);
+                return builder;
+              },
+              order(col, opts) {
+                return builder;
+              },
+              async maybeSingle() {
+                for (const row of githubIntegrationsTable.values()) {
+                  if (filterWs && row.workspace_id !== filterWs) continue;
+                  if (filterRepo !== null && filterRepo !== undefined && Number(row.repo_id) !== filterRepo) continue;
+                  return { data: { ...row }, error: null };
+                }
+                return { data: null, error: null };
+              },
+              async single() {
+                const res = await builder.maybeSingle();
+                if (!res.data) return { data: null, error: { message: 'Row not found', code: 'PGRST116' } };
+                return res;
+              },
+              async then(resolve) {
+                const results = [];
+                for (const row of githubIntegrationsTable.values()) {
+                  if (filterWs && row.workspace_id !== filterWs) continue;
+                  if (filterRepo !== null && filterRepo !== undefined && Number(row.repo_id) !== filterRepo) continue;
+                  results.push({ ...row });
+                }
+                resolve({ data: results, error: null });
+              },
+            };
+            return builder;
+          },
+
+          upsert(record, options) {
+            const key = `${record.workspace_id}:${record.repo_id}`;
+            const existing = githubIntegrationsTable.get(key);
+            const savedRow = {
+              ...record,
+              created_at: existing?.created_at || new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+            githubIntegrationsTable.set(key, savedRow);
+
+            return {
+              select(columns) {
+                return {
+                  async single() {
+                    return { data: { ...savedRow }, error: null };
+                  },
+                };
+              },
+            };
+          },
+
+          delete() {
+            let filterWs = null;
+            let filterRepo = null;
+            const builder = {
+              eq(col, val) {
+                if (col === 'workspace_id') filterWs = val;
+                if (col === 'repo_id') filterRepo = Number(val);
+                return builder;
+              },
+              async then(resolve) {
+                let deletedCount = 0;
+                for (const [key, row] of githubIntegrationsTable.entries()) {
+                  if (filterWs && row.workspace_id !== filterWs) continue;
+                  if (filterRepo !== null && filterRepo !== undefined && Number(row.repo_id) !== filterRepo) continue;
+                  githubIntegrationsTable.delete(key);
+                  deletedCount++;
+                }
+                resolve({ data: null, error: null });
+              },
+            };
+            return builder;
+          },
+        };
+      }
+
+      if (table === 'github_webhook_events') {
+        return {
+          async insert(record) {
+            webhookEventsTable.set(record.event_id, {
+              ...record,
+              processed_at: new Date().toISOString(),
+            });
+            return { data: [record], error: null };
+          },
+          select(columns) {
+            let filterId = null;
+            const builder = {
+              eq(col, val) {
+                if (col === 'event_id') filterId = val;
+                return builder;
+              },
+              async maybeSingle() {
+                const row = webhookEventsTable.get(filterId);
+                return { data: row ? { ...row } : null, error: null };
+              },
+            };
+            return builder;
           },
         };
       }
@@ -1056,5 +1172,153 @@ test('▶ Phase H: Supabase Backend & Cloud Storage Integration Suite', async (t
         console.warn('Warning: Could not clean up live test workspace:', cleanupErr);
       }
     }
+  });
+
+  // 19. SupabaseStorageRepository saves, retrieves, and lists GitHub integrations with workspace isolation
+  await t.test('19. SupabaseStorageRepository saves, retrieves, and lists GitHub integrations with workspace isolation', async () => {
+    const mockClient = createMockSupabaseClient();
+    const repo = new SupabaseStorageRepository({ client: mockClient });
+    const ws1 = 'ws_sb_gh_iso_1';
+    const ws2 = 'ws_sb_gh_iso_2';
+
+    await repo.createWorkspace(ws1);
+    await repo.createWorkspace(ws2);
+
+    const integration1 = {
+      id: 'ghi_test_sb_01',
+      workspaceId: ws1,
+      installationId: null,
+      repoOwner: 'vitsamyak',
+      repoName: 'KnoTrail',
+      repoId: 10101,
+      defaultBranch: 'main',
+      selectedBranch: 'main',
+      syncStatus: 'idle',
+      lastSyncedAt: null,
+      lastCommitSha: null,
+      errorMessage: null,
+      config: { includeCommits: true, includePullRequests: true, includeIssues: true, includeDocs: true },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const saved = await repo.saveGitHubIntegration(ws1, integration1);
+    assert.ok(saved);
+    assert.strictEqual(saved.repoOwner, 'vitsamyak');
+    assert.strictEqual(saved.repoName, 'KnoTrail');
+    assert.strictEqual(saved.repoId, 10101);
+
+    // Retrieve single
+    const retrieved = await repo.getGitHubIntegration(ws1, 10101);
+    assert.ok(retrieved);
+    assert.strictEqual(retrieved.id, 'ghi_test_sb_01');
+    assert.strictEqual(retrieved.repoName, 'KnoTrail');
+
+    // Verify workspace isolation: ws2 should NOT see ws1's integration
+    const ws2List = await repo.listGitHubIntegrations(ws2);
+    assert.strictEqual(ws2List.length, 0);
+
+    const ws1List = await repo.listGitHubIntegrations(ws1);
+    assert.strictEqual(ws1List.length, 1);
+    assert.strictEqual(ws1List[0].repoId, 10101);
+
+    // Verify findIntegrationsByRepoId across all workspaces
+    const foundByRepo = await repo.findIntegrationsByRepoId(10101);
+    assert.strictEqual(foundByRepo.length, 1);
+    assert.strictEqual(foundByRepo[0].workspaceId, ws1);
+  });
+
+  // 20. SupabaseStorageRepository auto-provisions workspace before saving GitHub integration
+  await t.test('20. SupabaseStorageRepository auto-provisions workspace before saving GitHub integration', async () => {
+    const mockClient = createMockSupabaseClient();
+    const repo = new SupabaseStorageRepository({ client: mockClient });
+    const freshWsId = 'ws_sb_auto_provision_test';
+
+    // Verify workspace does NOT exist yet
+    const beforeCheck = await repo.getWorkspace(freshWsId);
+    assert.strictEqual(beforeCheck, null);
+
+    const integration = {
+      id: 'ghi_test_sb_auto',
+      workspaceId: freshWsId,
+      installationId: 445566,
+      repoOwner: 'facebook',
+      repoName: 'react',
+      repoId: 20202,
+      defaultBranch: 'main',
+      selectedBranch: 'main',
+      syncStatus: 'idle',
+      config: { includeCommits: true, includePullRequests: true, includeIssues: true, includeDocs: true },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Save should succeed and auto-create the parent workspace row
+    const saved = await repo.saveGitHubIntegration(freshWsId, integration);
+    assert.ok(saved);
+    assert.strictEqual(saved.repoId, 20202);
+
+    // Parent workspace must now exist in storage (respecting foreign key constraint)
+    const afterCheck = await repo.getWorkspace(freshWsId);
+    assert.ok(afterCheck);
+    assert.ok(mockClient._workspaces.has(freshWsId));
+    assert.strictEqual(mockClient._workspaces.get(freshWsId).id, freshWsId);
+  });
+
+  // 21. SupabaseStorageRepository tracks and deduplicates webhook deliveries
+  await t.test('21. SupabaseStorageRepository tracks and deduplicates webhook deliveries via github_webhook_events', async () => {
+    const mockClient = createMockSupabaseClient();
+    const repo = new SupabaseStorageRepository({ client: mockClient });
+    const deliveryId = 'delivery-uuid-999-aaa-bbb';
+    const eventType = 'push';
+    const repoId = 10101;
+    const payloadHash = 'sha256_mock_payload_hash_12345';
+
+    // Initially not processed
+    const initiallyProcessed = await repo.isWebhookDeliveryProcessed(deliveryId);
+    assert.strictEqual(initiallyProcessed, false);
+
+    // Record delivery
+    const recorded = await repo.recordWebhookDelivery(deliveryId, eventType, repoId, payloadHash);
+    assert.strictEqual(recorded, true);
+
+    // Should now report processed
+    const nowProcessed = await repo.isWebhookDeliveryProcessed(deliveryId);
+    assert.strictEqual(nowProcessed, true);
+  });
+
+  // 22. SupabaseStorageRepository deletes GitHub integration cleanly
+  await t.test('22. SupabaseStorageRepository deletes GitHub integration cleanly', async () => {
+    const mockClient = createMockSupabaseClient();
+    const repo = new SupabaseStorageRepository({ client: mockClient });
+    const wsId = 'ws_sb_del_test';
+    await repo.createWorkspace(wsId);
+
+    const integration = {
+      id: 'ghi_to_delete',
+      workspaceId: wsId,
+      repoOwner: 'owner',
+      repoName: 'todelete',
+      repoId: 30303,
+      defaultBranch: 'main',
+      selectedBranch: 'main',
+      syncStatus: 'idle',
+      config: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await repo.saveGitHubIntegration(wsId, integration);
+    const beforeList = await repo.listGitHubIntegrations(wsId);
+    assert.strictEqual(beforeList.length, 1);
+
+    const deleted = await repo.deleteGitHubIntegration(wsId, 30303);
+    assert.strictEqual(deleted, true);
+
+    const afterList = await repo.listGitHubIntegrations(wsId);
+    assert.strictEqual(afterList.length, 0);
+
+    const afterSingle = await repo.getGitHubIntegration(wsId, 30303);
+    assert.strictEqual(afterSingle, null);
   });
 });

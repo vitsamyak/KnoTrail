@@ -65,11 +65,20 @@ DROP POLICY IF EXISTS "Deny authenticated access on github_webhook_events" ON gi
 CREATE POLICY "Deny authenticated access on github_webhook_events" ON github_webhook_events
     FOR ALL TO authenticated USING (false);
 
--- Grant privileges to service_role if role exists
+-- Grant privileges to service_role and postgres roles if they exist
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
         GRANT ALL ON TABLE github_integrations TO service_role;
         GRANT ALL ON TABLE github_webhook_events TO service_role;
     END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgres') THEN
+        GRANT ALL ON TABLE github_integrations TO postgres;
+        GRANT ALL ON TABLE github_webhook_events TO postgres;
+    END IF;
 END $$;
+
+-- 4. Reload PostgREST Schema Cache
+-- Explicitly signal PostgREST listener on PostgreSQL notification channel 'pgrst'
+-- to immediately refresh its schema cache without requiring server reboot.
+NOTIFY pgrst, 'reload schema';
