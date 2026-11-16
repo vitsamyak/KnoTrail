@@ -287,22 +287,56 @@ export function SourceManagerView() {
               const intel = integ.codebaseIntelligence || matchingSource?.codebaseIntelligence;
               const repoUrl = `https://github.com/${integ.repoOwner}/${integ.repoName}`;
 
+              // 4 uniform scope badges
+              const statsBadges = [
+                { key: 'commits', icon: 'commit', label: 'commits', title: 'Git Commits', active: integ.config?.includeCommits !== false },
+                { key: 'prs', icon: 'merge', label: 'PRs', title: 'Pull Requests', active: integ.config?.includePullRequests !== false },
+                { key: 'issues', icon: 'adjust', label: 'issues', title: 'Issues & Resolutions', active: integ.config?.includeIssues !== false },
+                { key: 'docs', icon: 'description', label: 'docs', title: 'Documentation', active: integ.config?.includeDocs !== false },
+              ];
+              const activeStats = statsBadges.filter(b => b.active);
+              const gridColsClass = activeStats.length === 4 ? 'grid-cols-4' : activeStats.length === 3 ? 'grid-cols-3' : activeStats.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
+
+              // Codebase Intelligence technology cards
+              const techCards = [
+                intel?.blueprint?.frontend?.framework && {
+                  name: intel.blueprint.frontend.framework.split(' ')[0],
+                  fullName: intel.blueprint.frontend.framework,
+                  icon: 'web',
+                  tone: 'primary',
+                },
+                intel?.blueprint?.backend?.framework && {
+                  name: intel.blueprint.backend.framework.split(' ')[0],
+                  fullName: intel.blueprint.backend.framework,
+                  icon: 'dns',
+                  tone: 'surface',
+                },
+                intel?.blueprint?.database?.type && {
+                  name: intel.blueprint.database.type.split(' ')[0],
+                  fullName: intel.blueprint.database.type,
+                  icon: 'database',
+                  tone: 'surface',
+                },
+              ].filter(Boolean) as { name: string; fullName: string; icon: string; tone: string }[];
+
               return (
                 <div
                   key={integ.id}
                   className="group bg-surface-container-lowest hover:bg-surface-container-low/30 rounded-2xl p-4 sm:p-5 border border-outline-variant/40 hover:border-outline-variant/70 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3.5"
                 >
                   <div className="space-y-3">
-                    {/* Top Row: GitHub Logo, Repo Name & Sync Status */}
-                    <div className="flex items-start justify-between gap-2.5">
-                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                    {/* 1. Repository Header Grid */}
+                    <div className="flex items-start justify-between gap-3">
+                      {/* Left: GitHub Octocat Avatar & Repo Meta */}
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
                         <div className="w-9 h-9 rounded-xl bg-[#24292f] text-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5 mt-0.5">
                           <GitHubLogo className="w-5 h-5 text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1 min-w-0">
-                            <span className="text-[11px] font-medium text-secondary truncate">{integ.repoOwner}</span>
-                            <span className="text-secondary/40 text-[10px]">/</span>
+                          {/* Owner & Repo Name */}
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-xs font-medium text-secondary truncate">{integ.repoOwner}</span>
+                            <span className="text-secondary/40 text-xs">/</span>
                             <a
                               href={repoUrl}
                               target="_blank"
@@ -317,15 +351,16 @@ export function SourceManagerView() {
                             </a>
                           </div>
 
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-container text-[10px] font-mono font-medium text-secondary border border-outline-variant/30 shrink-0">
+                          {/* Branch & Short Commit SHA */}
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-[10.5px] font-mono font-medium text-secondary border border-outline-variant/30 shrink-0">
                               <span className="material-symbols-outlined text-[11px] text-secondary">fork_right</span>
                               <span>{integ.selectedBranch || integ.defaultBranch || 'main'}</span>
                             </span>
                             {integ.lastCommitSha && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-secondary shrink-0">
-                                <span className="text-secondary/50 font-sans uppercase text-[9px]">SHA</span>
-                                <span className="font-bold text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-mono text-secondary shrink-0">
+                                <span className="text-secondary/50 font-sans uppercase text-[9px] font-medium tracking-wider">SHA</span>
+                                <span className="font-semibold text-on-surface bg-surface-container px-1.5 py-0.5 rounded-md border border-outline-variant/30">
                                   {integ.lastCommitSha.slice(0, 7)}
                                 </span>
                               </span>
@@ -334,9 +369,9 @@ export function SourceManagerView() {
                         </div>
                       </div>
 
-                      {/* Clean Status Badge */}
+                      {/* Right: Synced Status Badge */}
                       <div
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border shrink-0 ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold border shrink-0 ${
                           integ.syncStatus === 'synced'
                             ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
                             : integ.syncStatus === 'syncing' || isCurrentlySyncing
@@ -363,46 +398,34 @@ export function SourceManagerView() {
                       </div>
                     </div>
 
-                    {/* Scope Pills Row */}
-                    <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
-                      {integ.config.includeCommits && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                          <span className="material-symbols-outlined text-[11px] text-secondary/70">commit</span>
-                          commits
-                        </span>
-                      )}
-                      {integ.config.includePullRequests && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                          <span className="material-symbols-outlined text-[11px] text-secondary/70">merge</span>
-                          PRs
-                        </span>
-                      )}
-                      {integ.config.includeIssues && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                          <span className="material-symbols-outlined text-[11px] text-secondary/70">adjust</span>
-                          issues
-                        </span>
-                      )}
-                      {integ.config.includeDocs && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-low text-secondary text-[10px] font-medium border border-outline-variant/30 font-mono">
-                          <span className="material-symbols-outlined text-[11px] text-secondary/70">description</span>
-                          docs
-                        </span>
-                      )}
+                    {/* 2. Repository Statistics: 4 uniform, equally styled compact badges */}
+                    <div className={`grid ${gridColsClass} gap-1.5 pt-0.5`}>
+                      {activeStats.map((badge) => (
+                        <div
+                          key={badge.key}
+                          className="h-7 px-1.5 rounded-lg bg-surface-container-low text-secondary text-[10.5px] font-mono font-medium border border-outline-variant/30 flex items-center justify-center gap-1 min-w-0"
+                          title={badge.title}
+                        >
+                          <span className="material-symbols-outlined text-[12px] text-secondary/70 shrink-0">{badge.icon}</span>
+                          <span className="truncate">{badge.label}</span>
+                        </div>
+                      ))}
                     </div>
 
-                    {/* Telemetry Line */}
-                    <div className="flex items-center justify-between text-[11px] text-secondary font-mono border-t border-outline-variant/20 pt-2">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[13px] text-secondary/70">schedule</span>
-                        <span>{integ.lastSyncedAt ? new Date(integ.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Never'}</span>
-                      </span>
-                      {matchingSource && (
-                        <span className="font-semibold text-primary inline-flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[13px]">database</span>
-                          <span>{matchingSource.recordCount} records indexed</span>
+                    {/* 3. Sync Information Row */}
+                    <div className="flex items-center justify-between text-[11px] text-secondary font-mono border-t border-outline-variant/20 pt-2.5">
+                      <div className="flex items-center gap-1.5 min-w-0" title="Last synchronized time">
+                        <span className="material-symbols-outlined text-[13px] text-secondary/70 shrink-0">schedule</span>
+                        <span className="truncate">
+                          {integ.lastSyncedAt
+                            ? new Date(integ.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                            : 'Never'}
                         </span>
-                      )}
+                      </div>
+                      <div className="flex items-center gap-1.5 font-semibold text-primary shrink-0" title="Total indexed records in knowledge base">
+                        <span className="material-symbols-outlined text-[13px] text-primary shrink-0">database</span>
+                        <span>{matchingSource?.recordCount ?? 0} records indexed</span>
+                      </div>
                     </div>
 
                     {integ.errorMessage && (
@@ -412,10 +435,10 @@ export function SourceManagerView() {
                       </div>
                     )}
 
-                    {/* Codebase Intelligence Box */}
+                    {/* 4. Codebase Intelligence Section */}
                     {intel && (
-                      <div className="p-3 rounded-xl bg-surface-container/40 hover:bg-surface-container/60 transition-colors border border-outline-variant/40 flex flex-col gap-2">
-                        {/* Box Header: Title on Left, Metrics on Right — whitespace-nowrap prevents line breaks */}
+                      <div className="p-3 rounded-xl bg-surface-container/40 hover:bg-surface-container/60 transition-colors border border-outline-variant/30 flex flex-col gap-2.5">
+                        {/* Section Header: Title on Left, Metrics Badge on Right */}
                         <div className="flex items-center justify-between gap-2 min-w-0">
                           <div className="flex items-center gap-1.5 font-bold text-xs text-on-surface whitespace-nowrap shrink-0">
                             <span className="material-symbols-outlined text-[15px] text-primary shrink-0">terminal</span>
@@ -426,49 +449,36 @@ export function SourceManagerView() {
                           </span>
                         </div>
 
-                        {/* Tech Stack Chips: 3-column equal grid to guarantee neat, symmetrical alignment */}
-                        {intel.blueprint && (
-                          <div className="grid grid-cols-3 gap-1.5 pt-0.5 text-[10px]">
-                            {intel.blueprint.frontend?.framework && (
+                        {/* Technology Stack Cards: Equal height (h-7), uniform icons, responsive widths without clipping */}
+                        {techCards.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                            {techCards.map((tech, idx) => (
                               <div
-                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary font-semibold border border-primary/20 min-w-0 overflow-hidden"
-                                title={intel.blueprint.frontend.framework}
+                                key={idx}
+                                className={`h-7 px-2.5 rounded-lg border text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors flex-1 min-w-fit ${
+                                  tech.tone === 'primary'
+                                    ? 'bg-primary/10 text-primary border-primary/25 font-semibold'
+                                    : 'bg-surface-container-high text-on-surface border-outline-variant/40'
+                                }`}
+                                title={tech.fullName}
                               >
-                                <span className="material-symbols-outlined text-[12px] shrink-0">web</span>
-                                <span className="truncate">{intel.blueprint.frontend.framework.split(' ')[0]}</span>
+                                <span className="material-symbols-outlined text-[13px] shrink-0 opacity-80">{tech.icon}</span>
+                                <span className="whitespace-nowrap">{tech.name}</span>
                               </div>
-                            )}
-                            {intel.blueprint.backend?.framework && (
-                              <div
-                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-surface-container-high text-on-surface font-medium border border-outline-variant/40 min-w-0 overflow-hidden"
-                                title={intel.blueprint.backend.framework}
-                              >
-                                <span className="material-symbols-outlined text-[12px] shrink-0">dns</span>
-                                <span className="truncate">{intel.blueprint.backend.framework}</span>
-                              </div>
-                            )}
-                            {intel.blueprint.database?.type && (
-                              <div
-                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-surface-container-high text-secondary font-medium border border-outline-variant/40 min-w-0 overflow-hidden"
-                                title={intel.blueprint.database.type}
-                              >
-                                <span className="material-symbols-outlined text-[12px] shrink-0">database</span>
-                                <span className="truncate">{intel.blueprint.database.type.split(' ')[0]}</span>
-                              </div>
-                            )}
+                            ))}
                           </div>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* Bottom Action Toolbar */}
-                  <div className="pt-2.5 border-t border-outline-variant/30 flex flex-col gap-2">
-                    {/* Row 1: Primary Actions (Codebase Q&A + Sync) */}
+                  {/* 5. Action Buttons & 6. Footer Actions */}
+                  <div className="pt-2.5 border-t border-outline-variant/30 flex flex-col gap-2.5">
+                    {/* Primary Action (Codebase Q&A) & Secondary Action (Sync) */}
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setQnaModalRepo(integ)}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs shadow-2xs transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs shadow-2xs transition-all active:scale-[0.99] focus:outline-none"
                         title="Ask Codebase Q&A and inspect Architecture Blueprint"
                       >
                         <span className="material-symbols-outlined text-[15px]">chat</span>
@@ -494,24 +504,24 @@ export function SourceManagerView() {
                           }
                         }}
                         disabled={isCurrentlySyncing || isGitHubLoading || currentUserRole === 'EXTERNAL'}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs border border-outline-variant/40 disabled:opacity-50 transition-colors"
+                        className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs border border-outline-variant/40 disabled:opacity-50 transition-all active:scale-[0.99] shrink-0 focus:outline-none"
                         title="Synchronize repository context"
                       >
-                        <span className={`material-symbols-outlined text-[14px] ${isCurrentlySyncing ? 'animate-spin' : ''}`}>
+                        <span className={`material-symbols-outlined text-[15px] ${isCurrentlySyncing ? 'animate-spin text-primary' : 'text-secondary'}`}>
                           sync
                         </span>
                         <span>{isCurrentlySyncing ? 'Syncing...' : 'Sync'}</span>
                       </button>
                     </div>
 
-                    {/* Row 2: Secondary Utilities (Activity History on Left, Disconnect on Right) */}
-                    <div className="flex items-center justify-between text-xs pt-0.5">
+                    {/* Secondary Utilities Footer Row: Activity History on Left, Disconnect on Right */}
+                    <div className="flex items-center justify-between text-xs pt-1.5 border-t border-outline-variant/20">
                       <button
                         onClick={() => setSelectedHistoryRepo(integ)}
-                        className="inline-flex items-center gap-1 text-secondary hover:text-on-surface font-medium text-xs transition-colors"
+                        className="inline-flex items-center gap-1.5 text-secondary hover:text-on-surface font-medium text-xs transition-colors py-0.5 rounded focus:outline-none"
                         title="View continuous update activity history"
                       >
-                        <span className="material-symbols-outlined text-[14px]">history</span>
+                        <span className="material-symbols-outlined text-[14px] text-secondary/70">history</span>
                         <span>Activity History</span>
                       </button>
 
@@ -519,7 +529,7 @@ export function SourceManagerView() {
                         <button
                           onClick={() => setDisconnectConfirmRepo(integ)}
                           disabled={isCurrentlySyncing || isGitHubLoading}
-                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-error/70 hover:text-error hover:bg-error/10 text-xs font-medium transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-error/75 hover:text-error hover:bg-error/10 text-xs font-medium transition-colors disabled:opacity-50 focus:outline-none"
                           title="Disconnect repository"
                         >
                           <span className="material-symbols-outlined text-[13px]">link_off</span>
