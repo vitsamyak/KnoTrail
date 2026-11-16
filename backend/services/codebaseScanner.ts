@@ -429,7 +429,7 @@ export async function scanRepositoryCodebase(
     skippedCount: inventory.filter((i) => !i.isRead).length,
   });
 
-  const CONCURRENCY = 6;
+  const CONCURRENCY = 10;
   for (let i = 0; i < targetFiles.length; i += CONCURRENCY) {
     const batch = targetFiles.slice(i, i + CONCURRENCY);
 

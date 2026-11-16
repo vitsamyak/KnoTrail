@@ -25,6 +25,10 @@ import { ingestGitHubRepository } from '../services/githubIngestion.ts';
 import {
   executeContinuousUpdate,
   retryContinuousUpdateJob,
+  activeIngestionJobs,
+  getIngestionJob,
+  getActiveJobForRepo,
+  resumePersistenceOnly,
 } from '../services/continuousUpdate.ts';
 import { answerCodebaseQuestion } from '../services/codebaseAiExtractor.ts';
 import { requireWorkspaceAccess, requireRole } from '../middleware/roleAuth.ts';
@@ -34,6 +38,8 @@ import type {
   ProjectSource,
   ContinuousUpdateRecord,
   ContinuousKnowledgeStatus,
+  IngestionJobState,
+  IngestionJobCounters,
 } from '../../src/lib/types.ts';
 import { isGeminiConfigured } from '../../src/server/ai/gemini.ts';
 import { runKnowledgeExtractionPipeline } from '../../src/server/ai/pipeline.ts';
@@ -326,6 +332,99 @@ githubRouter.post(
     }
 
     try {
+      const isAsync = req.body?.async === true;
+
+      // Asynchronous Ingestion Workflow (Prevents HTTP connection timeouts)
+      if (isAsync) {
+        const existingJob = getActiveJobForRepo(workspaceId, repoId);
+        if (existingJob) {
+          res.status(202).json({
+            jobId: existingJob.jobId,
+            status: 'in_progress',
+            phase: existingJob.phase,
+            phaseName: existingJob.phaseName,
+            percent: existingJob.percent,
+            counters: existingJob.counters,
+            message: 'An ingestion job is already actively running for this repository.',
+          });
+          return;
+        }
+
+        const storage = getStorage();
+        const integration = await storage.getGitHubIntegration(workspaceId, repoId);
+        if (!integration) {
+          res.status(404).json({ error: `GitHub integration for repoId ${repoId} not found.` });
+          return;
+        }
+
+        const jobId = `job_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+        const job: IngestionJobState = {
+          jobId,
+          workspaceId,
+          repoId,
+          repoOwner: integration.repoOwner,
+          repoName: integration.repoName,
+          branch: integration.selectedBranch || 'main',
+          phase: 1,
+          phaseName: 'Repository Connected',
+          percent: 10,
+          status: 'in_progress',
+          counters: { discovered: 0, read: 0, skipped: 0, analyzed: 0, findings: 0 },
+          updatedAt: new Date().toISOString(),
+          startedAt: new Date().toISOString(),
+        };
+        activeIngestionJobs.set(jobId, job);
+
+        const rawRunAi = req.body?.runAiExtraction;
+        const runAiExtraction = typeof rawRunAi === 'boolean' ? rawRunAi : isGeminiConfigured();
+
+        // Fire background execution
+        executeContinuousUpdate(workspaceId, repoId, {
+          service: getActiveGitHubService(),
+          runAiExtraction,
+          reason: req.body?.reason || 'Asynchronous repository ingestion',
+          trigger: 'manual_sync',
+          eventType: 'manual',
+          onProgress: (p) => {
+            job.phase = p.phase;
+            job.phaseName = p.phaseName;
+            job.percent = p.percent;
+            if (p.counters) {
+              job.counters = { ...job.counters, ...p.counters };
+            }
+            job.updatedAt = new Date().toISOString();
+          },
+        })
+          .then((result) => {
+            job.phase = 9;
+            job.phaseName = 'Completed';
+            job.percent = 100;
+            job.status = 'completed';
+            job.codebaseIntelligence = result.integration.codebaseIntelligence;
+            job.recordCounts = result.recordCounts;
+            job.completedAt = new Date().toISOString();
+            job.updatedAt = new Date().toISOString();
+          })
+          .catch((err) => {
+            console.error('[Async Ingestion Job Error]:', err?.message || err);
+            job.status = 'failed';
+            job.error = err?.message || 'Ingestion encountered an unexpected error';
+            job.updatedAt = new Date().toISOString();
+          });
+
+        res.status(202).json({
+          jobId,
+          status: 'in_progress',
+          phase: 1,
+          phaseName: 'Repository Connected',
+          percent: 10,
+          counters: job.counters,
+          message: 'Asynchronous repository ingestion started.',
+        });
+        return;
+      }
+
+      // Synchronous execution (preserved for backwards-compatibility and unit tests)
       const rawRunAi = req.body?.runAiExtraction;
       const runAiExtraction = typeof rawRunAi === 'boolean'
         ? rawRunAi
@@ -371,6 +470,102 @@ githubRouter.post(
         error: error?.message || 'Failed to synchronize repository context.',
         status: 'error',
       });
+    }
+  }
+);
+
+/**
+ * GET /api/github/integrations/:repoId/job/:jobId
+ * Polls the real-time progress and telemetry of an asynchronous ingestion job.
+ */
+githubRouter.get(
+  '/integrations/:repoId/job/:jobId',
+  requireWorkspaceAccess,
+  async (req: Request, res: Response) => {
+    try {
+      const workspaceId = req.workspaceAuth!.workspaceId;
+      const repoIdParam = Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId;
+      const repoId = parseInt(repoIdParam, 10);
+      const jobId = req.params.jobId as string;
+
+      if (isNaN(repoId) || repoId <= 0 || !jobId) {
+        res.status(400).json({ error: 'Valid repoId and jobId parameters are required.' });
+        return;
+      }
+
+      let job = getIngestionJob(jobId);
+
+      // Check database update history if memory job has expired or server restarted
+      if (!job) {
+        const storage = getStorage();
+        const record = await storage.getContinuousUpdate(workspaceId, jobId);
+        if (record) {
+          const integration = await storage.getGitHubIntegration(workspaceId, repoId);
+          job = {
+            jobId: record.id,
+            workspaceId: record.workspaceId,
+            repoId: record.repoId,
+            repoOwner: record.repoOwner,
+            repoName: record.repoName,
+            branch: integration?.selectedBranch || 'main',
+            phase: record.status === 'success' ? 9 : record.status === 'failed' ? 8 : 5,
+            phaseName: record.status === 'success' ? 'Completed' : record.status === 'failed' ? 'Failed' : 'Processing',
+            percent: record.status === 'success' ? 100 : record.status === 'failed' ? 85 : 60,
+            status: record.status === 'success' ? 'completed' : record.status === 'failed' ? 'failed' : 'in_progress',
+            counters: {
+              discovered: integration?.codebaseIntelligence?.stats?.totalFilesDiscovered || 0,
+              read: integration?.codebaseIntelligence?.stats?.totalFilesRead || 0,
+              skipped: integration?.codebaseIntelligence?.stats?.totalFilesSkipped || 0,
+              analyzed: integration?.codebaseIntelligence?.inventory?.length || 0,
+              findings: record.findingsAdded || 0,
+            },
+            codebaseIntelligence: integration?.codebaseIntelligence,
+            error: record.errorMessage,
+            updatedAt: record.completedAt || record.timestamp,
+            startedAt: record.timestamp,
+            completedAt: record.completedAt,
+          };
+        }
+      }
+
+      if (!job) {
+        res.status(404).json({ error: `Ingestion job "${jobId}" not found.` });
+        return;
+      }
+
+      res.status(200).json({ job, status: 'success' });
+    } catch (error: any) {
+      console.error('[GitHub API Error] GET /job/:jobId:', error?.message || error);
+      res.status(500).json({ error: error?.message || 'Failed to retrieve job status.' });
+    }
+  }
+);
+
+/**
+ * POST /api/github/integrations/:repoId/resume-persist
+ * Resumes persistence (Phase 8) specifically using cached scan data.
+ * Skips GitHub file fetching and Gemini AI extraction completely.
+ */
+githubRouter.post(
+  '/integrations/:repoId/resume-persist',
+  requireWorkspaceAccess,
+  requireRole(['MANAGER', 'DEVELOPER']),
+  async (req: Request, res: Response) => {
+    try {
+      const workspaceId = req.workspaceAuth!.workspaceId;
+      const repoIdParam = Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId;
+      const repoId = parseInt(repoIdParam, 10);
+
+      if (isNaN(repoId) || repoId <= 0) {
+        res.status(400).json({ error: 'Valid numeric repoId parameter is required.' });
+        return;
+      }
+
+      const result = await resumePersistenceOnly(workspaceId, repoId);
+      res.status(result.success ? 200 : 422).json(result);
+    } catch (error: any) {
+      console.error('[GitHub API Error] POST /resume-persist:', error?.message || error);
+      res.status(500).json({ error: error?.message || 'Failed to resume persistence.' });
     }
   }
 );

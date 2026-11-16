@@ -16,6 +16,7 @@ import {
   GitHubIntegrationConfig,
   CodebaseIntelligence,
   CodebaseQuestionResponse,
+  IngestionJobState,
 } from '../lib/types';
 import { INITIAL_PROJECT_DATA } from '../lib/demoData';
 import { checkHandoverBlockStatus } from '../lib/handoverFilter';
@@ -126,6 +127,10 @@ interface ProjectContextType {
     config?: Partial<GitHubIntegrationConfig>;
   }) => Promise<{ success: boolean; error?: string; integration?: GitHubIntegration }>;
   syncGitHubRepo: (repoId: number) => Promise<{ success: boolean; error?: string; recordCounts?: any; isChanged?: boolean }>;
+  startAsyncSync: (repoId: number) => Promise<{ success: boolean; jobId?: string; phase?: number; phaseName?: string; percent?: number; error?: string }>;
+  getSyncJobStatus: (repoId: number, jobId: string) => Promise<{ success: boolean; job?: IngestionJobState; error?: string }>;
+  resumePersistence: (repoId: number) => Promise<{ success: boolean; error?: string; findingsAdded?: number }>;
+  completeSyncAndRefresh: () => Promise<void>;
   disconnectGitHubRepo: (repoId: number) => Promise<{ success: boolean; error?: string }>;
   getCodebaseIntelligence: (repoId: number) => Promise<{ success: boolean; data?: CodebaseIntelligence | null; error?: string }>;
   askCodebaseQuestion: (repoId: number, question: string) => Promise<{ success: boolean; data?: CodebaseQuestionResponse; error?: string }>;
@@ -1324,6 +1329,66 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const startAsyncSync = async (repoId: number) => {
+    setSyncingRepoId(repoId);
+    setGitHubError(null);
+    try {
+      const res = await apiClient.startAsyncSync(workspaceId, repoId);
+      return {
+        success: true,
+        jobId: res.jobId,
+        phase: res.phase,
+        phaseName: res.phaseName,
+        percent: res.percent,
+      };
+    } catch (err: any) {
+      setSyncingRepoId(null);
+      const errMsg = err?.message || 'Failed to start ingestion job';
+      setGitHubError(errMsg);
+      return { success: false, error: errMsg };
+    }
+  };
+
+  const getSyncJobStatus = async (repoId: number, jobId: string) => {
+    try {
+      const res = await apiClient.getSyncJobStatus(workspaceId, repoId, jobId);
+      return { success: true, job: res.job };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to poll job status' };
+    }
+  };
+
+  const resumePersistence = async (repoId: number) => {
+    try {
+      const res = await apiClient.resumePersistence(workspaceId, repoId);
+      if (res.success) {
+        const updatedWs = await apiClient.getWorkspace(workspaceId);
+        if (updatedWs?.project) {
+          setProject(updatedWs.project);
+          persistToLocalCache(workspaceId, updatedWs.project);
+        }
+        await refreshGitHubIntegrations();
+      }
+      return res;
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to resume persistence' };
+    }
+  };
+
+  const completeSyncAndRefresh = async () => {
+    setSyncingRepoId(null);
+    try {
+      const updatedWs = await apiClient.getWorkspace(workspaceId);
+      if (updatedWs?.project) {
+        setProject(updatedWs.project);
+        persistToLocalCache(workspaceId, updatedWs.project);
+      }
+      await refreshGitHubIntegrations();
+    } catch (err) {
+      console.warn('Could not refresh workspace after sync:', err);
+    }
+  };
+
   const disconnectGitHubRepo = async (repoId: number) => {
     setIsGitHubLoading(true);
     setGitHubError(null);
@@ -1452,6 +1517,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         refreshGitHubIntegrations,
         connectGitHubRepo,
         syncGitHubRepo,
+        startAsyncSync,
+        getSyncJobStatus,
+        resumePersistence,
+        completeSyncAndRefresh,
         disconnectGitHubRepo,
         getCodebaseIntelligence,
         askCodebaseQuestion,

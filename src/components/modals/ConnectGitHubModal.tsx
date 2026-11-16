@@ -39,6 +39,10 @@ export function ConnectGitHubModal({
   const {
     connectGitHubRepo,
     syncGitHubRepo,
+    startAsyncSync,
+    getSyncJobStatus,
+    resumePersistence,
+    completeSyncAndRefresh,
     getCodebaseIntelligence,
     isGitHubLoading,
     currentUserRole,
@@ -115,64 +119,98 @@ export function ConnectGitHubModal({
     setIsIngesting(true);
     setLocalError(null);
     setErrorPhase(null);
-
-    // Simulated/smooth phase transitions matching the real ingestion stages
     setCurrentPhase(2); // Fetching Git Tree
-    const timer1 = setTimeout(() => setCurrentPhase(3), 600); // Discovering & classifying
-    const timer2 = setTimeout(() => setCurrentPhase(4), 1400); // Reading source code
-    const timer3 = setTimeout(() => setCurrentPhase(5), 2400); // Analyzing architecture
-    const timer4 = setTimeout(() => setCurrentPhase(6), 3400); // Extracting knowledge
-    const timer5 = setTimeout(() => setCurrentPhase(7), 4400); // Grounding findings
-    const timer6 = setTimeout(() => setCurrentPhase(8), 5400); // Saving knowledge
 
     try {
-      const syncRes = await syncGitHubRepo(integ.repoId);
-
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-      clearTimeout(timer5);
-      clearTimeout(timer6);
-
-      if (!syncRes.success) {
-        setErrorPhase(currentPhase || 4);
-        setLocalError(syncRes.error || 'Repository synchronization encountered an error.');
+      const startRes = await startAsyncSync(integ.repoId);
+      if (!startRes.success || !startRes.jobId) {
+        setErrorPhase(2);
+        setLocalError(startRes.error || 'Failed to initiate repository ingestion job.');
         setIsIngesting(false);
         return;
       }
 
-      // Fetch verified intelligence from storage
-      const intelRes = await getCodebaseIntelligence(integ.repoId);
-      const intel = intelRes.data || null;
-      setIntelligence(intel);
+      const jobId = startRes.jobId;
 
-      // Extract accurate telemetry counters
-      const totalDisc = intel?.progress?.discoveredCount || intel?.stats?.totalFilesDiscovered || 0;
-      const fRead = intel?.progress?.readCount || intel?.stats?.totalFilesRead || intel?.inventory?.filter((f) => f.linesCount > 0).length || 0;
-      const fSkipped = intel?.progress?.skippedCount || intel?.stats?.totalFilesSkipped || Math.max(0, totalDisc - fRead);
-      const fAnalyzed = intel?.progress?.analyzedCount || intel?.inventory?.length || 0;
-      const fCount = intel?.progress?.findingsCount || intel?.stats?.totalFindings || syncRes.recordCounts?.findings || 0;
+      // Poll real job status until completed or failed
+      const maxPollAttempts = 180; // 3 minutes maximum timeout
+      let attempts = 0;
+      let completedSuccessfully = false;
 
-      setCounters({
-        discovered: totalDisc,
-        read: fRead,
-        skipped: fSkipped,
-        analyzed: fAnalyzed,
-        findings: fCount,
-      });
+      while (attempts < maxPollAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        attempts++;
 
-      setCurrentPhase(9); // Completed!
-      setIsIngesting(false);
+        const statusRes = await getSyncJobStatus(integ.repoId, jobId);
+        if (!statusRes.success || !statusRes.job) {
+          // If a transient network glitch happens while polling, retry polling
+          continue;
+        }
 
-      if (onSuccess) onSuccess();
+        const job = statusRes.job;
+
+        // Update real progress phase from server telemetry
+        if (job.phase && job.phase >= 2) {
+          setCurrentPhase(job.phase);
+        }
+
+        // Update live counters from server telemetry
+        if (job.counters) {
+          setCounters({
+            discovered: job.counters.discovered || 0,
+            read: job.counters.read || 0,
+            skipped: job.counters.skipped || 0,
+            analyzed: job.counters.analyzed || 0,
+            findings: job.counters.findings || 0,
+          });
+        }
+
+        if (job.status === 'completed') {
+          completedSuccessfully = true;
+          await completeSyncAndRefresh();
+
+          // Fetch verified intelligence from storage
+          const intelRes = await getCodebaseIntelligence(integ.repoId);
+          const intel = intelRes.data || null;
+          setIntelligence(intel);
+
+          if (intel) {
+            const totalDisc = intel?.progress?.discoveredCount || intel?.stats?.totalFilesDiscovered || job.counters?.discovered || 0;
+            const fRead = intel?.progress?.readCount || intel?.stats?.totalFilesRead || job.counters?.read || 0;
+            const fSkipped = intel?.progress?.skippedCount || intel?.stats?.totalFilesSkipped || job.counters?.skipped || 0;
+            const fAnalyzed = intel?.progress?.analyzedCount || job.counters?.analyzed || 0;
+            const fCount = intel?.progress?.findingsCount || intel?.stats?.totalFindings || job.counters?.findings || 0;
+
+            setCounters({
+              discovered: totalDisc,
+              read: fRead,
+              skipped: fSkipped,
+              analyzed: fAnalyzed,
+              findings: fCount,
+            });
+          }
+
+          setCurrentPhase(9); // Completed!
+          setIsIngesting(false);
+
+          if (onSuccess) onSuccess();
+          return;
+        }
+
+        if (job.status === 'failed') {
+          setErrorPhase(job.phase || 8);
+          setLocalError(job.error || 'Codebase ingestion failed during processing.');
+          setIsIngesting(false);
+          return;
+        }
+      }
+
+      if (!completedSuccessfully) {
+        setErrorPhase(currentPhase || 8);
+        setLocalError('Ingestion job is still processing in the background. Please verify the Render backend or refresh.');
+        setIsIngesting(false);
+      }
     } catch (err: any) {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-      clearTimeout(timer5);
-      clearTimeout(timer6);
       setErrorPhase(currentPhase || 5);
       setLocalError(err?.message || 'Codebase ingestion failed.');
       setIsIngesting(false);
@@ -233,13 +271,43 @@ export function ConnectGitHubModal({
     }
   };
 
-  const handleRetry = () => {
-    if (createdIntegration) {
-      runIngestionFlow(createdIntegration);
-    } else {
+  const handleRetry = async () => {
+    if (!createdIntegration) {
       setIsIngesting(false);
       setCurrentPhase(0);
       setErrorPhase(null);
+      return;
+    }
+
+    // Phase 8 Resilience: If persistence failed, skip GitHub scanning and Gemini AI extraction,
+    // and directly resume the persistence operation using cached scan data.
+    if (errorPhase === 8) {
+      setIsIngesting(true);
+      setLocalError(null);
+      setErrorPhase(null);
+      setCurrentPhase(8);
+
+      try {
+        const resumeRes = await resumePersistence(createdIntegration.repoId);
+        if (resumeRes.success) {
+          await completeSyncAndRefresh();
+          const intelRes = await getCodebaseIntelligence(createdIntegration.repoId);
+          setIntelligence(intelRes.data || null);
+          setCurrentPhase(9);
+          setIsIngesting(false);
+          if (onSuccess) onSuccess();
+        } else {
+          setErrorPhase(8);
+          setLocalError(resumeRes.error || 'Failed to persist cached repository intelligence.');
+          setIsIngesting(false);
+        }
+      } catch (err: any) {
+        setErrorPhase(8);
+        setLocalError(err?.message || 'Failed to persist knowledge.');
+        setIsIngesting(false);
+      }
+    } else {
+      await runIngestionFlow(createdIntegration);
     }
   };
 

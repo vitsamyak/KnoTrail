@@ -15,6 +15,8 @@ import type {
   ContinuousUpdateRetryResponse,
   CodebaseIntelligence,
   CodebaseQuestionResponse,
+  IngestionJobCounters,
+  IngestionJobState,
 } from './types.ts';
 
 // In-memory auth token and demo perspective state
@@ -196,7 +198,7 @@ async function request<T>(
 
     if (error.name === 'AbortError') {
       throw new ApiClientError(
-        `Backend request timed out after ${timeoutMs / 1000} seconds. Please verify the Render backend is active.`,
+        `Backend request timed out after ${timeoutMs / 1000} seconds. The backend may still be processing intensive operations in the background.`,
         504
       );
     }
@@ -706,10 +708,85 @@ export const apiClient = {
     findingsAdded?: number;
     updateRecord?: ContinuousUpdateRecord;
   }> {
-    return request(`/api/github/integrations/${encodeURIComponent(repoId)}/sync`, {
-      method: 'POST',
-      body: JSON.stringify({ workspaceId, ...options }),
-    });
+    // 120-second timeout for synchronous full repository synchronization
+    return request(
+      `/api/github/integrations/${encodeURIComponent(repoId)}/sync`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ workspaceId, ...options }),
+      },
+      120000
+    );
+  },
+
+  /**
+   * Starts an asynchronous background repository synchronization job.
+   * Returns immediately with a jobId so the frontend can poll real-time progress.
+   */
+  async startAsyncSync(
+    workspaceId: string,
+    repoId: number,
+    options?: {
+      runAiExtraction?: boolean;
+      reason?: string;
+    }
+  ): Promise<{
+    jobId: string;
+    status: string;
+    phase: number;
+    phaseName: string;
+    percent: number;
+    counters?: IngestionJobCounters;
+    message: string;
+  }> {
+    return request(
+      `/api/github/integrations/${encodeURIComponent(repoId)}/sync`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ workspaceId, async: true, ...options }),
+      },
+      15000
+    );
+  },
+
+  /**
+   * Polls real-time progress, active phase, and telemetry counters for an ingestion job.
+   */
+  async getSyncJobStatus(
+    workspaceId: string,
+    repoId: number,
+    jobId: string
+  ): Promise<{
+    job: IngestionJobState;
+    status: string;
+  }> {
+    return request(
+      `/api/github/integrations/${encodeURIComponent(repoId)}/job/${encodeURIComponent(jobId)}?workspaceId=${encodeURIComponent(workspaceId)}`,
+      {},
+      10000
+    );
+  },
+
+  /**
+   * Resumes Phase 8 (persistence) specifically using cached scan data.
+   * Skips GitHub file fetching and Gemini AI extraction completely.
+   */
+  async resumePersistence(
+    workspaceId: string,
+    repoId: number
+  ): Promise<{
+    success: boolean;
+    error?: string;
+    findingsAdded?: number;
+  }> {
+    return request(
+      `/api/github/integrations/${encodeURIComponent(repoId)}/resume-persist`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ workspaceId }),
+      },
+      30000
+    );
   },
 
   async getContinuousUpdateHistory(

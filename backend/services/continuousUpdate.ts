@@ -29,7 +29,48 @@ import type {
   GitHubIntegration,
   ProjectData,
   ProjectSource,
+  IngestionJobState,
+  IngestionJobCounters,
 } from '../../src/lib/types.ts';
+
+// ============================================================================
+// Asynchronous Job & Scan Cache Registries
+// ============================================================================
+
+export const activeIngestionJobs = new Map<string, IngestionJobState>();
+
+export function getIngestionJob(jobId: string): IngestionJobState | null {
+  return activeIngestionJobs.get(jobId) || null;
+}
+
+export function getActiveJobForRepo(workspaceId: string, repoId: number): IngestionJobState | null {
+  for (const job of Array.from(activeIngestionJobs.values())) {
+    if (job.workspaceId === workspaceId && job.repoId === repoId && job.status === 'in_progress') {
+      return job;
+    }
+  }
+  return null;
+}
+
+export interface CachedScanData {
+  workspaceId: string;
+  repoId: number;
+  ingestionResult: GitHubIngestionResult;
+  commitSha: string;
+  timestamp: number;
+}
+
+export const activeScanCache = new Map<string, CachedScanData>();
+
+export function getCachedScan(workspaceId: string, repoId: number): CachedScanData | null {
+  const cached = activeScanCache.get(`${workspaceId}_${repoId}`);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > 30 * 60 * 1000) {
+    activeScanCache.delete(`${workspaceId}_${repoId}`);
+    return null;
+  }
+  return cached;
+}
 
 // ============================================================================
 // Per-Repository Concurrency Serialization (Mutex Queue)
@@ -80,6 +121,12 @@ export interface ContinuousUpdateOptions {
   reason?: string;
   runAiExtraction?: boolean;
   service?: GitHubService;
+  onProgress?: (progress: {
+    phase: number;
+    phaseName: string;
+    percent: number;
+    counters?: IngestionJobCounters;
+  }) => void;
 }
 
 export interface ContinuousUpdateExecutionResult {
@@ -161,6 +208,12 @@ export async function executeContinuousUpdate(
 
     // 3. Ingestion Step
     try {
+      options.onProgress?.({
+        phase: 2,
+        phaseName: 'Fetching Git Tree via Git Trees API',
+        percent: 20,
+      });
+
       ingestionResult = await ingestGitHubRepository(
         integration.repoOwner,
         integration.repoName,
@@ -175,6 +228,20 @@ export async function executeContinuousUpdate(
           maxPullRequests: integration.config.maxPullRequests,
           maxIssues: integration.config.maxIssues,
           integrationId: integration.id,
+          onProgress: (p) => {
+            options.onProgress?.({
+              phase: p.phase ?? 2,
+              phaseName: p.phaseName ?? 'Processing',
+              percent: p.percent ?? 10,
+              counters: {
+                discovered: p.discoveredCount || 0,
+                read: p.readCount || 0,
+                skipped: p.skippedCount || 0,
+                analyzed: p.analyzedCount || p.readCount || 0,
+                findings: p.findingsCount || 0,
+              },
+            });
+          },
         },
         existingSource,
         activeService
@@ -332,7 +399,31 @@ export async function executeContinuousUpdate(
     record.findingsAdded = findingsAdded;
     record.completedAt = new Date().toISOString();
 
-    // 9. Persist Workspace State
+    // Signal Phase 8: Saving Persistent Knowledge
+    options.onProgress?.({
+      phase: 8,
+      phaseName: 'Saving Persistent Knowledge into Storage',
+      percent: 92,
+      counters: {
+        discovered: ingestionResult.codebaseIntelligence?.stats?.totalFilesDiscovered || 0,
+        read: ingestionResult.codebaseIntelligence?.stats?.totalFilesRead || 0,
+        skipped: ingestionResult.codebaseIntelligence?.stats?.totalFilesSkipped || 0,
+        analyzed: ingestionResult.codebaseIntelligence?.inventory?.length || 0,
+        findings: updatedFindings.length,
+      },
+    });
+
+    // Cache the scan result in memory for fast, resilient recovery if persistence needs retry
+    activeScanCache.set(`${workspaceId}_${repoId}`, {
+      workspaceId,
+      repoId,
+      ingestionResult,
+      commitSha: ingestionResult.lastCommitSha || 'main',
+      timestamp: Date.now(),
+    });
+
+    // 9. Persist Workspace State (Deduplicate findings to guarantee idempotency)
+    updatedFindings = deduplicateFindings(updatedFindings);
     const updatedProject: ProjectData = {
       ...project,
       sources: updatedSources,
@@ -350,11 +441,26 @@ export async function executeContinuousUpdate(
     integration.codebaseIntelligence = ingestionResult.codebaseIntelligence || integration.codebaseIntelligence;
     integration.lastSyncedAt = new Date().toISOString();
     integration.lastCommitSha = ingestionResult.lastCommitSha;
+    integration.errorMessage = undefined;
     integration.updatedAt = new Date().toISOString();
     await storage.saveGitHubIntegration(workspaceId, integration);
 
     // 11. Persist Immutable Update History Record
     await storage.recordContinuousUpdate(workspaceId, record);
+
+    // Signal Phase 9: Completed
+    options.onProgress?.({
+      phase: 9,
+      phaseName: 'Completed',
+      percent: 100,
+      counters: {
+        discovered: ingestionResult.codebaseIntelligence?.stats?.totalFilesDiscovered || 0,
+        read: ingestionResult.codebaseIntelligence?.stats?.totalFilesRead || 0,
+        skipped: ingestionResult.codebaseIntelligence?.stats?.totalFilesSkipped || 0,
+        analyzed: ingestionResult.codebaseIntelligence?.inventory?.length || 0,
+        findings: updatedFindings.length,
+      },
+    });
 
     return {
       status: record.status,
@@ -366,6 +472,82 @@ export async function executeContinuousUpdate(
       findingsAdded,
     };
   });
+}
+
+/**
+ * Resumes persistence (Phase 8) specifically using cached scan data.
+ * Skips GitHub file fetching and Gemini AI extraction completely.
+ */
+export async function resumePersistenceOnly(
+  workspaceId: string,
+  repoId: number
+): Promise<{ success: boolean; error?: string; findingsAdded?: number }> {
+  const cached = getCachedScan(workspaceId, repoId);
+  if (!cached) {
+    return {
+      success: false,
+      error: 'No cached repository scan data available to persist. Please trigger a full synchronization.',
+    };
+  }
+
+  const storage = getStorage();
+  const integration = await storage.getGitHubIntegration(workspaceId, repoId);
+  if (!integration) {
+    return { success: false, error: `Integration for repoId ${repoId} not found.` };
+  }
+
+  let project = await storage.getWorkspace(workspaceId);
+  if (!project) {
+    project = await storage.createWorkspace(workspaceId);
+  }
+
+  const { ingestionResult } = cached;
+
+  // 1. Update source
+  const existingIdx = (project.sources || []).findIndex(
+    (s) => s.id === ingestionResult.source.id || s.githubIntegrationId === integration.id
+  );
+  let updatedSources = [...(project.sources || [])];
+  if (existingIdx !== -1) {
+    updatedSources[existingIdx] = ingestionResult.source;
+  } else {
+    updatedSources = [ingestionResult.source, ...updatedSources];
+  }
+
+  // 2. Deduplicate and merge findings
+  let updatedFindings = [...(project.findings || [])];
+  let findingsAdded = 0;
+  if (ingestionResult.codebaseFindings && ingestionResult.codebaseFindings.length > 0) {
+    const unapproved = ingestionResult.codebaseFindings.map((f) => ({
+      ...f,
+      approved: false,
+      rejected: false,
+      reviewStatus: 'PENDING_REVIEW' as const,
+    }));
+    const beforeCount = updatedFindings.length;
+    updatedFindings = deduplicateFindings([...unapproved, ...updatedFindings]);
+    findingsAdded += Math.max(0, updatedFindings.length - beforeCount);
+  }
+
+  // 3. Persist workspace state
+  const updatedProject: ProjectData = {
+    ...project,
+    sources: updatedSources,
+    findings: updatedFindings,
+    lastAnalysed: 'Just now',
+  };
+  await storage.saveProject(workspaceId, updatedProject);
+
+  // 4. Persist integration
+  integration.syncStatus = 'synced';
+  integration.codebaseIntelligence = ingestionResult.codebaseIntelligence || integration.codebaseIntelligence;
+  integration.lastSyncedAt = new Date().toISOString();
+  integration.lastCommitSha = ingestionResult.lastCommitSha;
+  integration.errorMessage = undefined;
+  integration.updatedAt = new Date().toISOString();
+  await storage.saveGitHubIntegration(workspaceId, integration);
+
+  return { success: true, findingsAdded };
 }
 
 // ============================================================================

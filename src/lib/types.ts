@@ -684,6 +684,34 @@ export interface CodebaseIntelligence {
   lastIngestedAt: string;
 }
 
+export interface IngestionJobCounters {
+  discovered: number;
+  read: number;
+  skipped: number;
+  analyzed: number;
+  findings: number;
+}
+
+export interface IngestionJobState {
+  jobId: string;
+  workspaceId: string;
+  repoId: number;
+  repoOwner: string;
+  repoName: string;
+  branch: string;
+  phase: number;
+  phaseName: string;
+  percent: number;
+  status: 'in_progress' | 'completed' | 'failed';
+  counters: IngestionJobCounters;
+  codebaseIntelligence?: CodebaseIntelligence;
+  recordCounts?: { commits: number; pullRequests: number; issues: number; docs: number };
+  error?: string;
+  updatedAt: string;
+  startedAt: string;
+  completedAt?: string;
+}
+
 export interface CodebaseQuestionRequest {
   question: string;
   workspaceId: string;

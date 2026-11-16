@@ -1259,13 +1259,37 @@ export class SupabaseStorageRepository implements StorageRepository {
     }
 
     const row = mapGitHubIntegrationToDbRow(workspaceId, integration);
-    const { data, error } = await this.client
-      .from('github_integrations')
-      .upsert(row, { onConflict: 'workspace_id,repo_id' })
-      .select()
-      .single();
-    if (error) throw error;
-    return mapDbRowToGitHubIntegration(data);
+    let lastError: any = null;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const { data, error } = await this.client
+          .from('github_integrations')
+          .upsert(row, { onConflict: 'workspace_id,repo_id' })
+          .select()
+          .single();
+
+        if (error) {
+          lastError = error;
+          if (attempt === 1) {
+            await new Promise((r) => setTimeout(r, 400));
+            continue;
+          }
+          throw error;
+        }
+
+        return mapDbRowToGitHubIntegration(data);
+      } catch (err: any) {
+        lastError = err;
+        if (attempt === 1) {
+          await new Promise((r) => setTimeout(r, 400));
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw lastError || new Error('Failed to persist GitHub integration after retry');
   }
 
   async listGitHubIntegrations(workspaceId: string): Promise<GitHubIntegration[]> {
@@ -1411,6 +1435,7 @@ function mapDbRowToGitHubIntegration(row: any): GitHubIntegration {
     errorMessage: row.error_message,
     config: row.config || {},
     metadata: row.metadata,
+    codebaseIntelligence: row.metadata?.codebaseIntelligence || null,
     knowledgeStatus: row.metadata?.knowledgeStatus || 'idle',
     lastProcessedCommitSha: row.metadata?.lastProcessedCommitSha || null,
     createdAt: row.created_at,
@@ -1419,6 +1444,20 @@ function mapDbRowToGitHubIntegration(row: any): GitHubIntegration {
 }
 
 function mapGitHubIntegrationToDbRow(workspaceId: string, item: GitHubIntegration): any {
+  // Compact file excerpts to ensure lightweight JSON payload for lightning-fast database writes
+  let compactedIntelligence: any = null;
+  if (item.codebaseIntelligence) {
+    compactedIntelligence = {
+      ...item.codebaseIntelligence,
+      inventory: (item.codebaseIntelligence.inventory || []).map((file) => ({
+        ...file,
+        excerpt: file.excerpt ? file.excerpt.slice(0, 300) : undefined,
+      })),
+    };
+  } else if ((item.metadata as any)?.codebaseIntelligence) {
+    compactedIntelligence = (item.metadata as any).codebaseIntelligence;
+  }
+
   return {
     id: item.id,
     workspace_id: workspaceId,
@@ -1435,6 +1474,7 @@ function mapGitHubIntegrationToDbRow(workspaceId: string, item: GitHubIntegratio
     config: item.config || {},
     metadata: {
       ...(item.metadata || {}),
+      codebaseIntelligence: compactedIntelligence,
       knowledgeStatus: item.knowledgeStatus || 'idle',
       lastProcessedCommitSha: item.lastProcessedCommitSha || null,
     },
