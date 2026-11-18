@@ -58,7 +58,11 @@ export async function runKnowledgeExtractionPipeline(
 
   // 3. Process each eligible source
   for (const source of eligibleSources) {
-    const chunks = chunkDocument(source);
+    const allChunks = chunkDocument(source);
+    const chunks =
+      typeof options.maxChunks === 'number' && options.maxChunks > 0
+        ? allChunks.slice(0, options.maxChunks)
+        : allChunks;
     totalChunks += chunks.length;
 
     for (const chunk of chunks) {

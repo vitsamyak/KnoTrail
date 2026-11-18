@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { GitHubLogo } from '../ui/GitHubLogo';
 import type { CodebaseIntelligence, GitHubIntegration } from '../../lib/types';
@@ -62,6 +62,7 @@ export function ConnectGitHubModal({
   const [isIngesting, setIsIngesting] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<number>(0); // 0 = idle, 1..9 = phases
   const [errorPhase, setErrorPhase] = useState<number | null>(null);
+  const latestPhaseRef = useRef<number>(2);
   const [createdIntegration, setCreatedIntegration] = useState<GitHubIntegration | null>(null);
   const [intelligence, setIntelligence] = useState<CodebaseIntelligence | null>(null);
   const [counters, setCounters] = useState({
@@ -120,6 +121,7 @@ export function ConnectGitHubModal({
     setIsIngesting(true);
     setLocalError(null);
     setErrorPhase(null);
+    latestPhaseRef.current = 2;
     setCurrentPhase(2); // Fetching Git Tree
 
     try {
@@ -133,8 +135,8 @@ export function ConnectGitHubModal({
 
       const jobId = startRes.jobId;
 
-      // Poll real job status until completed or failed
-      const maxPollAttempts = 180; // 3 minutes maximum timeout
+      // Poll real job status until completed or failed (up to 5 minutes timeout)
+      const maxPollAttempts = 300;
       let attempts = 0;
       let completedSuccessfully = false;
 
@@ -152,6 +154,7 @@ export function ConnectGitHubModal({
 
         // Update real progress phase from server telemetry
         if (job.phase && job.phase >= 2) {
+          latestPhaseRef.current = job.phase;
           setCurrentPhase(job.phase);
         }
 
@@ -168,6 +171,7 @@ export function ConnectGitHubModal({
 
         if (job.status === 'completed') {
           completedSuccessfully = true;
+          latestPhaseRef.current = 9;
           await completeSyncAndRefresh();
 
           // Fetch verified intelligence from storage
@@ -199,7 +203,7 @@ export function ConnectGitHubModal({
         }
 
         if (job.status === 'failed') {
-          setErrorPhase(job.phase || 8);
+          setErrorPhase(job.phase || latestPhaseRef.current || 8);
           setLocalError(job.error || 'Codebase ingestion failed during processing.');
           setIsIngesting(false);
           return;
@@ -207,12 +211,12 @@ export function ConnectGitHubModal({
       }
 
       if (!completedSuccessfully) {
-        setErrorPhase(currentPhase || 8);
-        setLocalError('Ingestion job is still processing in the background. Please verify the Render backend or refresh.');
+        setErrorPhase(latestPhaseRef.current || 8);
+        setLocalError('Ingestion job timed out or is still processing in the background. Please retry or refresh.');
         setIsIngesting(false);
       }
     } catch (err: any) {
-      setErrorPhase(currentPhase || 5);
+      setErrorPhase(latestPhaseRef.current || 5);
       setLocalError(err?.message || 'Codebase ingestion failed.');
       setIsIngesting(false);
     }
@@ -280,8 +284,8 @@ export function ConnectGitHubModal({
       return;
     }
 
-    // Phase 8 Resilience: If persistence failed, skip GitHub scanning and Gemini AI extraction,
-    // and directly resume the persistence operation using cached scan data.
+    // Phase 8 Resilience: If persistence failed, attempt resume with cached scan data.
+    // If cache is expired or server restarted, automatically fall back to full ingestion.
     if (errorPhase === 8) {
       setIsIngesting(true);
       setLocalError(null);
@@ -297,15 +301,14 @@ export function ConnectGitHubModal({
           setCurrentPhase(9);
           setIsIngesting(false);
           if (onSuccess) onSuccess();
+          return;
         } else {
-          setErrorPhase(8);
-          setLocalError(resumeRes.error || 'Failed to persist cached repository intelligence.');
-          setIsIngesting(false);
+          console.warn('[ConnectGitHubModal] Resume persistence failed, falling back to full ingestion:', resumeRes.error);
+          await runIngestionFlow(createdIntegration);
         }
       } catch (err: any) {
-        setErrorPhase(8);
-        setLocalError(err?.message || 'Failed to persist knowledge.');
-        setIsIngesting(false);
+        console.warn('[ConnectGitHubModal] Resume persistence error, falling back to full ingestion:', err?.message || err);
+        await runIngestionFlow(createdIntegration);
       }
     } else {
       await runIngestionFlow(createdIntegration);
@@ -428,7 +431,7 @@ export function ConnectGitHubModal({
             <div className="border border-outline-variant/40 rounded-xl divide-y divide-outline-variant/20 bg-surface-container-low/30 overflow-hidden">
               {INGESTION_PHASES.map((p) => {
                 const isCurrent = currentPhase === p.id && isIngesting;
-                const isDone = currentPhase > p.id;
+                const isDone = currentPhase > p.id || (errorPhase !== null && p.id < errorPhase);
                 const isError = errorPhase === p.id;
 
                 return (

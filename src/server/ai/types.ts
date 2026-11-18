@@ -31,6 +31,7 @@ export interface ExtractionOptions {
   sourceIds?: string[];
   maxTokens?: number;
   temperature?: number;
+  maxChunks?: number;
 }
 
 export interface ExtractionChunk {

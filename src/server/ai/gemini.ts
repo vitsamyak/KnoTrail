@@ -88,7 +88,7 @@ export async function extractWithGemini(
   }
 
   const prompt = buildExtractionPrompt(documentName, text);
-  const modelName = options.model || process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+  const modelName = options.model || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
   let rawResponseText = '';
 
@@ -103,15 +103,16 @@ export async function extractWithGemini(
   } else {
     // Official GoogleGenAI SDK call with transient retry & fallback
     const ai = new GoogleGenAI({ apiKey: apiKey! });
-    const modelsToTry = [modelName, 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite'];
+    const modelsToTry = [modelName, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     const uniqueModels = Array.from(new Set(modelsToTry));
     let lastError: any = null;
     let response: any = null;
 
     for (const model of uniqueModels) {
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          response = await ai.models.generateContent({
+          // Bounded per-request timeout (25 seconds) to prevent hanging
+          const generatePromise = ai.models.generateContent({
             model,
             contents: prompt,
             config: {
@@ -119,12 +120,17 @@ export async function extractWithGemini(
               temperature: options.temperature ?? 0.1,
             },
           });
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`Gemini request timeout on model ${model}`)), 25000)
+          );
+
+          response = (await Promise.race([generatePromise, timeoutPromise])) as any;
           if (response?.text) break;
         } catch (err: any) {
           lastError = err;
           // If transient capacity spike (503, 429), back off before retry
           if (err?.status === 503 || err?.status === 429) {
-            await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+            await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
             continue;
           }
           // For other errors (e.g., 404), switch to next model immediately

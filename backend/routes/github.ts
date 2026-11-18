@@ -408,6 +408,8 @@ githubRouter.post(
           .catch((err) => {
             console.error('[Async Ingestion Job Error]:', err?.message || err);
             job.status = 'failed';
+            job.phase = job.phase || 8;
+            job.phaseName = 'Failed';
             job.error = err?.message || 'Ingestion encountered an unexpected error';
             job.updatedAt = new Date().toISOString();
           });
@@ -525,6 +527,34 @@ githubRouter.get(
             startedAt: record.timestamp,
             completedAt: record.completedAt,
           };
+        } else {
+          // If in-memory job was purged during server restart, check if repository integration is already synced
+          const integration = await storage.getGitHubIntegration(workspaceId, repoId);
+          if (integration && integration.syncStatus === 'synced') {
+            job = {
+              jobId,
+              workspaceId,
+              repoId,
+              repoOwner: integration.repoOwner,
+              repoName: integration.repoName,
+              branch: integration.selectedBranch || 'main',
+              phase: 9,
+              phaseName: 'Completed',
+              percent: 100,
+              status: 'completed',
+              counters: {
+                discovered: integration.codebaseIntelligence?.stats?.totalFilesDiscovered || 0,
+                read: integration.codebaseIntelligence?.stats?.totalFilesRead || 0,
+                skipped: integration.codebaseIntelligence?.stats?.totalFilesSkipped || 0,
+                analyzed: integration.codebaseIntelligence?.inventory?.length || 0,
+                findings: 0,
+              },
+              codebaseIntelligence: integration.codebaseIntelligence,
+              updatedAt: integration.lastSyncedAt || integration.updatedAt,
+              startedAt: integration.updatedAt,
+              completedAt: integration.lastSyncedAt,
+            };
+          }
         }
       }
 

@@ -336,7 +336,28 @@ export async function executeContinuousUpdate(
 
     if (shouldRunAi) {
       try {
-        const extractionRes = await runKnowledgeExtractionPipeline([ingestionResult.source]);
+        options.onProgress?.({
+          phase: 7,
+          phaseName: 'Synthesizing knowledge findings with Gemini AI',
+          percent: 88,
+          counters: {
+            discovered: ingestionResult.codebaseIntelligence?.stats?.totalFilesDiscovered || 0,
+            read: ingestionResult.codebaseIntelligence?.stats?.totalFilesRead || 0,
+            skipped: ingestionResult.codebaseIntelligence?.stats?.totalFilesSkipped || 0,
+            analyzed: ingestionResult.codebaseIntelligence?.inventory?.length || 0,
+            findings: updatedFindings.length,
+          },
+        });
+
+        // Safe 30s timeout and bounded 2-chunk extraction to guarantee fast, resilient sync
+        const aiExtractionPromise = runKnowledgeExtractionPipeline([ingestionResult.source], {
+          maxChunks: 2,
+        });
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('AI knowledge extraction timeout (exceeded 30s limit)')), 30000)
+        );
+
+        const extractionRes = await Promise.race([aiExtractionPromise, timeoutPromise]);
         if (extractionRes.findings && extractionRes.findings.length > 0) {
           // Strictly enforce Zero Auto-Approval Invariant: default to approved: false
           const unapprovedFindings = extractionRes.findings.map((f) => ({
@@ -354,11 +375,11 @@ export async function executeContinuousUpdate(
         record.knowledgeStatus = 'completed';
         integration.knowledgeStatus = 'completed';
       } catch (aiErr: any) {
-        console.warn('[Continuous Update AI Warning]: AI extraction failed during sync:', aiErr?.message || aiErr);
-        // Distinguish ingestion success from knowledge-processing success
+        console.warn('[Continuous Update AI Warning]: AI extraction failed or timed out during sync:', aiErr?.message || aiErr);
+        // Distinguish ingestion success from knowledge-processing success (graceful degradation)
         record.knowledgeStatus = 'failed';
         record.status = 'partial';
-        record.errorMessage = `Ingestion succeeded, but knowledge extraction encountered an error: ${aiErr?.message || aiErr}`;
+        record.errorMessage = `Ingestion succeeded, but knowledge extraction encountered an issue: ${aiErr?.message || aiErr}`;
 
         integration.knowledgeStatus = 'failed';
         integration.errorMessage = record.errorMessage;
